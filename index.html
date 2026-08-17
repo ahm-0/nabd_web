@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>منصة نبض التفوق التعليمية</title>
+  
+  <!-- استدعاء الخط العربي القياسي Noto Sans Arabic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+  <style>
+    /* ==========================================================================
+       نظام الألوان والسمات المتطور مع الأداء الفائق والاحترافي
+       ========================================================================== */
+    :root {
+      --bg-app: #070d19;
+      --bg-surface: #0f182c;
+      --bg-surface-elevated: #16223b;
+      --bg-digit: #0b1220;
+      
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(56, 189, 248, 0.5);
+      
+      --color-primary: #38bdf8;
+      --color-primary-rgb: 56, 189, 248;
+      --color-secondary: #818cf8;
+      --color-green: #34d399;
+      --color-amber: #fbbf24;
+      --color-rose: #f43f5e;
+      --color-purple: #a855f7;
+
+      --text-heading: #f8fafc;
+      --text-body: #cbd5e1;
+      --text-muted: #8292a7;
+      
+      --drawer-bg: #0b1426;
+      --bottom-bar-bg: rgba(15, 24, 44, 0.94);
+      --shadow-elevation: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-theme="light"] {
+      --bg-app: #f4f7fb;
+      --bg-surface: #ffffff;
+      --bg-surface-elevated: #f8fafc;
+      --bg-digit: #f1f5f9;
+      
+      --border-color: #e2e8f0;
+      --border-focus: #0284c7;
+      
+      --color-primary: #0284c7;
+      --color-primary-rgb: 2, 132, 199;
+      --color-secondary: #4f46e5;
+      --color-green: #059669;
+      --color-amber: #d97706;
+      --color-rose: #e11d48;
+      --color-purple: #9333ea;
+
+      --text-heading: #0f172a;
+      --text-body: #334155;
+      --text-muted: #64748b;
+      
+      --drawer-bg: #ffffff;
+      --bottom-bar-bg: rgba(255, 255, 255, 0.95);
+      --shadow-elevation: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans Arabic", Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+
+    body {
+      min-height: 100vh;
+      background-color: var(--bg-app);
+      color: var(--text-body);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow-x: hidden;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .app-viewport {
+      width: 100%;
+      max-width: 440px;
+      min-height: 100vh;
+      padding: 12px 14px 92px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* الترويسة */
+    .app-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .brand-identity-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1.5px solid var(--color-primary);
+      box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+    }
+
+    .brand-text-block h1 {
+      font-size: 1.12rem;
+      font-weight: 800;
+      color: var(--text-heading);
+      line-height: 1.2;
+    }
+
+    .brand-text-block p {
+      font-size: 0.72rem;
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+
+    .header-action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .header-circle-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      color: var(--text-heading);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: var(--shadow-elevation);
+      transition: transform 0.1s ease, border-color 0.1s ease;
+      position: relative;
+      text-decoration: none;
+    }
+
+    .header-circle-btn:active {
+      transform: scale(0.92);
+      border-color: var(--color-primary);
+    }
+
+    .btn-sidebar-attention {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      animation: sidebarPulseGlow 2.4s infinite ease-in-out;
+    }
+
+    @keyframes sidebarPulseGlow {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb), 0.4); }
+      50% { transform: scale(1.08); box-shadow: 0 0 14px rgba(var(--color-primary-rgb), 0.65); }
+    }
+
+    /* شريط البحث */
+    .search-pill-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .search-field-input {
+      width: 100%;
+      height: 44px;
+      padding: 0 40px 0 14px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      color: var(--text-heading);
+      font-size: 0.84rem;
+    }
+
+    .search-field-input::placeholder {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .search-field-input:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.18);
+    }
+
+    .search-icon-embedded {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+
+    /* ودجت عدادات الامتحانات */
+    .countdown-widget-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-elevation);
+      position: relative;
+    }
+
+    .widget-tabs-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 3px;
+      margin-bottom: 10px;
+    }
+
+    .tab-toggle-item {
+      flex: 1;
+      text-align: center;
+      padding: 5px 2px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .tab-toggle-item.active {
+      background: var(--color-primary);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(var(--color-primary-rgb), 0.3);
+    }
+
+    .countdown-slides-viewport {
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .countdown-slides-track {
+      display: flex;
+      width: 300%;
+      transform: translate3d(0, 0, 0);
+      transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.25, 1);
+    }
+
+    .single-timer-pane {
+      width: 33.3333%;
+      flex-shrink: 0;
+      padding: 2px 2px 4px;
+    }
+
+    .timer-info-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .timer-title-flex {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.86rem;
+      font-weight: 800;
+      color: var(--text-heading);
+    }
+
+    .timer-title-flex i { color: var(--color-primary); }
+
+    .stage-tag-badge {
+      font-size: 0.66rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: var(--bg-surface-elevated);
+      color: var(--color-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-edit-target-action {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      color: var(--color-primary);
+      padding: 2px 7px;
+      border-radius: 7px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .digits-flex-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      direction: ltr;
+      gap: 5px;
+      margin-bottom: 6px;
+    }
+
+    .digit-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .digit-box-surface {
+      width: 100%;
+      height: 44px;
+      background: var(--bg-digit);
+      border: 1px solid var(--border-color);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-heading);
+      margin-bottom: 3px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .digit-name-tag {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .timer-colon-divider {
+      color: var(--color-primary);
+      font-size: 0.95rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+
+    /* شبكة الأزرار مع الأضواء المتحركة */
+    .buttons-triplet-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+      margin-bottom: 14px;
+    }
+
+    .smart-btn-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 14px 6px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-elevation);
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      transition: transform 0.12s ease, border-color 0.12s ease;
+      will-change: transform;
+    }
+
+    .smart-btn-card:active {
+      transform: scale(0.95);
+      border-color: var(--border-focus);
+    }
+
+    .smart-btn-card::before,
+    .smart-btn-card::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(12px);
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+      animation: artisticOrbMove 5s infinite alternate ease-in-out;
+    }
+
+    .smart-btn-card::before {
+      width: 45px;
+      height: 45px;
+      top: -12px;
+      right: -12px;
+      background: var(--anim-color-1, var(--color-primary));
+    }
+
+    .smart-btn-card::after {
+      width: 38px;
+      height: 38px;
+      bottom: -10px;
+      left: -10px;
+      background: var(--anim-color-2, var(--color-secondary));
+      animation-delay: 2.5s;
+    }
+
+    @keyframes artisticOrbMove {
+      0% { transform: translate3d(0, 0, 0) scale(0.8); }
+      100% { transform: translate3d(4px, 4px, 0) scale(1.15); }
+    }
+
+    .icon-anim-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: #ffffff;
+      margin-bottom: 8px;
+      z-index: 1;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+      background-size: 200% 200%;
+      animation: dynamicGradientFlow 4s ease infinite;
+    }
+
+    @keyframes dynamicGradientFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* التدرجات */
+    .theme-calc     { --anim-color-1: #10b981; --anim-color-2: #06b6d4; }
+    .badge-gradient-calc { background: linear-gradient(135deg, #10b981, #06b6d4, #059669); }
+
+    .theme-exams    { --anim-color-1: #8b5cf6; --anim-color-2: #6366f1; }
+    .badge-gradient-exams { background: linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6); }
+
+    .theme-pomodoro { --anim-color-1: #f43f5e; --anim-color-2: #fb923c; }
+    .badge-gradient-pomodoro { background: linear-gradient(135deg, #f43f5e, #fb923c, #e11d48); }
+
+    .theme-photos   { --anim-color-1: #06b6d4; --anim-color-2: #3b82f6; }
+    .badge-gradient-photos { background: linear-gradient(135deg, #06b6d4, #3b82f6, #0284c7); }
+
+    .theme-time     { --anim-color-1: #f59e0b; --anim-color-2: #ef4444; }
+    .badge-gradient-time { background: linear-gradient(135deg, #f59e0b, #ef4444, #f97316); }
+
+    .theme-plan     { --anim-color-1: #10b981; --anim-color-2: #84cc16; }
+    .badge-gradient-plan { background: linear-gradient(135deg, #10b981, #84cc16, #059669); }
+
+    .theme-uni      { --anim-color-1: #8b5cf6; --anim-color-2: #ec4899; }
+    .badge-gradient-uni { background: linear-gradient(135deg, #8b5cf6, #ec4899, #a855f7); }
+
+    .theme-stages   { --anim-color-1: #3b82f6; --anim-color-2: #10b981; }
+    .badge-gradient-stages { background: linear-gradient(135deg, #3b82f6, #10b981, #06b6d4); }
+
+    .theme-ai       { --anim-color-1: #ec4899; --anim-color-2: #8b5cf6; }
+    .badge-gradient-ai { background: linear-gradient(135deg, #ec4899, #8b5cf6, #c026d3); }
+
+    .theme-library  { --anim-color-1: #f59e0b; --anim-color-2: #d97706; }
+    .badge-gradient-library { background: linear-gradient(135deg, #f59e0b, #d97706, #fbbf24); }
+
+    .theme-lessons  { --anim-color-1: #0ea5e9; --anim-color-2: #6366f1; }
+    .badge-gradient-lessons { background: linear-gradient(135deg, #0ea5e9, #6366f1, #0284c7); }
+
+    .theme-predictions { --anim-color-1: #10b981; --anim-color-2: #3b82f6; }
+    .badge-gradient-predictions { background: linear-gradient(135deg, #10b981, #3b82f6, #06b6d4); }
+
+    /* الأقسام المميزة والقنوات التعليمية */
+    .theme-featured { 
+      --anim-color-1: #fbbf24; 
+      --anim-color-2: #f43f5e; 
+      grid-column: span 3;
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.14), rgba(244, 63, 94, 0.14));
+      border: 1.5px solid rgba(251, 191, 36, 0.45);
+      flex-direction: row;
+      align-items: center;
+      padding: 12px 16px;
+      text-align: right;
+      gap: 14px;
+      animation: vipCardGlow 3s infinite ease-in-out;
+    }
+
+    @keyframes vipCardGlow {
+      0%, 100% { border-color: rgba(251, 191, 36, 0.45); box-shadow: 0 4px 15px rgba(251, 191, 36, 0.15); }
+      50% { border-color: rgba(251, 191, 36, 0.9); box-shadow: 0 6px 22px rgba(251, 191, 36, 0.35); }
+    }
+
+    .theme-featured .icon-anim-badge {
+      margin-bottom: 0;
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+    }
+
+    .badge-gradient-featured { background: linear-gradient(135deg, #fbbf24, #f43f5e, #d97706); }
+    .badge-gradient-channels { background: linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6); }
+
+    .featured-text-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      z-index: 1;
+    }
+
+    .smart-btn-card h3 {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--text-heading);
+      margin-bottom: 2px;
+      z-index: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .smart-btn-card p {
+      font-size: 0.64rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      z-index: 1;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .theme-featured h3 { font-size: 0.95rem; }
+    .theme-featured p { font-size: 0.72rem; }
+
+    .badge-main-featured {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: var(--color-green);
+      font-size: 0.58rem;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 8px;
+      z-index: 2;
+    }
+
+    .badge-vip-exclusive {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      background: linear-gradient(135deg, #fbbf24, #f43f5e);
+      color: #ffffff;
+      font-size: 0.62rem;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 10px;
+      z-index: 2;
+      box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+    }
+
+    /* شريط الغلافات والإعلانات */
+    .banner-covers-section {
+      margin-bottom: 14px;
+      position: relative;
+    }
+
+    .banner-swiper-viewport {
+      overflow: hidden;
+      border-radius: 18px;
+      box-shadow: var(--shadow-elevation);
+    }
+
+    .banner-swiper-track {
+      display: flex;
+      width: 300%;
+      transform: translate3d(0, 0, 0);
+      transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.25, 1);
+    }
+
+    .banner-slide-item {
+      width: 33.3333%;
+      flex-shrink: 0;
+      min-height: 135px;
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .banner-gradient-1 { background: linear-gradient(135deg, #092047, #0d3875, #145cb3); border: 1px solid rgba(56, 189, 248, 0.3); }
+    .banner-gradient-2 { background: linear-gradient(135deg, #2b1055, #591a8a, #7e22ce); border: 1px solid rgba(168, 85, 247, 0.3); }
+    .banner-gradient-3 { background: linear-gradient(135deg, #063d33, #0a6655, #0d9488); border: 1px solid rgba(52, 211, 153, 0.3); }
+
+    .banner-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      z-index: 1;
+    }
+
+    .banner-pill-badge {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      color: #ffffff;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .banner-bg-watermark {
+      font-size: 3.5rem;
+      position: absolute;
+      left: 14px;
+      bottom: -8px;
+      color: rgba(255, 255, 255, 0.08);
+      pointer-events: none;
+    }
+
+    .banner-title-text h4 {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 3px;
+    }
+
+    .banner-title-text p {
+      font-size: 0.74rem;
+      color: rgba(255, 255, 255, 0.85);
+      font-weight: 500;
+    }
+
+    .banner-btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffffff;
+      color: #0c1933;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      border: none;
+      align-self: flex-start;
+      margin-top: 8px;
+    }
+
+    .banner-dots-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .dot-step {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      opacity: 0.35;
+      cursor: pointer;
+    }
+
+    .dot-step.active {
+      width: 18px;
+      border-radius: 10px;
+      background: var(--color-primary);
+      opacity: 1;
+    }
+
+    /* الشريط السفلي */
+    .app-5tabs-nav-bar {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 24px);
+      max-width: 416px;
+      height: 62px;
+      background: var(--bottom-bar-bg);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border-color);
+      border-radius: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      box-shadow: var(--shadow-elevation);
+      z-index: 100;
+    }
+
+    .nav-side-group {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex: 1;
+      justify-content: space-around;
+    }
+
+    .nav-tab-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px 4px;
+      border-radius: 16px;
+      min-width: 62px;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .nav-tab-button i { font-size: 1.05rem; }
+    .nav-tab-button span { font-size: 0.58rem; font-weight: 700; }
+    .nav-tab-button.active { color: var(--color-primary); }
+
+    .center-home-floating-btn {
+      position: relative;
+      top: -16px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      box-shadow: 0 8px 20px rgba(var(--color-primary-rgb), 0.45);
+      border: 3.5px solid var(--bg-app);
+      cursor: pointer;
+      z-index: 101;
+      text-decoration: none;
+    }
+
+    /* القائمة الجانبية */
+    .drawer-overlay-scrim {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.68);
+      backdrop-filter: blur(5px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+      z-index: 998;
+    }
+
+    .drawer-overlay-scrim.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .sidebar-drawer-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 305px;
+      height: 100vh;
+      background: var(--drawer-bg);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px 18px;
+      z-index: 999;
+      transform: translate3d(100%, 0, 0);
+      transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.25, 1);
+      box-shadow: -15px 0 45px rgba(0, 0, 0, 0.5);
+      overflow-y: auto;
+      border-top-left-radius: 28px;
+      border-bottom-left-radius: 28px;
+    }
+
+    .sidebar-drawer-panel.open { transform: translate3d(0, 0, 0); }
+
+    .drawer-profile-card {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .drawer-logo-badge {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 2px solid var(--color-primary);
+    }
+
+    .drawer-profile-text h2 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-heading);
+      margin-bottom: 2px;
+    }
+
+    .drawer-profile-text span {
+      font-size: 0.72rem;
+      color: var(--color-primary);
+      font-weight: 700;
+    }
+
+    .drawer-menu-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .drawer-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 15px;
+      border-radius: 16px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      color: var(--text-heading);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .drawer-menu-item.vip-item {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(249, 115, 22, 0.12));
+      border-color: rgba(251, 191, 36, 0.35);
+    }
+
+    .drawer-menu-item.vip-item i { color: #fbbf24; }
+
+    .drawer-menu-item.logout-item {
+      background: linear-gradient(135deg, rgba(244, 63, 94, 0.12), rgba(225, 29, 72, 0.12));
+      border-color: rgba(244, 63, 94, 0.35);
+      color: var(--color-rose);
+    }
+
+    .drawer-menu-item.logout-item i { color: var(--color-rose); }
+
+    .vip-badge-tag {
+      margin-right: auto;
+      background: linear-gradient(135deg, #fbbf24, #f97316);
+      color: #ffffff;
+      font-size: 0.58rem;
+      font-weight: 900;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+
+    .drawer-footer-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .theme-switch-card-btn {
+      width: 100%;
+      padding: 12px 15px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      color: var(--text-heading);
+      font-size: 0.82rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .developer-credit-box {
+      background: var(--bg-surface-elevated);
+      border: 1px dashed var(--border-color);
+      border-radius: 16px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .developer-credit-box .dev-title {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .developer-credit-box .dev-name {
+      font-size: 0.88rem;
+      font-weight: 900;
+      color: var(--color-primary);
+    }
+
+    /* واجهة تسجيل الدخول */
+    .onboarding-overlay-layer {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-app);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 2000;
+      overflow-y: auto;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    .onboarding-overlay-layer.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .onboarding-card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 22px 18px;
+      box-shadow: var(--shadow-elevation);
+      text-align: center;
+      margin: auto;
+    }
+
+    .onboarding-logo {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 2px solid var(--color-primary);
+      margin: 0 auto 10px;
+      box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.35);
+    }
+
+    .onboarding-card h2 {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--text-heading);
+      margin-bottom: 2px;
+    }
+
+    .onboarding-card p {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .onboarding-grid-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .onboarding-form-group {
+      text-align: right;
+      margin-bottom: 10px;
+    }
+
+    .onboarding-form-group.full-width {
+      grid-column: span 2;
+    }
+
+    .onboarding-form-group label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-heading);
+      margin-bottom: 3px;
+    }
+
+    .onboarding-input, .onboarding-select {
+      width: 100%;
+      height: 40px;
+      padding: 0 10px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--text-heading);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .onboarding-btn {
+      width: 100%;
+      height: 44px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 6px;
+      box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4);
+    }
+
+    /* النوافذ المنبثقة */
+    .interactive-modal-layer {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 1200;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    .interactive-modal-layer.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-main-card {
+      width: 100%;
+      max-width: 380px;
+      max-height: 85vh;
+      overflow-y: auto;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 20px 18px;
+      box-shadow: var(--shadow-elevation);
+    }
+
+    .modal-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .modal-header-top h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text-heading);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-close-modal {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* بومودورو */
+    .pomodoro-display-circle {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: var(--bg-surface-elevated);
+      border: 3px solid var(--color-rose);
+      margin: 10px auto 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(244, 63, 94, 0.25);
+    }
+
+    .pomodoro-time-text {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--text-heading);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pomodoro-state-label {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--color-rose);
+    }
+
+    .pomodoro-ctrls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .pomo-btn {
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pomo-start { background: var(--color-green); color: #ffffff; }
+    .pomo-pause { background: var(--color-amber); color: #ffffff; }
+    .pomo-reset { background: var(--bg-surface-elevated); color: var(--text-muted); border: 1px solid var(--border-color); }
+
+    /* حاسبة المجموع */
+    .calc-inputs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .calc-input-item label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    .calc-input-item input {
+      width: 100%;
+      height: 36px;
+      padding: 0 8px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-heading);
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .calc-result-badge {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-focus);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .calc-result-badge h4 {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--color-primary);
+    }
+
+    /* اختبار تجريبي */
+    .quiz-question-box {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .quiz-question-box h4 {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--text-heading);
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    .quiz-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .quiz-opt-btn {
+      width: 100%;
+      padding: 9px 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 9px;
+      color: var(--text-body);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-align: right;
+      cursor: pointer;
+    }
+
+    .quiz-opt-btn.correct { background: rgba(52, 211, 153, 0.2); border-color: var(--color-green); color: var(--color-green); }
+    .quiz-opt-btn.wrong { background: rgba(244, 63, 94, 0.2); border-color: var(--color-rose); color: var(--color-rose); }
+
+    /* المساعد الذكي */
+    .chat-messages-container {
+      height: 220px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding: 6px;
+    }
+
+    .chat-bubble {
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      max-width: 85%;
+    }
+
+    .chat-bot { background: var(--bg-surface-elevated); color: var(--text-heading); align-self: flex-start; border: 1px solid var(--border-color); }
+    .chat-user { background: var(--color-primary); color: #ffffff; align-self: flex-end; }
+
+    .chat-input-row { display: flex; gap: 6px; }
+    .chat-input-text { flex: 1; height: 40px; padding: 0 12px; background: var(--bg-surface-elevated); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-heading); font-size: 0.82rem; }
+    .chat-send-btn { width: 40px; height: 40px; border-radius: 10px; background: var(--color-primary); color: #ffffff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    .search-field-input-custom {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--text-heading);
+      font-size: 0.84rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- واجهة تسجيل الدخول الإجبارية -->
+  <div class="onboarding-overlay-layer" id="onboardingLayer">
+    <div class="onboarding-card">
+      <img src="https://i.ibb.co/Lh9dhtCw/IMG-20260717-151527-109.jpg" alt="شعار نبض التفوق" class="onboarding-logo">
+      <h2>تسجيل دخول الطالب</h2>
+      <p>أدخل معلوماتك الكاملة للبدء في المنصة</p>
+      
+      <form id="onboardingForm" onsubmit="completeStudentRegistration(event)">
+        <div class="onboarding-grid-row">
+          <div class="onboarding-form-group">
+            <label>الاسم الأول:</label>
+            <input type="text" id="studentFirstName" class="onboarding-input" placeholder="الاسم الأول" required>
+          </div>
+          <div class="onboarding-form-group">
+            <label>اسم الكنية:</label>
+            <input type="text" id="studentLastName" class="onboarding-input" placeholder="الكنية" required>
+          </div>
+        </div>
+
+        <div class="onboarding-grid-row">
+          <div class="onboarding-form-group">
+            <label>رقم الهاتف:</label>
+            <input type="tel" id="studentPhone" class="onboarding-input" placeholder="رقم الهاتف" required>
+          </div>
+          <div class="onboarding-form-group">
+            <label>تاريخ الميلاد:</label>
+            <input type="date" id="studentBirthday" class="onboarding-input" required>
+          </div>
+        </div>
+
+        <div class="onboarding-grid-row">
+          <div class="onboarding-form-group">
+            <label>المحافظة:</label>
+            <select id="studentCity" class="onboarding-select">
+              <option value="دمشق">دمشق</option>
+              <option value="ريف دمشق">ريف دمشق</option>
+              <option value="حلب">حلب</option>
+              <option value="حمص">حمص</option>
+              <option value="حماة">حماة</option>
+              <option value="اللاذقية">اللاذقية</option>
+              <option value="طرطوس">طرطوس</option>
+              <option value="إدلب">إدلب</option>
+              <option value="دير الزور">دير الزور</option>
+              <option value="الرقة">الرقة</option>
+              <option value="الحسكة">الحسكة</option>
+              <option value="درعا">درعا</option>
+              <option value="السويداء">السويداء</option>
+              <option value="القنيطرة">القنيطرة</option>
+            </select>
+          </div>
+          <div class="onboarding-form-group">
+            <label>المرحلة الدراسية:</label>
+            <select id="studentStageSelect" class="onboarding-select">
+              <option value="بكالوريا علمي">بكالوريا علمي</option>
+              <option value="بكالوريا أدبي">بكالوريا أدبي</option>
+              <option value="التاسع الأساسي">التاسع الأساسي</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="onboarding-form-group full-width">
+          <label>كلمة السر:</label>
+          <input type="password" id="studentPassword" class="onboarding-input" placeholder="كلمة المرور الخاصة بك" required>
+        </div>
+
+        <button type="submit" class="onboarding-btn">تسجيل الدخول 🚀</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- الحاوية الرئيسية للتطبيق -->
+  <div class="app-viewport">
+
+    <!-- الترويسة الرئيسية مع روابط go المطلوبة مباشرة -->
+    <header class="app-header-top">
+      <div class="brand-identity-row">
+        <img src="https://i.ibb.co/Lh9dhtCw/IMG-20260717-151527-109.jpg" alt="شعار نبض التفوق" class="brand-logo-badge">
+        <div class="brand-text-block">
+          <h1 id="welcomeHeaderTitle">نبض التفوق</h1>
+          <p>المنصة التعليمية الأولى</p>
+        </div>
+      </div>
+
+      <div class="header-action-buttons">
+        <a href="go:notifications" class="header-circle-btn" title="الإشعارات">
+          <i class="fa-regular fa-bell"></i>
+        </a>
+        <a href="go:sidebar" class="header-circle-btn btn-sidebar-attention" id="btnOpenSidebar" onclick="document.getElementById('sidebarDrawerPanel').classList.add('open'); document.getElementById('drawerOverlayScrim').classList.add('active'); return false;" title="القائمة الرئيسية">
+          <i class="fa-solid fa-bars-staggered"></i>
+        </a>
+      </div>
+    </header>
+
+    <!-- شريط البحث -->
+    <div class="search-pill-wrapper">
+      <i class="fa-solid fa-magnifying-glass search-icon-embedded"></i>
+      <input type="text" id="mainSearchInput" class="search-field-input" placeholder="ابحث في الدروس، الاختبارات، أو الأقسام...">
+    </div>
+
+    <!-- 1. ودجت عدادات الامتحانات -->
+    <section class="countdown-widget-box" id="countdownWidgetBox">
+      <div class="widget-tabs-row">
+        <div class="tab-toggle-item active" onclick="slideToTimer(0)">بكالوريا</div>
+        <div class="tab-toggle-item" onclick="slideToTimer(1)">تاسع</div>
+        <div class="tab-toggle-item" onclick="slideToTimer(2)">مخصص</div>
+      </div>
+
+      <div class="countdown-slides-viewport" id="countdownViewport">
+        <div class="countdown-slides-track" id="countdownTrack">
+
+          <div class="single-timer-pane">
+            <div class="timer-info-header">
+              <div class="timer-title-flex">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>امتحانات البكالوريا</span>
+              </div>
+              <span class="stage-tag-badge">الثانوية العامة</span>
+            </div>
+            <div class="digits-flex-container">
+              <div class="digit-column"><div class="digit-box-surface" id="bacDays">00</div><span class="digit-name-tag">يوم</span></div>
+              <span class="timer-colon-divider">:</span>
+              <div class="digit-column"><div class="digit-box-surface" id="bacHours">00</div><span class="digit-name-tag">ساعة</span></div>
+              <span class="timer-colon-divider">:</span>
+              <div class="digit-column"><div class="digit-box-surface" id="bacMins">00</div><span class="digit-name-tag">دقيقة</span></div>
+              <span class="timer-colon-divider">:</span>
+              <div class="digit-column"><div class="digit-box-surface" id="bacSecs">00</div><span class="digit-name-tag">ثانية</span></div>
+            </div>
+          </div>
+
+          <div class="single-timer-pane">
+            <div class="timer-info-header">
+              <div class="timer-title-flex">
+                <i class="fa-solid fa-book-open-reader"></i>
+                <span>امتحانات التاسع</span>
+              </div>
+              <span class="stage-tag-badge">التعليم الأساسي</span>
+            </div>
+            <div class="digits-flex-container">
+              <div class="digit-column"><div class="digit-box-surface" id="tasDays">00</div><span class="digit-name-tag">يوم</span></div>
+              <span class="timer-colon-divider">:</span>
+              <div class="digit-column"><div class="digit-box-surface" id="tasHours">00</div><span class="digit-name-tag">ساعة</span></div>
+              <span class="timer-colon-divider">:</span>
+              <div class="digit-column"><div class="digit-box-surface" id="tasMins">00</div><span class="digit-name-tag">دقيقة</span></div>
+              <span class="timer-colon-divider">:</span>
+              <div class="digit-column"><div class="digit-box-surface" id="tasSecs">00</div><span class="digit-name-tag">ثانية</span></div>
+            </div>
+          </div>
+
+          <div class="single-timer-pane">
+            <div class="timer-info-header">
+              <div class="timer-title-flex">
+                <i class="fa-solid fa-bullseye"></i>
+                <span id="customGoalNameLabel">هدفي الخاص</span>
+              </div>
+              <button class="btn-edit-target-action" onclick="openModal('modalCustomTarget')">
+                <i class="fa-solid fa-pen-to-square"></i> ضبط
+              </button>
+            </div>
+            <div class="digits-flex-container">
+              <div class="digit-column"><div class="digit-box-surface" id="custDays">00</div><span class="digit-name-tag">يوم</span></div>
+              <span class="timer-colon-divider">:</span>
+              <div class="digit-column"><div class="digit-box-surface" id="custHours">00</div><span class="digit-name-tag">ساعة</span></div>
+              <span class="timer-colon-divider">:</span>
+              <div class="digit-column"><div class="digit-box-surface" id="custMins">00</div><span class="digit-name-tag">دقيقة</span></div>
+              <span class="timer-colon-divider">:</span>
+              <div class="digit-column"><div class="digit-box-surface" id="custSecs">00</div><span class="digit-name-tag">ثانية</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. شبكة الأزرار - الصف الأول -->
+    <div class="buttons-triplet-grid">
+      <a href="go:calc" class="smart-btn-card theme-calc">
+        <span class="badge-main-featured">رئيسي</span>
+        <div class="icon-anim-badge badge-gradient-calc"><i class="fa-solid fa-calculator"></i></div>
+        <h3>حاسبة المعدل</h3>
+        <p>احسب مجموعك</p>
+      </a>
+
+      <a href="go:quiz" class="smart-btn-card theme-exams">
+        <div class="icon-anim-badge badge-gradient-exams"><i class="fa-solid fa-clipboard-check"></i></div>
+        <h3>الاختبارات</h3>
+        <p>نماذج مؤتمتة</p>
+      </a>
+
+      <a href="go:pomodoro" class="smart-btn-card theme-pomodoro">
+        <div class="icon-anim-badge badge-gradient-pomodoro"><i class="fa-solid fa-stopwatch-20"></i></div>
+        <h3>بومودورو</h3>
+        <p>تركيز دراسي</p>
+      </a>
+    </div>
+
+    <!-- 3. شريط الغلافات والإعلانات -->
+    <section class="banner-covers-section" id="coversSection">
+      <div class="banner-swiper-viewport" id="bannerViewport">
+        <div class="banner-swiper-track" id="bannerTrack">
+          <a href="go:math_course" class="banner-slide-item banner-gradient-1">
+            <i class="fa-solid fa-square-root-variable banner-bg-watermark"></i>
+            <div class="banner-header-row"><span class="banner-pill-badge">دورة مكثفة 2027</span><i class="fa-solid fa-fire" style="color: #fbbf24;"></i></div>
+            <div class="banner-title-text">
+              <h4>مكثفة الرياضيات والتحليل</h4>
+              <p>شرح كافة النماذج المؤتمتة وطرق الحل السريع</p>
+              <button class="banner-btn-action"><span>ابدأ الآن</span><i class="fa-solid fa-arrow-left"></i></button>
+            </div>
+          </a>
+
+          <a href="go:physics_bank" class="banner-slide-item banner-gradient-2">
+            <i class="fa-solid fa-atom banner-bg-watermark"></i>
+            <div class="banner-header-row"><span class="banner-pill-badge">بنك أسئلة شامل</span><i class="fa-solid fa-bolt" style="color: #38bdf8;"></i></div>
+            <div class="banner-title-text">
+              <h4>نماذج الفيزياء والكيمياء</h4>
+              <p>أكثر من 1500 سؤال مؤتمت مع سلالم التصحيح</p>
+              <button class="banner-btn-action"><span>تصفح النماذج</span><i class="fa-solid fa-arrow-left"></i></button>
+            </div>
+          </a>
+
+          <a href="go:biology_summary" class="banner-slide-item banner-gradient-3">
+            <i class="fa-solid fa-dna banner-bg-watermark"></i>
+            <div class="banner-header-row"><span class="banner-pill-badge">المراجعة الذهبية</span><i class="fa-solid fa-star" style="color: #fbbf24;"></i></div>
+            <div class="banner-title-text">
+              <h4>ملخصات العلوم والأحياء</h4>
+              <p>مخططات ورسومات مفاهيمية للدرجة التامة</p>
+              <button class="banner-btn-action"><span>تحميل PDF</span><i class="fa-solid fa-arrow-left"></i></button>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div class="banner-dots-indicator">
+        <div class="dot-step active" onclick="slideToBanner(0)"></div>
+        <div class="dot-step" onclick="slideToBanner(1)"></div>
+        <div class="dot-step" onclick="slideToBanner(2)"></div>
+      </div>
+    </section>
+
+    <!-- 4. شبكة الأزرار - الصف الثاني -->
+    <div class="buttons-triplet-grid">
+      <a href="go:photos" class="smart-btn-card theme-photos">
+        <div class="icon-anim-badge badge-gradient-photos"><i class="fa-solid fa-images"></i></div>
+        <h3>تنظيم الصور</h3>
+        <p>أرشيف اللوحات</p>
+      </a>
+
+      <a href="go:time" class="smart-btn-card theme-time">
+        <div class="icon-anim-badge badge-gradient-time"><i class="fa-solid fa-calendar-check"></i></div>
+        <h3>تنظيم الوقت</h3>
+        <p>جدول المهام</p>
+      </a>
+
+      <a href="go:plan" class="smart-btn-card theme-plan">
+        <div class="icon-anim-badge badge-gradient-plan"><i class="fa-solid fa-list-check"></i></div>
+        <h3>برنامج الختم</h3>
+        <p>تاسع وبكالوريا</p>
+      </a>
+    </div>
+
+    <!-- 5. شبكة الأزرار - الصف الثالث -->
+    <div class="buttons-triplet-grid">
+      <a href="go:uni" class="smart-btn-card theme-uni">
+        <div class="icon-anim-badge badge-gradient-uni"><i class="fa-solid fa-building-columns"></i></div>
+        <h3>الجامعات</h3>
+        <p>دليل الكليات</p>
+      </a>
+
+      <a href="go:stages" class="smart-btn-card theme-stages">
+        <div class="icon-anim-badge badge-gradient-stages"><i class="fa-solid fa-user-graduate"></i></div>
+        <h3>تاسع وبكالوريا</h3>
+        <p>المنهاج والملخصات</p>
+      </a>
+
+      <a href="go:ai" class="smart-btn-card theme-ai">
+        <div class="icon-anim-badge badge-gradient-ai"><i class="fa-solid fa-brain"></i></div>
+        <h3>المساعد الذكي</h3>
+        <p>إجابات فورية</p>
+      </a>
+    </div>
+
+    <!-- 6. شبكة الأزرار - الصف الرابع -->
+    <div class="buttons-triplet-grid">
+      <a href="go:library" class="smart-btn-card theme-library">
+        <div class="icon-anim-badge badge-gradient-library"><i class="fa-solid fa-book-bookmark"></i></div>
+        <h3>المكتبة</h3>
+        <p>مصادر وملخصات</p>
+      </a>
+
+      <a href="go:lessons" class="smart-btn-card theme-lessons">
+        <div class="icon-anim-badge badge-gradient-lessons"><i class="fa-solid fa-circle-play"></i></div>
+        <h3>الدروس</h3>
+        <p>شروحات مبسطة</p>
+      </a>
+
+      <a href="go:predictions" class="smart-btn-card theme-predictions">
+        <div class="icon-anim-badge badge-gradient-predictions"><i class="fa-solid fa-bullseye"></i></div>
+        <h3>التوقعات</h3>
+        <p>أسئلة متوقعة</p>
+      </a>
+    </div>
+
+    <!-- 7. الأقسام المميزة -->
+    <div class="buttons-triplet-grid" style="margin-top: 4px;">
+      <a href="go:featured_vip" class="smart-btn-card theme-featured">
+        <span class="badge-vip-exclusive">حصري VIP</span>
+        <div class="icon-anim-badge badge-gradient-featured"><i class="fa-solid fa-crown"></i></div>
+        <div class="featured-text-content">
+          <h3>الأقسام المميزة والنخبة</h3>
+          <p>دورات النخبة، النماذج الذهبية، وسلالم التصحيح الرسمية</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- زر القنوات التعليمية المجانية -->
+    <div class="buttons-triplet-grid" style="margin-top: 4px;">
+      <a href="go:free_channels" class="smart-btn-card theme-featured" style="animation-delay: 1.5s;">
+        <span class="badge-vip-exclusive" style="background: linear-gradient(135deg, #06b6d4, #3b82f6);">مجاني</span>
+        <div class="icon-anim-badge badge-gradient-channels"><i class="fa-solid fa-bullhorn"></i></div>
+        <div class="featured-text-content">
+          <h3>القنوات التعليمية المجانية</h3>
+          <p>روابط قنوات الواتساب والتليغرام الرسمية لكل المواد</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- 8. الشريط السفلي مع روابط go كاملة -->
+    <nav class="app-5tabs-nav-bar">
+      <div class="nav-side-group">
+        <a href="go:lessons_tab" class="nav-tab-button" onclick="setActiveTab(this)">
+          <i class="fa-solid fa-circle-play"></i>
+          <span>الدروس</span>
+        </a>
+        <a href="go:exams_tab" class="nav-tab-button" onclick="setActiveTab(this)">
+          <i class="fa-solid fa-clipboard-check"></i>
+          <span>الاختبارات</span>
+        </a>
+      </div>
+
+      <a href="go:home" class="center-home-floating-btn" onclick="scrollToTop(); setActiveCenterTab()" title="الرئيسية">
+        <i class="fa-solid fa-house"></i>
+      </a>
+
+      <div class="nav-side-group">
+        <a href="go:news_tab" class="nav-tab-button" onclick="setActiveTab(this)">
+          <i class="fa-solid fa-bullhorn"></i>
+          <span>الأخبار</span>
+        </a>
+        <a href="go:mbc3" class="nav-tab-button" onclick="setActiveTab(this)">
+          <i class="fa-solid fa-circle-user"></i>
+          <span>حسابي</span>
+        </a>
+      </div>
+    </nav>
+  </div>
+
+  <!-- القائمة الجانبية -->
+  <div class="drawer-overlay-scrim" id="drawerOverlayScrim" onclick="closeSidebarDrawer()"></div>
+  <aside class="sidebar-drawer-panel" id="sidebarDrawerPanel">
+    <div>
+      <div class="drawer-profile-card">
+        <img src="https://i.ibb.co/Lh9dhtCw/IMG-20260717-151527-109.jpg" alt="شعار نبض التفوق" class="drawer-logo-badge">
+        <div class="drawer-profile-text">
+          <h2 id="drawerStudentName">نبض التفوق</h2>
+          <span id="drawerStudentStage">المنصة التعليمية الأولى</span>
+        </div>
+      </div>
+
+      <ul class="drawer-menu-list">
+        <a href="go:vip" class="drawer-menu-item vip-item" onclick="closeSidebarDrawer()"><i class="fa-solid fa-gem"></i><span>اشتراك مميز</span><span class="vip-badge-tag">VIP</span></a>
+        <a href="go:profile" class="drawer-menu-item" onclick="closeSidebarDrawer()"><i class="fa-solid fa-user"></i><span>ملف الشخصي</span></a>
+        <a href="go:settings" class="drawer-menu-item" onclick="closeSidebarDrawer()"><i class="fa-solid fa-gear"></i><span>الإعدادات</span></a>
+        <a href="go:about" class="drawer-menu-item" onclick="closeSidebarDrawer()"><i class="fa-solid fa-circle-info"></i><span>نبذة عن المنصة</span></a>
+        <a href="go:social" class="drawer-menu-item" onclick="closeSidebarDrawer()"><i class="fa-solid fa-share-nodes"></i><span>صفحاتنا الرسمية</span></a>
+        
+        <a href="go:logout" class="drawer-menu-item logout-item" onclick="studentLogout(); return false;">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>تسجيل الخروج</span>
+        </a>
+      </ul>
+    </div>
+
+    <div class="drawer-footer-actions">
+      <button class="theme-switch-card-btn" id="btnThemeSwitcher"><span>الوضع (نهاري / ليلي)</span><i class="fa-solid fa-circle-half-stroke"></i></button>
+      <div class="developer-credit-box">
+        <p class="dev-title">تم تطوير التطبيق بواسطة</p>
+        <h4 class="dev-name">Ali Haj Hussain</h4>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    // التحقق الفوري من حالة تسجيل الدخول
+    const savedName = localStorage.getItem('nbd_student_name');
+    const savedStage = localStorage.getItem('nbd_student_stage');
+    const onboardingLayer = document.getElementById('onboardingLayer');
+
+    if (savedName) {
+      onboardingLayer.classList.add('hidden');
+      document.getElementById('welcomeHeaderTitle').textContent = `أهلاً، ${savedName.split(' ')[0]}`;
+      document.getElementById('drawerStudentName').textContent = savedName;
+      document.getElementById('drawerStudentStage').textContent = savedStage;
+    }
+
+    function completeStudentRegistration(e) {
+      e.preventDefault();
+      const firstName = document.getElementById('studentFirstName').value.trim();
+      const lastName = document.getElementById('studentLastName').value.trim();
+      const phone = document.getElementById('studentPhone').value.trim();
+      const birthday = document.getElementById('studentBirthday').value;
+      const city = document.getElementById('studentCity').value;
+      const stage = document.getElementById('studentStageSelect').value;
+      const password = document.getElementById('studentPassword').value;
+
+      if (!firstName || !lastName || !phone || !birthday || !password) return;
+
+      const fullName = `${firstName} ${lastName}`;
+      const fullStageInfo = `${stage} - ${city}`;
+      localStorage.setItem('nbd_student_name', fullName);
+      localStorage.setItem('nbd_student_stage', fullStageInfo);
+      localStorage.setItem('nbd_student_phone', phone);
+
+      document.getElementById('welcomeHeaderTitle').textContent = `أهلاً، ${firstName}`;
+      document.getElementById('drawerStudentName').textContent = fullName;
+      document.getElementById('drawerStudentStage').textContent = fullStageInfo;
+
+      onboardingLayer.classList.add('hidden');
+    }
+
+    function studentLogout() {
+      closeSidebarDrawer();
+      localStorage.removeItem('nbd_student_name');
+      localStorage.removeItem('nbd_student_stage');
+      localStorage.removeItem('nbd_student_phone');
+      document.getElementById('onboardingForm').reset();
+      onboardingLayer.classList.remove('hidden');
+    }
+
+    function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    function setActiveTab(el) {
+      document.querySelectorAll('.nav-tab-button').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+    }
+    function setActiveCenterTab() {
+      document.querySelectorAll('.nav-tab-button').forEach(btn => btn.classList.remove('active'));
+    }
+
+    // العدادات التنازلية
+    const targetBac = new Date("2027-06-24T07:00:00").getTime();
+    const targetTas = new Date("2027-05-28T07:00:00").getTime();
+    let targetCust = localStorage.getItem('nbd_cust_goal_time') ? parseInt(localStorage.getItem('nbd_cust_goal_time')) : new Date("2027-04-15T08:00:00").getTime();
+    let titleCust = localStorage.getItem('nbd_cust_goal_title') || 'هدفي الخاص';
+    document.getElementById('customGoalNameLabel').textContent = titleCust;
+
+    function renderTimeDigit(targetTimestamp, elD, elH, elM, elS) {
+      const diff = targetTimestamp - Date.now();
+      if (diff <= 0) { elD.textContent = "00"; elH.textContent = "00"; elM.textContent = "00"; elS.textContent = "00"; return; }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      elD.textContent = d < 10 ? '0' + d : d;
+      elH.textContent = h < 10 ? '0' + h : h;
+      elM.textContent = m < 10 ? '0' + m : m;
+      elS.textContent = s < 10 ? '0' + s : s;
+    }
+
+    function updateAllTimers() {
+      renderTimeDigit(targetBac, document.getElementById('bacDays'), document.getElementById('bacHours'), document.getElementById('bacMins'), document.getElementById('bacSecs'));
+      renderTimeDigit(targetTas, document.getElementById('tasDays'), document.getElementById('tasHours'), document.getElementById('tasMins'), document.getElementById('tasSecs'));
+      renderTimeDigit(targetCust, document.getElementById('custDays'), document.getElementById('custHours'), document.getElementById('custMins'), document.getElementById('custSecs'));
+    }
+    setInterval(updateAllTimers, 1000);
+    updateAllTimers();
+
+    let currentTimerSlide = 0;
+    const countTrack = document.getElementById('countdownTrack');
+    const timerTabs = document.querySelectorAll('.tab-toggle-item');
+    function slideToTimer(idx) {
+      currentTimerSlide = idx;
+      countTrack.style.transform = `translate3d(${currentTimerSlide * 33.3333}%, 0, 0)`;
+      timerTabs.forEach((tab, i) => tab.classList.toggle('active', i === currentTimerSlide));
+    }
+
+    let currentBannerSlide = 0;
+    const bannerTrack = document.getElementById('bannerTrack');
+    const bannerDots = document.querySelectorAll('.dot-step');
+    function slideToBanner(idx) {
+      currentBannerSlide = idx;
+      bannerTrack.style.transform = `translate3d(${currentBannerSlide * 33.3333}%, 0, 0)`;
+      bannerDots.forEach((d, i) => d.classList.toggle('active', i === currentBannerSlide));
+    }
+
+    const sidebar = document.getElementById('sidebarDrawerPanel');
+    const scrim = document.getElementById('drawerOverlayScrim');
+    function closeSidebarDrawer() { sidebar.classList.remove('open'); scrim.classList.remove('active'); }
+
+    document.getElementById('btnThemeSwitcher').addEventListener('click', () => {
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      document.documentElement.setAttribute('data-theme', isLight ? 'dark' : 'light');
+    });
+
+    document.getElementById('mainSearchInput').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      document.querySelectorAll('.smart-btn-card').forEach(card => {
+        card.style.display = card.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>
