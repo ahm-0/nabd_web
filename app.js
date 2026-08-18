@@ -292,8 +292,6 @@
       ['countSeconds', Math.floor((difference % 60000) / 1000), 2]
     ];
     parts.forEach(([id, value, length]) => { const element = $('#' + id); if (element) element.textContent = String(value).padStart(length, '0'); });
-    const mobileDays = $('#mobileCountdownDays');
-    if (mobileDays) mobileDays.textContent = String(parts[0][1]).padStart(3, '0');
   }
 
   function setExam(key) {
@@ -306,10 +304,6 @@
     if (title) title.innerHTML = `<i class="fa-solid fa-graduation-cap"></i> ${escapeHTML(exam.title)}`;
     if (badge) badge.textContent = exam.badge;
     if (note) note.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${escapeHTML(exam.note)}`;
-    const mobileTitle = $('#mobileCountdownTitle');
-    const mobileIndicator = $('#mobileCountdownIndicator');
-    if (mobileTitle) mobileTitle.textContent = exam.badge;
-    if (mobileIndicator) mobileIndicator.setAttribute('aria-label', `عداد ${exam.title}: اضغط للانتقال إلى العداد`);
     $('#customCountdownButton')?.classList.toggle('hidden', key !== 'custom');
     $$('.exam-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.exam === key));
     updateCountdown();
@@ -319,7 +313,6 @@
     if (!$('#homeExamTitle')) return;
     $$('.exam-tab').forEach(tab => tab.addEventListener('click', () => setExam(tab.dataset.exam)));
     $('#customCountdownButton')?.addEventListener('click', () => openNamedModal('customCountdown'));
-    $('#mobileCountdownIndicator')?.addEventListener('click', () => $('.exam-countdown')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
     setExam('bac');
     let timer = window.setInterval(() => { if (!document.hidden) updateCountdown(); }, 1000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) updateCountdown(); });
@@ -328,11 +321,20 @@
 
   function initIntensives() {
     const track = $('#intensiveTrack');
-    if (!track) return;
+    const carousel = $('#intensiveCarousel');
+    if (!track || !carousel) return;
+    const slides = $$('.intensive-slide', track);
+    const dots = $$('.intensive-dot', carousel);
     let active = false;
     let moved = false;
     let startX = 0;
     let startScroll = 0;
+    const activeIndex = () => {
+      const index = Math.max(0, Math.min(slides.length - 1, Math.round(Math.abs(track.scrollLeft) / Math.max(1, track.clientWidth))));
+      dots.forEach((dot, position) => dot.classList.toggle('active', position === index));
+      return index;
+    };
+    const goTo = index => slides[Math.max(0, Math.min(slides.length - 1, index))]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
     track.addEventListener('pointerdown', event => {
       active = true;
       moved = false;
@@ -350,7 +352,14 @@
     const endDrag = () => { active = false; track.classList.remove('is-dragging'); };
     track.addEventListener('pointerup', endDrag);
     track.addEventListener('pointercancel', endDrag);
+    track.addEventListener('scroll', () => window.requestAnimationFrame(activeIndex), { passive: true });
     track.addEventListener('click', event => { if (moved) { event.preventDefault(); event.stopPropagation(); } }, true);
+    dots.forEach(dot => dot.addEventListener('click', () => goTo(Number(dot.dataset.intensiveSlide))));
+    $$('[data-intensive-nav]', carousel).forEach(button => button.addEventListener('click', () => {
+      const direction = button.dataset.intensiveNav === 'next' ? 1 : -1;
+      const next = (activeIndex() + direction + slides.length) % slides.length;
+      goTo(next);
+    }));
   }
 
   const seedPosts = [
