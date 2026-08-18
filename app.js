@@ -21,10 +21,13 @@
     catch { return fallback; }
   }
 
+  const storedPosts = readStorage('posts', []);
+  const storedChats = readStorage('chats', []);
+  const storedInteractions = readStorage('post_interactions', {});
   let student = { ...defaultStudent, ...readStorage('student', {}) };
-  let posts = Array.isArray(readStorage('posts', [])) ? readStorage('posts', []) : [];
-  let chats = Array.isArray(readStorage('chats', [])) ? readStorage('chats', []) : [];
-  let postInteractions = readStorage('post_interactions', {});
+  let posts = Array.isArray(storedPosts) ? storedPosts : [];
+  let chats = Array.isArray(storedChats) ? storedChats : [];
+  let postInteractions = storedInteractions && typeof storedInteractions === 'object' && !Array.isArray(storedInteractions) ? storedInteractions : {};
   let customCountdown = readStorage('custom_countdown', {
     title: 'هدفي الخاص', target: new Date('2027-04-15T08:00:00').getTime()
   });
@@ -94,7 +97,7 @@
     }
   }
 
-  function applyTheme(theme = student.theme) {
+  function applyTheme(theme = student.theme, persist = true) {
     student.theme = theme === 'light' ? 'light' : 'dark';
     document.documentElement.dataset.theme = student.theme;
     const meta = $('meta[name="theme-color"]');
@@ -103,7 +106,7 @@
     if (switcher) switcher.checked = student.theme === 'dark';
     const buttonIcon = $('#profileThemeButton i');
     if (buttonIcon) buttonIcon.className = student.theme === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-    saveState();
+    if (persist) saveState();
   }
 
   function renderBrand() {
@@ -115,7 +118,21 @@
   function renderTopActions() {
     const actions = $('.top-actions');
     if (!actions || $('#sharePlatform')) return;
-    actions.insertAdjacentHTML('afterbegin', '<button class="icon-button share-platform" id="sharePlatform" type="button" title="مشاركة المنصة" aria-label="مشاركة المنصة"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>');
+    actions.insertAdjacentHTML('afterbegin', '<button class="icon-button sidebar-toggle" id="sidebarToggle" type="button" title="القائمة الرئيسية" aria-label="فتح القائمة الرئيسية" aria-expanded="false"><i class="fa-solid fa-bars-staggered"></i></button><button class="icon-button share-platform" id="sharePlatform" type="button" title="مشاركة المنصة" aria-label="مشاركة المنصة"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>');
+  }
+
+  function toggleSidebar(force) {
+    const toggle = $('#sidebarToggle');
+    const mobile = window.matchMedia('(max-width: 820px)').matches;
+    if (mobile) {
+      const shouldOpen = typeof force === 'boolean' ? force : !document.body.classList.contains('sidebar-open');
+      document.body.classList.toggle('sidebar-open', shouldOpen);
+      if (toggle) { toggle.setAttribute('aria-expanded', String(shouldOpen)); toggle.setAttribute('aria-label', shouldOpen ? 'إغلاق القائمة الرئيسية' : 'فتح القائمة الرئيسية'); }
+      return;
+    }
+    const shouldCollapse = typeof force === 'boolean' ? !force : !document.body.classList.contains('sidebar-collapsed');
+    document.body.classList.toggle('sidebar-collapsed', shouldCollapse);
+    if (toggle) { toggle.setAttribute('aria-expanded', String(!shouldCollapse)); toggle.setAttribute('aria-label', shouldCollapse ? 'إظهار القائمة الجانبية' : 'إخفاء القائمة الجانبية'); }
   }
 
   async function sharePlatform() {
@@ -492,6 +509,9 @@
       if (event.target.closest('#openEditProfile, #editProfileSmall, #completeProfile, #profileDataUpdate')) openNamedModal('edit');
       if (event.target.closest('#verificationRequest')) { if (profileIncomplete()) { toast('أكمل بيانات الملف الشخصي قبل طلب التوثيق.'); openNamedModal('edit'); } else openNamedModal('verification'); }
       if (event.target.closest('#sharePlatform')) sharePlatform();
+      if (event.target.closest('#sidebarToggle')) toggleSidebar();
+      if (document.body.classList.contains('sidebar-open') && event.target.closest('.side-link, .sidebar-edit-cta')) toggleSidebar(false);
+      if (document.body.classList.contains('sidebar-open') && !event.target.closest('#desktopSidebar, #sidebarToggle')) toggleSidebar(false);
       if (event.target.closest('#profileThemeButton')) applyTheme(student.theme === 'dark' ? 'light' : 'dark');
       const demo = event.target.closest('[data-demo]');
       if (demo) toast(demo.dataset.demo);
@@ -534,7 +554,7 @@
     if (typeof android !== 'undefined' && android.webReady) android.webReady();
     renderBrand();
     renderTopActions();
-    applyTheme(student.theme);
+    applyTheme(student.theme, false);
     updateProfileUI();
     bindEvents();
     initHome();
