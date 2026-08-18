@@ -442,19 +442,36 @@
     let seen = false;
     try { seen = sessionStorage.getItem(sessionKey) === '1'; } catch { /* يستمر العرض عند تعذر التخزين */ }
     if (seen) { screen.remove(); return; }
+    const progressBar = $('#welcomeProgressBar');
+    const progressValue = $('#welcomeProgressValue');
+    const loadingText = $('#welcomeLoadingText');
+    const duration = 4200;
+    const startedAt = performance.now();
+    let animationFrame = 0;
     let closed = false;
     const closeWelcome = () => {
       if (closed) return;
       closed = true;
+      window.cancelAnimationFrame(animationFrame);
       try { sessionStorage.setItem(sessionKey, '1'); } catch { /* لا حاجة لإيقاف الواجهة */ }
       screen.classList.add('is-leaving');
       screen.setAttribute('aria-hidden', 'true');
       window.setTimeout(() => screen.remove(), 560);
     };
+    const updateProgress = now => {
+      if (closed) return;
+      const progress = Math.min(100, Math.round(((now - startedAt) / duration) * 100));
+      if (progressBar) progressBar.style.width = `${progress}%`;
+      if (progressValue) progressValue.textContent = `${progress}%`;
+      if (loadingText && progress >= 100) loadingText.innerHTML = '<i class="fa-solid fa-circle-check"></i> اكتمل التجهيز، أهلًا بك في نبض التفوق';
+      if (progress >= 100) { window.setTimeout(closeWelcome, 280); return; }
+      animationFrame = window.requestAnimationFrame(updateProgress);
+    };
     screen.classList.add('is-visible');
     screen.setAttribute('aria-hidden', 'false');
     $('#welcomeStart')?.addEventListener('click', closeWelcome);
     $('#welcomeSkip')?.addEventListener('click', closeWelcome);
+    animationFrame = window.requestAnimationFrame(updateProgress);
     window.setTimeout(() => $('#welcomeStart')?.focus(), 160);
   }
 
@@ -528,11 +545,11 @@
   function postTemplate(rawPost) {
     const post = enrichedPost(rawPost);
     const avatar = rawPost.mine ? avatarMarkup() : `<span class="avatar">${escapeHTML((post.name || 'ط')[0])}</span>`;
-    const verified = Boolean(post.verified || (rawPost.mine && student.verificationStatus === 'approved'));
+    const verified = rawPost.mine ? student.verificationStatus === 'approved' : Boolean(post.verified);
     const images = (post.images || []).length
       ? `<div class="post-images ${(post.images || []).length > 1 ? 'multiple' : ''}">${post.images.map(src => `<img loading="lazy" src="${src}" alt="صورة مرفقة بالمنشور">`).join('')}</div><div class="post-media-indicator">${post.images.length > 1 ? `<i class="fa-solid fa-images"></i> اسحب لمشاهدة الصور ${post.images.length}` : ''}</div>`
       : '';
-    const comments = post.comments.map(comment => `<div class="comment"><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(Boolean(comment.verified))}</b><br>${escapeHTML(comment.text)}</div>`).join('');
+    const comments = post.comments.map(comment => { const commentVerified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified); return `<div class="comment"><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(commentVerified)}</b><br>${escapeHTML(comment.text)}</div>`; }).join('');
     return `<article class="post" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong>${escapeHTML(post.name)}${verifiedBadgeMarkup(verified)}</strong><span>${escapeHTML(post.meta || `${student.stage} · ${student.city}`)} · الآن</span></div><button class="post-menu" type="button" aria-label="المزيد"><i class="fa-solid fa-ellipsis"></i></button></div><p class="post-content">${escapeHTML(post.text)}</p>${images}<div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
   }
 
@@ -610,7 +627,7 @@
     const input = $('input', form);
     const text = input?.value.trim();
     if (!post || !text) return;
-    const comment = { name: fullName(), text, verified: student.verificationStatus === 'approved' };
+    const comment = { name: fullName(), text, mine: true, verified: student.verificationStatus === 'approved' };
     if (posts.some(item => item.id === postId)) {
       post.comments = [...(post.comments || []), comment];
     } else {
