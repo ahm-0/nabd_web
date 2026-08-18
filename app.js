@@ -248,7 +248,7 @@
     const verificationStatus = $('#verificationStatus');
     if (verificationStatus) verificationStatus.classList.toggle('hidden', !student.verificationRequested);
     const verificationButton = $('#verificationRequest');
-    if (verificationButton) { verificationButton.disabled = Boolean(student.verificationRequested); verificationButton.querySelector('span').textContent = student.verificationRequested ? 'طلب التوثيق قيد المراجعة' : 'طلب شارة التوثيق'; }
+    if (verificationButton) { const title = $('.setting-copy strong', verificationButton); const detail = $('.setting-copy small', verificationButton); verificationButton.disabled = Boolean(student.verificationRequested); if (title) title.textContent = student.verificationRequested ? 'طلب التوثيق قيد المراجعة' : 'طلب شارة التوثيق'; if (detail) detail.textContent = student.verificationRequested ? 'تم إرسال طلبك وسيبقى ظاهرًا في ملفك' : 'راجع ملفك وأرسل الطلب للمراجعة'; }
     const notificationSwitch = $('#notificationsSwitch');
     if (notificationSwitch) notificationSwitch.checked = Boolean(student.notifications);
     setAvatar('profileAvatar', 'profile-avatar');
@@ -429,34 +429,74 @@
     $$('.community-tab').forEach(tab => tab.addEventListener('click', () => { activeFeedFilter = tab.dataset.filter || 'all'; $$('.community-tab').forEach(item => item.classList.toggle('active', item === tab)); renderFeed(); }));
   }
 
+  const assistantServices = {
+    profile: { label: 'فتح ملفي الشخصي', href: 'profile.html', icon: 'fa-regular fa-user' },
+    news: { label: 'فتح مجتمع الأخبار', href: 'news.html', icon: 'fa-regular fa-newspaper' },
+    tools: { label: 'فتح أدوات الدراسة', href: 'index.html#tools', icon: 'fa-solid fa-toolbox' },
+    home: { label: 'الذهاب إلى الرئيسية', href: 'index.html', icon: 'fa-solid fa-house' },
+    notifications: { label: 'فتح الإشعارات', href: 'notifications.html', icon: 'fa-regular fa-bell' },
+    privacy: { label: 'سياسة الخصوصية', href: 'privacy.html', icon: 'fa-solid fa-shield-halved' },
+    supervision: { label: 'بوابة الإشراف', href: 'supervision.html', icon: 'fa-solid fa-shield-halved' },
+    about: { label: 'عن المنصة', href: 'about.html', icon: 'fa-solid fa-circle-info' }
+  };
+
   function getChat() {
     let chat = chats.find(item => item.id === activeChatId);
     if (!chat) {
-      chat = { id: `chat-${Date.now()}`, title: 'محادثة جديدة', messages: [{ role: 'assistant', text: `أهلاً ${student.first || 'بك'}، أنا دليل نبض التفوق. كيف أساعدك؟` }] };
+      const now = Date.now();
+      chat = { id: `chat-${now}`, title: 'محادثة جديدة', updatedAt: now, messages: [{ role: 'assistant', text: `أهلاً ${student.first || 'بك'}، أنا دليل نبض التفوق. أخبرني بالخدمة التي تريدها وسأشرحها وأرشدك إليها مباشرة.`, links: [assistantServices.profile, assistantServices.news, assistantServices.tools] }] };
       chats.unshift(chat);
       activeChatId = chat.id;
       saveState();
     }
+    if (!Array.isArray(chat.messages)) chat.messages = [];
     return chat;
   }
 
-  function assistantReply(question) {
-    const query = question.toLowerCase();
-    if (/ملف|حساب|صورة|بيان/.test(query)) return `يمكنك يا ${student.first || 'صديقي'} فتح «ملفي الشخصي» لتعديل بياناتك وصورتك وإعداداتك.`;
-    if (/خبر|مجتمع|منشور|صورة/.test(query)) return 'افتح مجتمع الأخبار، اكتب الخبر ثم استخدم زر الصور لإرفاق صورة أو عدة صور. يمكن للطلاب الإعجاب والتعليق.';
-    if (/خصوص|حفظ|بيانات/.test(query)) return 'هذه النسخة الثابتة تحفظ البيانات والمنشورات والمحادثات في متصفحك فقط ولا ترسلها إلى خادم خارجي.';
-    if (/عداد|هدف|موعد/.test(query)) return 'من الرئيسية اختر «مخصص» في شريط العداد، ثم استخدم زر «ضبط» لكتابة اسم هدفك وتحديد موعده.';
-    return `شكرًا لسؤالك يا ${student.first || 'صديقي'}. أنا دليل نبض التفوق، ويمكنني تعريفك بالملف الشخصي ومجتمع الأخبار والعدادات.`;
+  function expertReply(question) {
+    const query = question.toLowerCase().replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه');
+    const answer = (text, links = []) => ({ text, links });
+    if (/ملف|حساب|صوره|بيان|اسم|منطقه|مواليد|توثيق/.test(query)) {
+      return answer(`ملفك الشخصي هو مركز تخصيص المنصة يا ${student.first || 'صديقي'}. منه تعدّل الاسم والرقم والمنطقة والمواليد والصورة والنبذة، وتدير الإشعارات والوضع الليلي. بعد اكتمال البيانات يمكنك إرسال طلب شارة التوثيق.`, [assistantServices.profile]);
+    }
+    if (/خبر|مجتمع|منشور|تعليق|اعجاب|صور/.test(query)) {
+      return answer('مجتمع الأخبار مخصص لمشاركة الأخبار التعليمية والإنجازات. اكتب الخبر، وأرفق حتى صورتين، ثم انشره. تستطيع التفاعل بالإعجاب والتعليقات، واستخدام الفلاتر لمشاهدة الأحدث أو الأكثر تفاعلًا أو منشوراتك.', [assistantServices.news]);
+    }
+    if (/عداد|هدف|موعد|بكالوريا|تاسع/.test(query)) {
+      return answer('من الرئيسية ستجد عدادات البكالوريا والتاسع والعداد المخصص. لاستخدام العداد الشخصي اختر «مخصص»، ثم اضغط «ضبط» واكتب اسم هدفك وموعده. سيبقى محفوظًا في متصفحك.', [assistantServices.home]);
+    }
+    if (/اختبار|حاسب|معدل|بومودورو|دروس|مكتبه|جامع|توقع|تنظيم/.test(query)) {
+      return answer('تضم الرئيسية أدوات الدراسة مثل حاسبة المعدل والاختبارات وبومودورو وتنظيم الوقت والمكتبة والدروس والتوقعات. اختر الأداة المناسبة من بطاقات الخدمات، وسأرشدك إلى المكان الصحيح.', [assistantServices.tools]);
+    }
+    if (/اشعار|تنبيه/.test(query)) return answer('يمكنك إدارة تنبيهات الأخبار والأنشطة من صفحة الإشعارات أو من إعدادات الملف الشخصي.', [assistantServices.notifications, assistantServices.profile]);
+    if (/خصوص|امان|حفظ|بيانات/.test(query)) return answer('هذه النسخة الثابتة تحفظ ملفك والمنشورات والمحادثات على جهازك داخل المتصفح. يمكنك مراجعة سياسة الخصوصية لمعرفة التفاصيل.', [assistantServices.privacy]);
+    if (/اشراف|بلاغ|اداره/.test(query)) return answer('بوابة الإشراف هي المكان المخصص لمسارات المراجعة والتنظيم داخل المنصة.', [assistantServices.supervision]);
+    if (/من انت|كيف ابد|خدم|قسم|تطبيق|ساعد/.test(query)) {
+      return answer('أنا دليل نبض التفوق. أساعدك في الوصول إلى ملفك الشخصي، عدادات الامتحانات، أدوات الدراسة، مجتمع الأخبار، الإشعارات والخصوصية. اختر القسم الذي تريد معرفته أو اكتب سؤالك بشكل مباشر.', [assistantServices.profile, assistantServices.home, assistantServices.tools, assistantServices.news]);
+    }
+    return answer(`فهمت سؤالك يا ${student.first || 'صديقي'}. يمكنني شرح أي قسم من نبض التفوق أو نقلك إليه مباشرة. جرّب أن تسأل مثلًا: «كيف أنشر خبرًا؟»، «كيف أضبط العداد؟»، أو «أين الاختبارات؟».`, [assistantServices.home, assistantServices.profile, assistantServices.news]);
+  }
+
+  function chatLinkMarkup(links = []) {
+    return links.map(link => `<a class="assistant-link" href="${link.href}"><i class="${link.icon}"></i><span>${escapeHTML(link.label)}</span><i class="fa-solid fa-arrow-left"></i></a>`).join('');
+  }
+
+  function chatTime(timestamp) {
+    if (!timestamp) return 'محفوظة محليًا';
+    const diff = Date.now() - timestamp;
+    if (diff < 60000) return 'الآن';
+    if (diff < 3600000) return `منذ ${Math.floor(diff / 60000)} د`;
+    return 'محادثة محفوظة';
   }
 
   function renderChat() {
     const area = $('#chatArea');
     if (!area) return;
     const chat = getChat();
-    area.innerHTML = chat.messages.map(message => `<div class="bubble ${message.role === 'assistant' ? 'assistant' : 'student'}">${escapeHTML(message.text)}</div>`).join('') + `<div class="guide-block"><b>ميزة دليل نبض:</b> اكتشف ملفك الشخصي، مجتمع الأخبار، والعدادات من خلال المحادثة.</div><div class="suggestions"><button class="suggestion" type="button">كيف أعدل ملفي؟</button><button class="suggestion" type="button">كيف أنشر خبرًا؟</button><button class="suggestion" type="button">كيف أضبط العداد؟</button></div>`;
+    area.innerHTML = chat.messages.map(message => `<div class="message-wrap ${message.role === 'assistant' ? 'assistant' : 'student'}"><div class="bubble">${escapeHTML(message.text)}</div>${message.role === 'assistant' && message.links?.length ? `<div class="assistant-links">${chatLinkMarkup(message.links)}</div>` : ''}</div>`).join('') + `<div class="guide-block"><b>دليل ذكي لخدمات نبض:</b> اذكر اسم الخدمة أو الهدف، وسأشرحها وأضع لك زر انتقال مباشر.</div><div class="suggestions"><button class="suggestion" type="button">كيف أعدل ملفي؟</button><button class="suggestion" type="button">كيف أنشر خبرًا؟</button><button class="suggestion" type="button">أين الاختبارات؟</button><button class="suggestion" type="button">كيف أضبط العداد؟</button></div>`;
     area.scrollTop = area.scrollHeight;
     const history = $('#chatHistoryList');
-    if (history) history.innerHTML = chats.map(item => `<button class="history-item ${item.id === activeChatId ? 'active' : ''}" type="button" data-chat="${item.id}">${escapeHTML(item.title)}</button>`).join('');
+    if (history) history.innerHTML = chats.slice().sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)).map(item => `<button class="history-item ${item.id === activeChatId ? 'active' : ''}" type="button" data-chat="${item.id}"><i class="fa-regular fa-message"></i><span>${escapeHTML(item.title || 'محادثة جديدة')}<small>${chatTime(item.updatedAt)}</small></span></button>`).join('');
   }
 
   function sendChat() {
@@ -464,9 +504,12 @@
     const question = input?.value.trim();
     if (!question) return;
     const chat = getChat();
-    chat.messages.push({ role: 'student', text: question }, { role: 'assistant', text: assistantReply(question) });
+    const reply = expertReply(question);
+    chat.messages.push({ role: 'student', text: question }, { role: 'assistant', ...reply });
     chat.messages = chat.messages.slice(-80);
-    chat.title = question.slice(0, 28);
+    chat.title = question.slice(0, 30);
+    chat.updatedAt = Date.now();
+    chats.sort((first, second) => (second.updatedAt || 0) - (first.updatedAt || 0));
     input.value = '';
     saveState();
     renderChat();
@@ -524,8 +567,8 @@
         if (tool.dataset.action === 'share') sharePost(postId);
       }
 
-      const suggestion = event.target.closest('.suggestion');
-      if (suggestion) { const input = $('#chatInput'); if (input) { input.value = suggestion.textContent; sendChat(); } }
+      const suggestion = event.target.closest('.suggestion, .assistant-chip');
+      if (suggestion) { const input = $('#chatInput'); if (input) { input.value = suggestion.dataset.prompt || suggestion.textContent; sendChat(); } }
       const history = event.target.closest('[data-chat]');
       if (history) { activeChatId = history.dataset.chat; renderChat(); }
     });

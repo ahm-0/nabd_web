@@ -1,3 +1,52 @@
 <!doctype html>
-<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080d19"><title>نبض التفوق | مساعد نبض</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"><link rel="stylesheet" href="styles.css"></head>
-<body data-page="ai"><div class="app"><header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header><div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content"><div class="page-heading"><div><h2>مساعد نبض التفوق</h2><p>واجهة تجريبية مجانية للتوجيه داخل المنصة وحفظ سجل محادثاتك محليًا.</p></div><span class="badge"><i class="fa-solid fa-sparkles"></i> مجاني تجريبيًا</span></div><div class="ai-layout"><aside class="chat-history panel"><h3>سجل المحادثات</h3><button class="outline-button" id="newChat" style="width:100%"><i class="fa-solid fa-plus"></i> محادثة جديدة</button><div class="history-list" id="chatHistoryList"></div></aside><section class="ai-chat panel"><div class="ai-chat-header"><div><h2>دليل نبض التفوق</h2><p><i class="fa-solid fa-circle"></i> متاح الآن</p></div><span class="free-tag">فترة مجانية</span></div><div class="chat-area" id="chatArea"></div><div class="chat-composer"><input id="chatInput" placeholder="اكتب سؤالك أو اطلب شرح قسم..." autocomplete="off"><button id="sendChat" title="إرسال"><i class="fa-solid fa-arrow-up"></i></button></div></section></div></main></div></div><nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script src="app.js"></script></body></html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080d19">
+  <title>نبض التفوق | مساعد نبض</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="ai">
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a>
+      <div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div>
+    </header>
+    <div class="layout">
+      <aside class="sidebar panel" id="desktopSidebar"></aside>
+      <main class="main-content">
+        <div class="assistant-page-head">
+          <div><span class="eyebrow"><i class="fa-solid fa-brain"></i> دليل ذكي داخل المنصة</span><h2>مساعد نبض التفوق</h2><p>اسأل عن أي خدمة، وسأشرحها لك وأقترح أقصر طريق للانتقال إليها.</p></div>
+          <div class="assistant-status"><i class="fa-solid fa-sparkles"></i><span><b>متاح الآن</b><small>إرشاد مجاني تجريبيًا</small></span></div>
+        </div>
+        <div class="assistant-service-map panel">
+          <div><b>ما الذي يمكنني مساعدتك فيه؟</b><span>اختر خدمة أو اكتب سؤالك بطريقتك.</span></div>
+          <div class="assistant-service-chips">
+            <button class="assistant-chip" data-prompt="اشرح لي الملف الشخصي"><i class="fa-regular fa-user"></i> ملفي الشخصي</button>
+            <button class="assistant-chip" data-prompt="كيف أضبط العداد المخصص؟"><i class="fa-solid fa-stopwatch"></i> العداد</button>
+            <button class="assistant-chip" data-prompt="اشرح لي مجتمع الأخبار"><i class="fa-regular fa-newspaper"></i> الأخبار</button>
+            <button class="assistant-chip" data-prompt="كيف أستخدم الاختبارات؟"><i class="fa-solid fa-clipboard-check"></i> الاختبارات</button>
+          </div>
+        </div>
+        <div class="ai-layout">
+          <aside class="chat-history panel">
+            <div class="history-head"><div><h3>سجل المحادثات</h3><small>محفوظ محليًا في متصفحك</small></div><button class="history-new" id="newChat" title="محادثة جديدة"><i class="fa-solid fa-plus"></i></button></div>
+            <div class="history-list" id="chatHistoryList"></div>
+          </aside>
+          <section class="ai-chat panel">
+            <div class="ai-chat-header"><div><h2>دليل نبض التفوق</h2><p><i class="fa-solid fa-circle"></i> يشرح الخدمات ويقترح المسار المناسب</p></div><span class="free-tag">مجاني تجريبيًا</span></div>
+            <div class="chat-area" id="chatArea" aria-live="polite"></div>
+            <div class="chat-composer"><input id="chatInput" maxlength="500" placeholder="مثلًا: كيف أنشر خبرًا؟ أو أين أجد الاختبارات؟" autocomplete="off"><button id="sendChat" title="إرسال" aria-label="إرسال السؤال"><i class="fa-solid fa-arrow-up"></i></button></div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+  <nav class="bottom-nav" id="bottomNav"></nav>
+  <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div>
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
