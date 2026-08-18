@@ -292,6 +292,8 @@
       ['countSeconds', Math.floor((difference % 60000) / 1000), 2]
     ];
     parts.forEach(([id, value, length]) => { const element = $('#' + id); if (element) element.textContent = String(value).padStart(length, '0'); });
+    const mobileDays = $('#mobileCountdownDays');
+    if (mobileDays) mobileDays.textContent = String(parts[0][1]).padStart(3, '0');
   }
 
   function setExam(key) {
@@ -304,6 +306,10 @@
     if (title) title.innerHTML = `<i class="fa-solid fa-graduation-cap"></i> ${escapeHTML(exam.title)}`;
     if (badge) badge.textContent = exam.badge;
     if (note) note.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${escapeHTML(exam.note)}`;
+    const mobileTitle = $('#mobileCountdownTitle');
+    const mobileIndicator = $('#mobileCountdownIndicator');
+    if (mobileTitle) mobileTitle.textContent = exam.badge;
+    if (mobileIndicator) mobileIndicator.setAttribute('aria-label', `عداد ${exam.title}: اضغط للانتقال إلى العداد`);
     $('#customCountdownButton')?.classList.toggle('hidden', key !== 'custom');
     $$('.exam-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.exam === key));
     updateCountdown();
@@ -313,6 +319,7 @@
     if (!$('#homeExamTitle')) return;
     $$('.exam-tab').forEach(tab => tab.addEventListener('click', () => setExam(tab.dataset.exam)));
     $('#customCountdownButton')?.addEventListener('click', () => openNamedModal('customCountdown'));
+    $('#mobileCountdownIndicator')?.addEventListener('click', () => $('.exam-countdown')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
     setExam('bac');
     let timer = window.setInterval(() => { if (!document.hidden) updateCountdown(); }, 1000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) updateCountdown(); });
