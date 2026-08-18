@@ -1,52 +1,504 @@
-const STORE='nabd_v3_';
-const LEGACY_STORE='nabd_v2_';
-const loadLocal=(key,fallback)=>JSON.parse(localStorage.getItem(STORE+key)||localStorage.getItem(LEGACY_STORE+key)||'null')||fallback;
-const defaultStudent={first:'',last:'',phone:'',birth:'',city:'دمشق',stage:'بكالوريا علمي',bio:'طالب في منصة نبض التفوق، أعمل على تنظيم رحلتي الدراسية والوصول إلى أهدافي.',avatar:'',notifications:true,theme:'dark',studentId:''};
-let student=loadLocal('student',{...defaultStudent});
-let posts=loadLocal('posts',[]);
-let chats=loadLocal('chats',[]);
-let customCountdown=loadLocal('custom_countdown',{title:'هدفي الخاص',target:new Date('2027-04-15T08:00:00').getTime()});
-let uploadImages=[];let activeChatId=null;let activeExam='bac';
-const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
-const page=document.body.dataset.page||'home';
-const save=()=>{localStorage.setItem(STORE+'student',JSON.stringify(student));localStorage.setItem(STORE+'posts',JSON.stringify(posts));localStorage.setItem(STORE+'chats',JSON.stringify(chats));};
-const esc=t=>String(t||'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
-const fullName=()=>`${student.first||'طالب'} ${student.last||''}`.trim();
-const initials=()=>fullName().split(/\s+/).map(x=>x[0]).join('').slice(0,2);
-const avatarHtml=(cls='avatar')=>student.avatar?`<img class="${cls}" src="${student.avatar}" alt="صورة ${esc(fullName())}">`:`<span class="${cls}">${esc(initials())}</span>`;
-function notify(text){const t=$('#toast');if(!t)return;t.textContent=text;t.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove('show'),2600)}
-function ensureStudentId(){if(!student.studentId){student.studentId=String(Math.floor(1000000000+Math.random()*9000000000));save()}}
-function applyTheme(theme=student.theme){student.theme=theme;document.documentElement.dataset.theme=theme;const meta=$('meta[name="theme-color"]');if(meta)meta.content=theme==='dark'?'#080d19':'#f2f7ff';const sw=$('#themeSwitch');if(sw)sw.checked=theme==='dark';const icon=$('#profileThemeButton i');if(icon)icon.className=theme==='dark'?'fa-solid fa-moon':'fa-solid fa-sun';save()}
-function renderBrand(){document.querySelectorAll('.brand-mark').forEach(mark=>{mark.innerHTML='<img src="assets/nabd-logo.jpg" alt="شعار نبض التفوق" decoding="async">'});}
-function renderShell(){const shell=$('#desktopSidebar');if(shell){shell.innerHTML=`<div class="sidebar-brand"><img src="assets/nabd-logo.jpg" alt="شعار نبض التفوق" decoding="async"><div><b>نبض التفوق</b><span>منصتك نحو التميز</span></div><i class="fa-solid fa-sparkles"></i></div><div class="sidebar-student"><div class="sidebar-avatar-wrap">${avatarHtml('sidebar-avatar')}<span class="online-ring"></span></div><div><strong>${esc(fullName())}</strong><span>${esc(student.stage)} · ${esc(student.city)}</span></div><a class="quick-edit" href="profile.html" title="تعديل الملف"><i class="fa-solid fa-pen"></i></a></div><div class="sidebar-label">التنقل الرئيسي</div><nav class="side-nav"><a class="side-link ${page==='home'?'active':''}" href="index.html"><span class="nav-icon home-nav"><i class="fa-solid fa-house"></i></span><span>الرئيسية</span></a><a class="side-link ${page==='profile'?'active':''}" href="profile.html"><span class="nav-icon profile-nav"><i class="fa-regular fa-user"></i></span><span>ملفي الشخصي</span></a><a class="side-link ${page==='news'?'active':''}" href="news.html"><span class="nav-icon news-nav"><i class="fa-regular fa-newspaper"></i></span><span>مجتمع الأخبار</span><em>جديد</em></a><a class="side-link ${page==='ai'?'active':''}" href="assistant.html"><span class="nav-icon ai-nav"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span>مساعد نبض</span></a></nav><div class="sidebar-label">المركز الشخصي</div><nav class="side-nav compact"><a class="side-link ${page==='notifications'?'active':''}" href="notifications.html"><span class="nav-icon notify-nav"><i class="fa-regular fa-bell"></i></span><span>الإشعارات</span></a><a class="side-link ${page==='about'?'active':''}" href="about.html"><span class="nav-icon about-nav"><i class="fa-solid fa-circle-info"></i></span><span>عن المنصة</span></a><a class="side-link ${page==='supervision'?'active':''}" href="supervision.html"><span class="nav-icon shield-nav"><i class="fa-solid fa-shield-halved"></i></span><span>بوابة الإشراف</span></a><a class="side-link ${page==='privacy'?'active':''}" href="privacy.html"><span class="nav-icon lock-nav"><i class="fa-solid fa-lock"></i></span><span>الخصوصية والأمان</span></a></nav><a class="sidebar-edit-cta" href="profile.html"><i class="fa-solid fa-sliders"></i><span>تعديل بياناتي</span><i class="fa-solid fa-arrow-left"></i></a>`}
- const bottom=$('#bottomNav');if(bottom)bottom.innerHTML=`<a class="bottom-link" href="assistant.html"><i class="fa-solid fa-circle-play"></i><span>الدروس</span></a><a class="bottom-link" href="index.html#tools"><i class="fa-solid fa-clipboard-check"></i><span>الاختبارات</span></a><a class="bottom-link ${page==='home'?'active':''}" href="index.html"><i class="fa-solid fa-house"></i><span>الرئيسية</span></a><a class="bottom-link ${page==='news'?'active':''}" href="news.html"><i class="fa-regular fa-newspaper"></i><span>الأخبار</span></a><a class="bottom-link ${page==='profile'?'active':''}" href="profile.html"><i class="fa-regular fa-user"></i><span>حسابي</span></a>`}
-function setAvatar(id,cls='avatar'){const el=$('#'+id);if(!el)return;if(student.avatar){const im=document.createElement('img');im.id=id;im.className=cls;im.src=student.avatar;im.alt='صورة المستخدم';el.replaceWith(im)}else{el.className=cls;el.textContent=initials()}}
-function openModal(content){$('#modalContent').innerHTML=content;$('#modalBackdrop').classList.add('show')}
-function closeModal(){$('#modalBackdrop').classList.remove('show')}
-function modal(name){const modals={
- edit:`<div class="modal-head"><h3>تعديل الملف الشخصي</h3><button class="close-modal">×</button></div><form id="editForm"><div class="form-grid"><div class="form-group"><label>الاسم الأول</label><input name="first" required value="${esc(student.first)}"></div><div class="form-group"><label>اسم العائلة</label><input name="last" required value="${esc(student.last)}"></div><div class="form-group"><label>رقم الهاتف</label><input name="phone" value="${esc(student.phone)}"></div><div class="form-group"><label>تاريخ الميلاد</label><input name="birth" type="date" value="${esc(student.birth)}"></div><div class="form-group"><label>المنطقة</label><input name="city" value="${esc(student.city)}"></div><div class="form-group"><label>المرحلة</label><select name="stage"><option ${student.stage==='بكالوريا علمي'?'selected':''}>بكالوريا علمي</option><option ${student.stage==='بكالوريا أدبي'?'selected':''}>بكالوريا أدبي</option><option ${student.stage==='التاسع الأساسي'?'selected':''}>التاسع الأساسي</option></select></div><div class="form-group full"><label>السيرة الذاتية</label><textarea name="bio">${esc(student.bio)}</textarea></div></div><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button">حفظ التغييرات</button></div></form>`,
- customCountdown:`<div class="modal-head"><h3>ضبط العداد المخصص</h3><button class="close-modal">×</button></div><form id="customCountdownForm"><div class="form-group"><label>اسم الهدف</label><input name="title" required maxlength="34" value="${esc(customCountdown.title)}"></div><div class="form-group" style="margin-top:12px"><label>موعد الهدف</label><input name="target" type="datetime-local" required value="${dateInput(customCountdown.target)}"></div><p class="onboarding-note">سيُحفظ العداد داخل متصفحك فقط.</p><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button">حفظ العداد</button></div></form>`,
- appGuide:`<div class="modal-head"><h3>شرح استخدام التطبيق</h3><button class="close-modal">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-regular fa-circle-play"></i></div><h2>ابدأ بخطوات بسيطة</h2><p>من الرئيسية يمكنك متابعة عدادات الامتحان واستخدام الأدوات الدراسية. اختر «مخصص» لضبط هدفك وموعدك.</p><p>استخدم مجتمع الأخبار لمشاركة الأخبار والصور والتفاعل مع الطلاب، ثم عد إلى ملفك لتعديل بياناتك وإعداداتك.</p></div>`,
- contribute:`<div class="modal-head"><h3>ساهم في التطبيق</h3><button class="close-modal">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-solid fa-hand-holding-heart"></i></div><h2>رأيك يصنع فرقًا</h2><p>هذه نسخة واجهات مهيأة للتوسع. شارك اقتراحاتك حول الأقسام والأدوات الدراسية المطلوبة في الإصدارات القادمة.</p></div>`,
- contact:`<div class="modal-head"><h3>تواصل معنا</h3><button class="close-modal">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-regular fa-comment-dots"></i></div><h2>نستمع لملاحظاتك</h2><p>استخدم القنوات الرسمية أو فريق الإشراف لإرسال الأسئلة والملاحظات الفنية المتعلقة بتجربة نبض التفوق.</p></div>`};openModal(modals[name]||modals.appGuide)}
-function dateInput(t){const d=new Date(t),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`}
-function updateProfile(){ensureStudentId();const name=fullName();const incomplete=!(student.first&&student.last&&student.phone&&student.birth);const map={profileName:name,profileHandle:'@'+name.replaceAll(' ','_'),profileBio:student.bio||'أضف نبذة بسيطة لتظهر في مجتمع الأخبار.',profilePhone:student.phone||'—',profileCity:student.city||'—',profileStudentId:student.studentId,profilePosts:posts.filter(p=>p.mine).length,homeGreeting:`أهلاً ${student.first||'بك'}، لنصنع يومًا دراسيًا رائعًا`};Object.entries(map).forEach(([id,text])=>{const el=$('#'+id);if(el)el.textContent=text});const stage=$('#profileStage');if(stage)stage.innerHTML=`<i class="fa-solid fa-graduation-cap"></i> ${esc(student.stage)}`;const birth=$('#profileBirth');if(birth)birth.textContent=student.birth?new Intl.DateTimeFormat('ar-SY',{year:'numeric',month:'long',day:'numeric'}).format(new Date(student.birth)):'—';const completion=$('#completeProfile');if(completion)completion.classList.toggle('hidden',!incomplete);const ns=$('#notificationsSwitch');if(ns)ns.checked=student.notifications;setAvatar('profileAvatar','profile-avatar');setAvatar('composerAvatar','avatar');renderShell()}
-function refreshAll(){updateProfile();renderFeed();renderChat()}
-const homeExams={bac:{title:'امتحانات البكالوريا',badge:'الثانوية العامة',note:'رتّب خطتك اليومية لتصل إلى موعد الامتحان بثقة.',target:new Date('2027-06-24T07:00:00').getTime()},nine:{title:'امتحانات التاسع',badge:'التعليم الأساسي',note:'اجعل المراجعة اليومية عادة ثابتة قبل موعد الامتحان.',target:new Date('2027-05-28T07:00:00').getTime()},custom:{title:customCountdown.title,badge:'عداد مخصص',note:'اضبط اسم هدفك وموعده ليظهر عدادك الخاص هنا.',target:customCountdown.target}};
-function updateCountdown(){const e=homeExams[activeExam];if(!e)return;const diff=Math.max(0,e.target-Date.now()),f=(n,d=2)=>String(n).padStart(d,'0');[['countDays',Math.floor(diff/86400000),3],['countHours',Math.floor(diff%86400000/3600000)],['countMinutes',Math.floor(diff%3600000/60000)],['countSeconds',Math.floor(diff%60000/1000)]].forEach(([id,n,d])=>{const el=$('#'+id);if(el)el.textContent=f(n,d)})}
-function setExam(key){activeExam=key;const e=homeExams[key];if(!e)return;const title=$('#homeExamTitle'),badge=$('#homeExamBadge'),note=$('#homeExamNote'),control=$('#customCountdownButton');if(title)title.innerHTML=`<i class="fa-solid fa-graduation-cap"></i> ${esc(e.title)}`;if(badge)badge.textContent=e.badge;if(note)note.innerHTML=`<i class="fa-solid fa-circle-check"></i> ${esc(e.note)}`;if(control)control.classList.toggle('hidden',key!=='custom');$$('.exam-tab').forEach(b=>b.classList.toggle('active',b.dataset.exam===key));updateCountdown()}
-function initHome(){if(!$('#homeExamTitle'))return;$$('.exam-tab').forEach(b=>b.addEventListener('click',()=>setExam(b.dataset.exam)));$('#customCountdownButton')?.addEventListener('click',()=>modal('customCountdown'));setExam('bac');setInterval(()=>{if(!document.hidden)updateCountdown()},1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateCountdown()})}
-function samplePosts(){return[{id:'sample-1',name:'سارة الحلبي',meta:'بكالوريا علمي · حلب',text:'تم نشر برنامج المراجعة المكثفة لمادة الفيزياء في المدرسة، بالتوفيق للجميع في التحضير للامتحانات.',likes:24,liked:false,comments:[{name:'محمد',text:'شكرًا على المشاركة، خبر مفيد جدًا.'}],images:[]},{id:'sample-2',name:'ياسر الدمشقي',meta:'التاسع الأساسي · دمشق',text:'شاركتكم صورًا من معرض المشاريع العلمية اليوم. كانت تجربة ملهمة ومليئة بالأفكار الجديدة.',likes:38,liked:false,comments:[],images:['https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1000&q=80','https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1000&q=80']} ]}
-function postTemplate(p){const av=p.mine?avatarHtml():`<span class="avatar">${esc((p.name||'ط')[0])}</span>`;const imgs=(p.images||[]).length?`<div class="post-images ${(p.images||[]).length>1?'multiple':''}">${p.images.map(src=>`<img loading="lazy" src="${src}" alt="صورة مرفقة بالمنشور">`).join('')}</div><div class="post-media-indicator">${p.images.length>1?`<i class="fa-solid fa-images"></i> اسحب لمشاهدة الصور ${p.images.length}`:''}</div>`:'';const comments=(p.comments||[]).map(c=>`<div class="comment"><b>${esc(c.name)}</b><br>${esc(c.text)}</div>`).join('');return `<article class="post" data-post="${p.id}"><div class="post-head">${av}<div class="post-author"><strong>${esc(p.name)}</strong><span>${esc(p.meta||student.stage+' · '+student.city)} · الآن</span></div><button class="post-menu" aria-label="المزيد"><i class="fa-solid fa-ellipsis"></i></button></div><p class="post-content">${esc(p.text)}</p>${imgs}<div class="post-insights"><span>${p.likes||0} إعجاب</span><span>${(p.comments||[]).length} تعليق</span></div><div class="post-tools"><button class="tool-button ${p.liked?'liked':''}" data-action="like"><i class="${p.liked?'fa-solid':'fa-regular'} fa-heart"></i> إعجاب</button><button class="tool-button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق</button><button class="tool-button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments hidden">${comments}<form class="comment-form"><input required placeholder="أضف تعليقًا محترمًا..."><button title="إرسال"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`}
-function renderFeed(){const feed=$('#feed');if(!feed)return;const all=[...posts,...samplePosts()];feed.innerHTML=all.length?all.map(postTemplate).join(''):'<div class="empty-feed">لا توجد منشورات بعد. كن أول من يشارك خبرًا.</div>';const count=$('#profilePosts');if(count)count.textContent=posts.filter(p=>p.mine).length}
-function publish(){const text=$('#postText')?.value.trim();if(!text&&!uploadImages.length)return notify('اكتب الخبر أو أرفق صورة قبل النشر.');posts.unshift({id:'post-'+Date.now(),name:fullName(),meta:student.stage+' · '+student.city,text,images:uploadImages,likes:0,liked:false,comments:[],mine:true});uploadImages=[];$('#postText').value='';renderPreview();save();renderFeed();updateProfile();notify('تم نشر خبرك في مجتمع نبض.')}
-function renderPreview(){const x=$('#composePreview');if(x)x.innerHTML=uploadImages.map(s=>`<img src="${s}" alt="معاينة الصورة">`).join('')}
-function initNews(){if(!$('#feed'))return;renderFeed();$('#publishPost')?.addEventListener('click',publish);$('#clearImages')?.addEventListener('click',()=>{uploadImages=[];renderPreview()});$('#postImages')?.addEventListener('change',e=>{const files=[...e.target.files].slice(0,5);Promise.all(files.map(f=>new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)}))).then(images=>{uploadImages=images;renderPreview()})});$$('.community-tab').forEach(tab=>tab.addEventListener('click',()=>$$('.community-tab').forEach(t=>t.classList.toggle('active',t===tab))))}
-function assistantReply(q){const x=q.toLowerCase();if(/ملف|حساب|صورة/.test(x))return `يمكنك يا ${student.first||'صديقي'} فتح «ملفي الشخصي» لتعديل بياناتك وصورتك وإعداداتك.`;if(/خبر|مجتمع|منشور|صورة/.test(x))return 'افتح مجتمع الأخبار، اكتب الخبر ثم استخدم زر الصور لإرفاق صورة أو عدة صور. يمكن للطلاب الإعجاب والتعليق.';if(/خصوص|بيان|حفظ/.test(x))return 'هذه النسخة الثابتة تحفظ البيانات والمنشورات والمحادثات في متصفحك فقط ولا ترسلها إلى خادم خارجي.';return `شكرًا لسؤالك يا ${student.first||'صديقي'}. أنا دليل نبض التفوق، ويمكنني تعريفك بالملف الشخصي ومجتمع الأخبار والعدادات.`}
-function getChat(){let c=chats.find(x=>x.id===activeChatId);if(!c){c={id:'chat-'+Date.now(),title:'محادثة جديدة',messages:[{role:'assistant',text:`أهلاً ${student.first||'بك'}، أنا دليل نبض التفوق. كيف أساعدك؟`}]};chats.unshift(c);activeChatId=c.id;save()}return c}
-function renderChat(){const area=$('#chatArea');if(!area)return;const c=getChat();area.innerHTML=c.messages.map(m=>`<div class="bubble ${m.role==='assistant'?'assistant':'student'}">${esc(m.text)}</div>`).join('')+`<div class="guide-block"><b>ميزة دليل نبض:</b> اكتشف ملفك الشخصي، مجتمع الأخبار، والعدادات من خلال المحادثة.</div><div class="suggestions"><button class="suggestion">كيف أعدل ملفي؟</button><button class="suggestion">كيف أنشر خبرًا؟</button><button class="suggestion">ما سياسة الخصوصية؟</button></div>`;area.scrollTop=area.scrollHeight;const list=$('#chatHistoryList');if(list)list.innerHTML=chats.map(c=>`<button class="history-item ${c.id===activeChatId?'active':''}" data-chat="${c.id}">${esc(c.title)}</button>`).join('')}
-function sendChat(){const input=$('#chatInput'),q=input?.value.trim();if(!q)return;const c=getChat();c.messages.push({role:'student',text:q},{role:'assistant',text:assistantReply(q)});c.title=q.slice(0,28);input.value='';save();renderChat()}
-function initChat(){if(!$('#chatArea'))return;renderChat();$('#sendChat')?.addEventListener('click',sendChat);$('#chatInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')sendChat()});$('#newChat')?.addEventListener('click',()=>{activeChatId=null;renderChat()})}
-function bindEvents(){document.addEventListener('click',e=>{if(e.target.closest('.close-modal')||e.target.id==='modalBackdrop')closeModal();const action=e.target.closest('[data-modal]');if(action)modal(action.dataset.modal);if(e.target.closest('#openEditProfile')||e.target.closest('#editProfileSmall')||e.target.closest('#completeProfile')||e.target.closest('#profileDataUpdate'))modal('edit');if(e.target.closest('#profileThemeButton'))applyTheme(student.theme==='dark'?'light':'dark');if(e.target.closest('#logout')){location.href='profile.html'}const tool=e.target.closest('[data-demo]');if(tool)notify(tool.dataset.demo);const a=e.target.closest('[data-action]');if(a){const post=posts.find(p=>p.id===a.closest('[data-post]')?.dataset.post);if(a.dataset.action==='share')notify('تم نسخ رابط تجريبي للمنشور.');if(a.dataset.action==='comments')a.closest('[data-post]').querySelector('.comments').classList.toggle('hidden');if(a.dataset.action==='like'&&post){post.liked=!post.liked;post.likes+=(post.liked?1:-1);save();renderFeed()}}const suggestion=e.target.closest('.suggestion');if(suggestion){$('#chatInput').value=suggestion.textContent;sendChat()}const history=e.target.closest('[data-chat]');if(history){activeChatId=history.dataset.chat;renderChat()}});document.addEventListener('submit',e=>{if(e.target.id==='editForm'){e.preventDefault();student={...student,...Object.fromEntries(new FormData(e.target).entries())};save();closeModal();updateProfile();notify('تم حفظ بيانات الملف الشخصي.')}if(e.target.id==='customCountdownForm'){e.preventDefault();const f=new FormData(e.target),target=new Date(f.get('target')).getTime();if(!Number.isFinite(target))return notify('اختر موعدًا صحيحًا.');customCountdown={title:String(f.get('title')).trim(),target};homeExams.custom={title:customCountdown.title,badge:'عداد مخصص',note:'اضبط اسم هدفك وموعده ليظهر عدادك الخاص هنا.',target};localStorage.setItem(STORE+'custom_countdown',JSON.stringify(customCountdown));closeModal();setExam('custom');notify('تم حفظ العداد المخصص.')}if(e.target.matches('.comment-form')){e.preventDefault();const post=posts.find(p=>p.id===e.target.closest('[data-post]').dataset.post);if(!post)return notify('التعليقات على المنشورات التجريبية للعرض فقط.');const input=e.target.querySelector('input');post.comments.push({name:fullName(),text:input.value.trim()});save();renderFeed()}});$('#avatarInput')?.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;if(f.size>2.5*1024*1024)return notify('اختر صورة أصغر من 2.5 ميغابايت.');const r=new FileReader();r.onload=()=>{student.avatar=r.result;save();updateProfile();notify('تم تحديث صورة الملف الشخصي.')};r.readAsDataURL(f)});$('#themeSwitch')?.addEventListener('change',e=>applyTheme(e.target.checked?'dark':'light'));$('#notificationsSwitch')?.addEventListener('change',e=>{student.notifications=e.target.checked;save();notify(e.target.checked?'تم تفعيل الإشعارات.':'تم إيقاف الإشعارات.')})}
-function init(){if(typeof android!=='undefined'&&android.webReady)android.webReady();renderBrand();applyTheme(student.theme);updateProfile();bindEvents();initHome();initNews();initChat()}
-document.addEventListener('DOMContentLoaded',init);
+/* نبض التفوق — منطق الواجهة المشترك للصفحات الثابتة */
+(() => {
+  'use strict';
+
+  const STORE = 'nabd_v3_';
+  const LEGACY_STORE = 'nabd_v2_';
+  const PAGE = document.body.dataset.page || 'home';
+  const $ = (selector, scope = document) => scope.querySelector(selector);
+  const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
+
+  const defaultStudent = {
+    first: '', last: '', phone: '', birth: '', city: 'دمشق', stage: 'بكالوريا علمي',
+    bio: 'طالب في منصة نبض التفوق، أعمل على تنظيم رحلتي الدراسية والوصول إلى أهدافي.',
+    avatar: '', notifications: true, theme: 'dark', studentId: ''
+  };
+
+  function readStorage(key, fallback) {
+    const raw = localStorage.getItem(STORE + key) ?? localStorage.getItem(LEGACY_STORE + key);
+    if (!raw) return fallback;
+    try { return JSON.parse(raw) ?? fallback; }
+    catch { return fallback; }
+  }
+
+  let student = { ...defaultStudent, ...readStorage('student', {}) };
+  let posts = Array.isArray(readStorage('posts', [])) ? readStorage('posts', []) : [];
+  let chats = Array.isArray(readStorage('chats', [])) ? readStorage('chats', []) : [];
+  let postInteractions = readStorage('post_interactions', {});
+  let customCountdown = readStorage('custom_countdown', {
+    title: 'هدفي الخاص', target: new Date('2027-04-15T08:00:00').getTime()
+  });
+  let uploadImages = [];
+  let activeChatId = null;
+  let activeExam = 'bac';
+  const openComments = new Set();
+
+  const escapeHTML = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+  }[char]));
+
+  const fullName = () => `${student.first || 'طالب'} ${student.last || ''}`.trim();
+  const initials = () => fullName().split(/\s+/).map(word => word[0]).join('').slice(0, 2);
+  const profileIncomplete = () => !(student.first && student.last && student.phone && student.birth);
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORE + 'student', JSON.stringify(student));
+      localStorage.setItem(STORE + 'posts', JSON.stringify(posts));
+      localStorage.setItem(STORE + 'chats', JSON.stringify(chats.slice(0, 12)));
+      localStorage.setItem(STORE + 'post_interactions', JSON.stringify(postInteractions));
+      localStorage.setItem(STORE + 'custom_countdown', JSON.stringify(customCountdown));
+      return true;
+    } catch (error) {
+      console.warn('تعذر حفظ بعض البيانات محليًا', error);
+      toast('تعذر حفظ البيانات؛ جرّب تقليل عدد أو حجم الصور المرفقة.');
+      return false;
+    }
+  }
+
+  function ensureStudentId() {
+    if (!student.studentId) {
+      student.studentId = String(Math.floor(1000000000 + Math.random() * 9000000000));
+      saveState();
+    }
+  }
+
+  function toast(message) {
+    const element = $('#toast');
+    if (!element) return;
+    element.textContent = message;
+    element.classList.add('show');
+    clearTimeout(window.nabdToastTimer);
+    window.nabdToastTimer = setTimeout(() => element.classList.remove('show'), 2800);
+  }
+
+  function avatarMarkup(className = 'avatar') {
+    if (student.avatar) return `<img class="${className}" src="${student.avatar}" alt="صورة ${escapeHTML(fullName())}">`;
+    return `<span class="${className}">${escapeHTML(initials())}</span>`;
+  }
+
+  function setAvatar(elementId, className = 'avatar') {
+    const element = $('#' + elementId);
+    if (!element) return;
+    if (student.avatar) {
+      const image = document.createElement('img');
+      image.id = elementId;
+      image.className = className;
+      image.src = student.avatar;
+      image.alt = `صورة ${fullName()}`;
+      element.replaceWith(image);
+    } else {
+      element.className = className;
+      element.textContent = initials();
+    }
+  }
+
+  function applyTheme(theme = student.theme) {
+    student.theme = theme === 'light' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = student.theme;
+    const meta = $('meta[name="theme-color"]');
+    if (meta) meta.content = student.theme === 'dark' ? '#080d19' : '#f2f7ff';
+    const switcher = $('#themeSwitch');
+    if (switcher) switcher.checked = student.theme === 'dark';
+    const buttonIcon = $('#profileThemeButton i');
+    if (buttonIcon) buttonIcon.className = student.theme === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    saveState();
+  }
+
+  function renderBrand() {
+    $$('.brand-mark').forEach(mark => {
+      mark.innerHTML = '<img src="assets/nabd-logo.jpg" alt="شعار نبض التفوق" decoding="async">';
+    });
+  }
+
+  function renderShell() {
+    const sidebar = $('#desktopSidebar');
+    if (sidebar) {
+      const studentSubtitle = profileIncomplete()
+        ? 'أكمل بياناتك لتخصيص تجربتك'
+        : `${escapeHTML(student.stage)} · ${escapeHTML(student.city)}`;
+      sidebar.innerHTML = `
+        <div class="sidebar-brand"><img src="assets/nabd-logo.jpg" alt="شعار نبض التفوق" decoding="async"><div><b>نبض التفوق</b><span>منصتك نحو التميز</span></div><i class="fa-solid fa-sparkles"></i></div>
+        <div class="sidebar-student"><div class="sidebar-avatar-wrap">${avatarMarkup('sidebar-avatar')}<span class="online-ring"></span></div><div><strong>${escapeHTML(fullName())}</strong><span>${studentSubtitle}</span></div><a class="quick-edit" href="profile.html" title="تعديل الملف"><i class="fa-solid fa-pen"></i></a></div>
+        <div class="sidebar-label">التنقل الرئيسي</div>
+        <nav class="side-nav">
+          <a class="side-link ${PAGE === 'home' ? 'active' : ''}" href="index.html"><span class="nav-icon home-nav"><i class="fa-solid fa-house"></i></span><span>الرئيسية</span></a>
+          <a class="side-link ${PAGE === 'profile' ? 'active' : ''}" href="profile.html"><span class="nav-icon profile-nav"><i class="fa-regular fa-user"></i></span><span>ملفي الشخصي</span></a>
+          <a class="side-link ${PAGE === 'news' ? 'active' : ''}" href="news.html"><span class="nav-icon news-nav"><i class="fa-regular fa-newspaper"></i></span><span>مجتمع الأخبار</span><em>جديد</em></a>
+          <a class="side-link ${PAGE === 'ai' ? 'active' : ''}" href="assistant.html"><span class="nav-icon ai-nav"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span>مساعد نبض</span></a>
+        </nav>
+        <div class="sidebar-label">المركز الشخصي</div>
+        <nav class="side-nav compact">
+          <a class="side-link ${PAGE === 'notifications' ? 'active' : ''}" href="notifications.html"><span class="nav-icon notify-nav"><i class="fa-regular fa-bell"></i></span><span>الإشعارات</span></a>
+          <a class="side-link ${PAGE === 'about' ? 'active' : ''}" href="about.html"><span class="nav-icon about-nav"><i class="fa-solid fa-circle-info"></i></span><span>عن المنصة</span></a>
+          <a class="side-link ${PAGE === 'supervision' ? 'active' : ''}" href="supervision.html"><span class="nav-icon shield-nav"><i class="fa-solid fa-shield-halved"></i></span><span>بوابة الإشراف</span></a>
+          <a class="side-link ${PAGE === 'privacy' ? 'active' : ''}" href="privacy.html"><span class="nav-icon lock-nav"><i class="fa-solid fa-lock"></i></span><span>الخصوصية والأمان</span></a>
+        </nav>
+        <a class="sidebar-edit-cta" href="profile.html"><i class="fa-solid fa-sliders"></i><span>${profileIncomplete() ? 'أكمل بياناتي' : 'تعديل بياناتي'}</span><i class="fa-solid fa-arrow-left"></i></a>`;
+    }
+
+    const bottomNav = $('#bottomNav');
+    if (bottomNav) {
+      bottomNav.innerHTML = `
+        <a class="bottom-link" href="assistant.html"><i class="fa-solid fa-circle-play"></i><span>الدروس</span></a>
+        <a class="bottom-link" href="index.html#tools"><i class="fa-solid fa-clipboard-check"></i><span>الاختبارات</span></a>
+        <a class="bottom-link ${PAGE === 'home' ? 'active' : ''}" href="index.html"><i class="fa-solid fa-house"></i><span>الرئيسية</span></a>
+        <a class="bottom-link ${PAGE === 'news' ? 'active' : ''}" href="news.html"><i class="fa-regular fa-newspaper"></i><span>الأخبار</span></a>
+        <a class="bottom-link ${PAGE === 'profile' ? 'active' : ''}" href="profile.html"><i class="fa-regular fa-user"></i><span>حسابي</span></a>`;
+    }
+  }
+
+  function formatDate(timestamp) {
+    const date = new Date(timestamp);
+    const pad = number => String(number).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+
+  function openModal(content) {
+    const modal = $('#modalContent');
+    const backdrop = $('#modalBackdrop');
+    if (!modal || !backdrop) return;
+    modal.innerHTML = content;
+    backdrop.classList.add('show');
+  }
+
+  function closeModal() {
+    $('#modalBackdrop')?.classList.remove('show');
+  }
+
+  function openNamedModal(name) {
+    const modals = {
+      edit: `<div class="modal-head"><h3>تعديل الملف الشخصي</h3><button class="close-modal" aria-label="إغلاق">×</button></div>
+        <form id="editForm"><div class="form-grid">
+          <div class="form-group"><label>الاسم الأول</label><input name="first" required maxlength="32" value="${escapeHTML(student.first)}"></div>
+          <div class="form-group"><label>اسم العائلة</label><input name="last" required maxlength="32" value="${escapeHTML(student.last)}"></div>
+          <div class="form-group"><label>رقم الهاتف</label><input name="phone" type="tel" inputmode="tel" maxlength="20" value="${escapeHTML(student.phone)}"></div>
+          <div class="form-group"><label>تاريخ الميلاد</label><input name="birth" type="date" value="${escapeHTML(student.birth)}"></div>
+          <div class="form-group"><label>المنطقة</label><input name="city" maxlength="40" value="${escapeHTML(student.city)}"></div>
+          <div class="form-group"><label>المرحلة</label><select name="stage"><option ${student.stage === 'بكالوريا علمي' ? 'selected' : ''}>بكالوريا علمي</option><option ${student.stage === 'بكالوريا أدبي' ? 'selected' : ''}>بكالوريا أدبي</option><option ${student.stage === 'التاسع الأساسي' ? 'selected' : ''}>التاسع الأساسي</option></select></div>
+          <div class="form-group full"><label>السيرة الذاتية</label><textarea name="bio" maxlength="240">${escapeHTML(student.bio)}</textarea></div>
+        </div><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">حفظ التغييرات</button></div></form>`,
+      customCountdown: `<div class="modal-head"><h3>ضبط العداد المخصص</h3><button class="close-modal" aria-label="إغلاق">×</button></div>
+        <form id="customCountdownForm"><div class="form-group"><label>اسم الهدف</label><input name="title" required maxlength="34" value="${escapeHTML(customCountdown.title)}"></div><div class="form-group" style="margin-top:12px"><label>موعد الهدف</label><input name="target" type="datetime-local" required value="${formatDate(customCountdown.target)}"></div><p class="onboarding-note">يحفظ العداد على جهازك داخل المتصفح.</p><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">حفظ العداد</button></div></form>`,
+      appGuide: `<div class="modal-head"><h3>شرح استخدام التطبيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-regular fa-circle-play"></i></div><h2>ابدأ بخطوات بسيطة</h2><p>من الرئيسية تابع عدادات الامتحان واستخدم الأدوات الدراسية. اختر «مخصص» لضبط هدفك وموعده.</p><p>في الملف الشخصي عدّل بياناتك وصورتك وإعداداتك، ثم استخدم مجتمع الأخبار لمشاركة الأخبار والصور والتفاعل باحترام.</p></div>`,
+      contribute: `<div class="modal-head"><h3>ساهم في التطبيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-solid fa-hand-holding-heart"></i></div><h2>رأيك يصنع فرقًا</h2><p>شارك اقتراحاتك للأقسام والأدوات الدراسية التي ترغب برؤيتها في الإصدارات القادمة.</p></div>`,
+      contact: `<div class="modal-head"><h3>تواصل معنا</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-regular fa-comment-dots"></i></div><h2>نستمع لملاحظاتك</h2><p>استخدم القنوات الرسمية أو فريق الإشراف لإرسال الأسئلة والملاحظات الفنية المتعلقة بتجربة نبض التفوق.</p></div>`
+    };
+    openModal(modals[name] || modals.appGuide);
+  }
+
+  function updateProfileUI() {
+    ensureStudentId();
+    const values = {
+      profileName: fullName(),
+      profileHandle: '@' + fullName().replaceAll(' ', '_'),
+      profileBio: student.bio || 'أضف نبذة بسيطة لتظهر في مجتمع الأخبار.',
+      profilePhone: student.phone || '—',
+      profileCity: student.city || '—',
+      profileStudentId: student.studentId,
+      profilePosts: posts.filter(post => post.mine).length,
+      homeGreeting: `أهلاً ${student.first || 'بك'}، لنصنع يومًا دراسيًا رائعًا`
+    };
+    Object.entries(values).forEach(([id, text]) => { const element = $('#' + id); if (element) element.textContent = text; });
+    const stage = $('#profileStage');
+    if (stage) stage.innerHTML = `<i class="fa-solid fa-graduation-cap"></i> ${escapeHTML(student.stage)}`;
+    const birth = $('#profileBirth');
+    if (birth) birth.textContent = student.birth ? new Intl.DateTimeFormat('ar-SY', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(student.birth)) : '—';
+    const completion = $('#completeProfile');
+    if (completion) completion.classList.toggle('hidden', !profileIncomplete());
+    const notificationSwitch = $('#notificationsSwitch');
+    if (notificationSwitch) notificationSwitch.checked = Boolean(student.notifications);
+    setAvatar('profileAvatar', 'profile-avatar');
+    setAvatar('composerAvatar', 'avatar');
+    renderShell();
+  }
+
+  const homeExams = {
+    bac: { title: 'امتحانات البكالوريا', badge: 'الثانوية العامة', note: 'رتّب خطتك اليومية لتصل إلى موعد الامتحان بثقة.', target: new Date('2027-06-24T07:00:00').getTime() },
+    nine: { title: 'امتحانات التاسع', badge: 'التعليم الأساسي', note: 'اجعل المراجعة اليومية عادة ثابتة قبل موعد الامتحان.', target: new Date('2027-05-28T07:00:00').getTime() },
+    custom: { title: customCountdown.title, badge: 'عداد مخصص', note: 'اضبط اسم هدفك وموعده ليظهر عدادك الخاص هنا.', target: customCountdown.target }
+  };
+
+  function updateCountdown() {
+    const exam = homeExams[activeExam];
+    if (!exam) return;
+    const difference = Math.max(0, exam.target - Date.now());
+    const parts = [
+      ['countDays', Math.floor(difference / 86400000), 3],
+      ['countHours', Math.floor((difference % 86400000) / 3600000), 2],
+      ['countMinutes', Math.floor((difference % 3600000) / 60000), 2],
+      ['countSeconds', Math.floor((difference % 60000) / 1000), 2]
+    ];
+    parts.forEach(([id, value, length]) => { const element = $('#' + id); if (element) element.textContent = String(value).padStart(length, '0'); });
+  }
+
+  function setExam(key) {
+    const exam = homeExams[key];
+    if (!exam) return;
+    activeExam = key;
+    const title = $('#homeExamTitle');
+    const badge = $('#homeExamBadge');
+    const note = $('#homeExamNote');
+    if (title) title.innerHTML = `<i class="fa-solid fa-graduation-cap"></i> ${escapeHTML(exam.title)}`;
+    if (badge) badge.textContent = exam.badge;
+    if (note) note.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${escapeHTML(exam.note)}`;
+    $('#customCountdownButton')?.classList.toggle('hidden', key !== 'custom');
+    $$('.exam-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.exam === key));
+    updateCountdown();
+  }
+
+  function initHome() {
+    if (!$('#homeExamTitle')) return;
+    $$('.exam-tab').forEach(tab => tab.addEventListener('click', () => setExam(tab.dataset.exam)));
+    $('#customCountdownButton')?.addEventListener('click', () => openNamedModal('customCountdown'));
+    setExam('bac');
+    let timer = window.setInterval(() => { if (!document.hidden) updateCountdown(); }, 1000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) updateCountdown(); });
+    window.addEventListener('pagehide', () => window.clearInterval(timer), { once: true });
+  }
+
+  const seedPosts = [
+    { id: 'sample-1', name: 'سارة الحلبي', meta: 'بكالوريا علمي · حلب', text: 'تم نشر برنامج المراجعة المكثفة لمادة الفيزياء في المدرسة، بالتوفيق للجميع في التحضير للامتحانات.', likes: 24, comments: [{ name: 'محمد', text: 'شكرًا على المشاركة، خبر مفيد جدًا.' }], images: [] },
+    { id: 'sample-2', name: 'ياسر الدمشقي', meta: 'التاسع الأساسي · دمشق', text: 'شاركتكم صورًا من معرض المشاريع العلمية اليوم. كانت تجربة ملهمة ومليئة بالأفكار الجديدة.', likes: 38, comments: [], images: ['https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1000&q=80', 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1000&q=80'] }
+  ];
+
+  function feedPost(id) {
+    return posts.find(post => post.id === id) || seedPosts.find(post => post.id === id) || null;
+  }
+
+  function enrichedPost(post) {
+    const interaction = postInteractions[post.id] || {};
+    return {
+      ...post,
+      liked: Boolean(interaction.liked ?? post.liked),
+      likes: Number.isFinite(interaction.likes) ? interaction.likes : (post.likes || 0),
+      comments: [...(post.comments || []), ...(interaction.comments || [])]
+    };
+  }
+
+  function postTemplate(rawPost) {
+    const post = enrichedPost(rawPost);
+    const avatar = rawPost.mine ? avatarMarkup() : `<span class="avatar">${escapeHTML((post.name || 'ط')[0])}</span>`;
+    const images = (post.images || []).length
+      ? `<div class="post-images ${(post.images || []).length > 1 ? 'multiple' : ''}">${post.images.map(src => `<img loading="lazy" src="${src}" alt="صورة مرفقة بالمنشور">`).join('')}</div><div class="post-media-indicator">${post.images.length > 1 ? `<i class="fa-solid fa-images"></i> اسحب لمشاهدة الصور ${post.images.length}` : ''}</div>`
+      : '';
+    const comments = post.comments.map(comment => `<div class="comment"><b>${escapeHTML(comment.name)}</b><br>${escapeHTML(comment.text)}</div>`).join('');
+    return `<article class="post" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong>${escapeHTML(post.name)}</strong><span>${escapeHTML(post.meta || `${student.stage} · ${student.city}`)} · الآن</span></div><button class="post-menu" type="button" aria-label="المزيد"><i class="fa-solid fa-ellipsis"></i></button></div><p class="post-content">${escapeHTML(post.text)}</p>${images}<div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
+  }
+
+  function renderFeed() {
+    const feed = $('#feed');
+    if (!feed) return;
+    const entries = [...posts, ...seedPosts];
+    feed.innerHTML = entries.length ? entries.map(postTemplate).join('') : '<div class="empty-feed">لا توجد منشورات بعد. كن أول من يشارك خبرًا.</div>';
+    const postCount = $('#profilePosts');
+    if (postCount) postCount.textContent = posts.filter(post => post.mine).length;
+  }
+
+  function renderPreview() {
+    const preview = $('#composePreview');
+    if (preview) preview.innerHTML = uploadImages.map(source => `<img loading="lazy" src="${source}" alt="معاينة الصورة">`).join('');
+  }
+
+  function publishPost() {
+    const text = $('#postText')?.value.trim() || '';
+    if (!text && !uploadImages.length) return toast('اكتب الخبر أو أرفق صورة قبل النشر.');
+    if (text.length > 1200) return toast('يرجى اختصار الخبر إلى 1200 حرف أو أقل.');
+    const draft = { id: `post-${Date.now()}`, name: fullName(), meta: `${student.stage} · ${student.city}`, text, images: [...uploadImages], likes: 0, comments: [], mine: true };
+    posts.unshift(draft);
+    if (!saveState()) { posts.shift(); return; }
+    uploadImages = [];
+    const input = $('#postText');
+    if (input) input.value = '';
+    renderPreview();
+    renderFeed();
+    updateProfileUI();
+    toast('تم نشر خبرك في مجتمع نبض.');
+  }
+
+  function toggleLike(postId) {
+    const post = feedPost(postId);
+    if (!post) return;
+    const current = enrichedPost(post);
+    const next = { liked: !current.liked, likes: Math.max(0, current.likes + (current.liked ? -1 : 1)), comments: postInteractions[postId]?.comments || [] };
+    if (posts.some(item => item.id === postId)) {
+      post.liked = next.liked;
+      post.likes = next.likes;
+    } else {
+      postInteractions[postId] = next;
+    }
+    saveState();
+    renderFeed();
+  }
+
+  async function sharePost(postId) {
+    const url = `${location.origin}${location.pathname}#${postId}`;
+    try {
+      if (navigator.share) await navigator.share({ title: 'مجتمع نبض التفوق', text: 'منشور جديد في مجتمع نبض التفوق', url });
+      else if (navigator.clipboard) { await navigator.clipboard.writeText(url); toast('تم نسخ رابط المنشور.'); }
+      else toast('ميزة المشاركة متاحة عند نشر التطبيق على الهاتف.');
+    } catch (error) {
+      if (error.name !== 'AbortError') toast('تعذر تنفيذ المشاركة حاليًا.');
+    }
+  }
+
+  function addComment(form) {
+    const postId = form.closest('[data-post]')?.dataset.post;
+    const post = feedPost(postId);
+    const input = $('input', form);
+    const text = input?.value.trim();
+    if (!post || !text) return;
+    const comment = { name: fullName(), text };
+    if (posts.some(item => item.id === postId)) {
+      post.comments = [...(post.comments || []), comment];
+    } else {
+      const current = postInteractions[postId] || {};
+      postInteractions[postId] = { ...current, comments: [...(current.comments || []), comment] };
+    }
+    openComments.add(postId);
+    saveState();
+    renderFeed();
+  }
+
+  function initNews() {
+    if (!$('#feed')) return;
+    renderFeed();
+    $('#publishPost')?.addEventListener('click', publishPost);
+    $('#clearImages')?.addEventListener('click', () => { uploadImages = []; renderPreview(); });
+    $('#postImages')?.addEventListener('change', event => {
+      const files = [...event.target.files].slice(0, 2);
+      const invalid = files.some(file => file.size > 700 * 1024);
+      if (invalid) { event.target.value = ''; return toast('اختر حتى صورتين، وحجم كل صورة لا يتجاوز 700 كيلوبايت.'); }
+      Promise.all(files.map(file => new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(file); }))).then(images => { uploadImages = images; renderPreview(); });
+    });
+    $$('.community-tab').forEach(tab => tab.addEventListener('click', () => $$('.community-tab').forEach(item => item.classList.toggle('active', item === tab))));
+  }
+
+  function getChat() {
+    let chat = chats.find(item => item.id === activeChatId);
+    if (!chat) {
+      chat = { id: `chat-${Date.now()}`, title: 'محادثة جديدة', messages: [{ role: 'assistant', text: `أهلاً ${student.first || 'بك'}، أنا دليل نبض التفوق. كيف أساعدك؟` }] };
+      chats.unshift(chat);
+      activeChatId = chat.id;
+      saveState();
+    }
+    return chat;
+  }
+
+  function assistantReply(question) {
+    const query = question.toLowerCase();
+    if (/ملف|حساب|صورة|بيان/.test(query)) return `يمكنك يا ${student.first || 'صديقي'} فتح «ملفي الشخصي» لتعديل بياناتك وصورتك وإعداداتك.`;
+    if (/خبر|مجتمع|منشور|صورة/.test(query)) return 'افتح مجتمع الأخبار، اكتب الخبر ثم استخدم زر الصور لإرفاق صورة أو عدة صور. يمكن للطلاب الإعجاب والتعليق.';
+    if (/خصوص|حفظ|بيانات/.test(query)) return 'هذه النسخة الثابتة تحفظ البيانات والمنشورات والمحادثات في متصفحك فقط ولا ترسلها إلى خادم خارجي.';
+    if (/عداد|هدف|موعد/.test(query)) return 'من الرئيسية اختر «مخصص» في شريط العداد، ثم استخدم زر «ضبط» لكتابة اسم هدفك وتحديد موعده.';
+    return `شكرًا لسؤالك يا ${student.first || 'صديقي'}. أنا دليل نبض التفوق، ويمكنني تعريفك بالملف الشخصي ومجتمع الأخبار والعدادات.`;
+  }
+
+  function renderChat() {
+    const area = $('#chatArea');
+    if (!area) return;
+    const chat = getChat();
+    area.innerHTML = chat.messages.map(message => `<div class="bubble ${message.role === 'assistant' ? 'assistant' : 'student'}">${escapeHTML(message.text)}</div>`).join('') + `<div class="guide-block"><b>ميزة دليل نبض:</b> اكتشف ملفك الشخصي، مجتمع الأخبار، والعدادات من خلال المحادثة.</div><div class="suggestions"><button class="suggestion" type="button">كيف أعدل ملفي؟</button><button class="suggestion" type="button">كيف أنشر خبرًا؟</button><button class="suggestion" type="button">كيف أضبط العداد؟</button></div>`;
+    area.scrollTop = area.scrollHeight;
+    const history = $('#chatHistoryList');
+    if (history) history.innerHTML = chats.map(item => `<button class="history-item ${item.id === activeChatId ? 'active' : ''}" type="button" data-chat="${item.id}">${escapeHTML(item.title)}</button>`).join('');
+  }
+
+  function sendChat() {
+    const input = $('#chatInput');
+    const question = input?.value.trim();
+    if (!question) return;
+    const chat = getChat();
+    chat.messages.push({ role: 'student', text: question }, { role: 'assistant', text: assistantReply(question) });
+    chat.messages = chat.messages.slice(-80);
+    chat.title = question.slice(0, 28);
+    input.value = '';
+    saveState();
+    renderChat();
+  }
+
+  function initChat() {
+    if (!$('#chatArea')) return;
+    renderChat();
+    $('#sendChat')?.addEventListener('click', sendChat);
+    $('#chatInput')?.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendChat(); } });
+    $('#newChat')?.addEventListener('click', () => { activeChatId = null; renderChat(); });
+  }
+
+  function handleProfileSave(form) {
+    const data = Object.fromEntries(new FormData(form).entries());
+    student = { ...student, ...data, first: String(data.first || '').trim(), last: String(data.last || '').trim(), phone: String(data.phone || '').trim(), city: String(data.city || '').trim(), bio: String(data.bio || '').trim() || defaultStudent.bio };
+    saveState();
+    closeModal();
+    updateProfileUI();
+    toast(profileIncomplete() ? 'تم حفظ البيانات. أكمل الحقول المتبقية متى شئت.' : 'تم حفظ بيانات الملف الشخصي.');
+  }
+
+  function handleCountdownSave(form) {
+    const data = new FormData(form);
+    const target = new Date(data.get('target')).getTime();
+    if (!Number.isFinite(target)) return toast('اختر موعدًا صحيحًا.');
+    customCountdown = { title: String(data.get('title')).trim(), target };
+    homeExams.custom = { title: customCountdown.title, badge: 'عداد مخصص', note: 'اضبط اسم هدفك وموعده ليظهر عدادك الخاص هنا.', target };
+    saveState();
+    closeModal();
+    setExam('custom');
+    toast('تم حفظ العداد المخصص.');
+  }
+
+  function bindEvents() {
+    document.addEventListener('click', event => {
+      if (event.target.closest('.close-modal') || event.target.id === 'modalBackdrop') closeModal();
+      const modalButton = event.target.closest('[data-modal]');
+      if (modalButton) openNamedModal(modalButton.dataset.modal);
+      if (event.target.closest('#openEditProfile, #editProfileSmall, #completeProfile, #profileDataUpdate')) openNamedModal('edit');
+      if (event.target.closest('#profileThemeButton')) applyTheme(student.theme === 'dark' ? 'light' : 'dark');
+      const demo = event.target.closest('[data-demo]');
+      if (demo) toast(demo.dataset.demo);
+
+      const tool = event.target.closest('[data-action]');
+      if (tool) {
+        const postId = tool.closest('[data-post]')?.dataset.post;
+        if (tool.dataset.action === 'like') toggleLike(postId);
+        if (tool.dataset.action === 'comments') { openComments.has(postId) ? openComments.delete(postId) : openComments.add(postId); renderFeed(); }
+        if (tool.dataset.action === 'share') sharePost(postId);
+      }
+
+      const suggestion = event.target.closest('.suggestion');
+      if (suggestion) { const input = $('#chatInput'); if (input) { input.value = suggestion.textContent; sendChat(); } }
+      const history = event.target.closest('[data-chat]');
+      if (history) { activeChatId = history.dataset.chat; renderChat(); }
+    });
+
+    document.addEventListener('submit', event => {
+      if (event.target.id === 'editForm') { event.preventDefault(); handleProfileSave(event.target); }
+      if (event.target.id === 'customCountdownForm') { event.preventDefault(); handleCountdownSave(event.target); }
+      if (event.target.matches('.comment-form')) { event.preventDefault(); addComment(event.target); }
+    });
+
+    $('#avatarInput')?.addEventListener('change', event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) return toast('اختر ملف صورة صالحًا.');
+      if (file.size > 700 * 1024) return toast('اختر صورة أصغر من 700 كيلوبايت للحفظ المحلي.');
+      const reader = new FileReader();
+      reader.onload = () => { student.avatar = reader.result; saveState(); updateProfileUI(); toast('تم تحديث صورة الملف الشخصي.'); };
+      reader.readAsDataURL(file);
+    });
+    $('#themeSwitch')?.addEventListener('change', event => applyTheme(event.target.checked ? 'dark' : 'light'));
+    $('#notificationsSwitch')?.addEventListener('change', event => { student.notifications = event.target.checked; saveState(); toast(event.target.checked ? 'تم تفعيل الإشعارات.' : 'تم إيقاف الإشعارات.'); });
+  }
+
+  function init() {
+    if (typeof android !== 'undefined' && android.webReady) android.webReady();
+    renderBrand();
+    applyTheme(student.theme);
+    updateProfileUI();
+    bindEvents();
+    initHome();
+    initNews();
+    initChat();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
