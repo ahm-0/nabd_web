@@ -5,6 +5,7 @@
   const STORE = 'nabd_v3_';
   const LEGACY_STORE = 'nabd_v2_';
   const PAGE = document.body.dataset.page || 'home';
+  const ADMIN_EMAIL = 'aaaaaaaa@gmail.com';
   const $ = (selector, scope = document) => scope.querySelector(selector);
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
 
@@ -40,6 +41,9 @@
   verificationRequests = Array.isArray(verificationRequests) ? verificationRequests : [];
   supportTickets = Array.isArray(supportTickets) ? supportTickets : [];
   adminActivity = Array.isArray(adminActivity) ? adminActivity : [];
+  let adminCredential = readStorage('admin_credential', null);
+  let adminSession = readStorage('admin_session', null);
+  let adminControlsBound = false;
   let customCountdown = readStorage('custom_countdown', {
     title: 'هدفي الخاص', target: new Date('2027-04-15T08:00:00').getTime()
   });
@@ -125,6 +129,7 @@
       stage: student.stage || '—',
       birth: student.birth || '',
       avatar: student.avatar || '',
+      verificationStatus: student.verificationStatus || '',
       updatedAt: Date.now()
     };
   }
@@ -143,6 +148,60 @@
     if (!timestamp) return '—';
     try { return new Intl.DateTimeFormat('ar-SY', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(timestamp)); }
     catch { return '—'; }
+  }
+
+  async function hashAdminPassword(value) {
+    const source = new TextEncoder().encode(String(value));
+    if (window.crypto?.subtle) {
+      const digest = await window.crypto.subtle.digest('SHA-256', source);
+      return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+    return btoa(unescape(encodeURIComponent(String(value))));
+  }
+
+  function saveAdminAccess() {
+    localStorage.setItem(STORE + 'admin_credential', JSON.stringify(adminCredential));
+    localStorage.setItem(STORE + 'admin_session', JSON.stringify(adminSession));
+  }
+
+  function isAdminAuthenticated() {
+    return Boolean(adminSession && adminSession.email === ADMIN_EMAIL && adminSession.active === true);
+  }
+
+  function showAdminWorkspace(allowed) {
+    const screen = $('#adminLoginScreen');
+    const workspace = $('#adminWorkspace');
+    if (screen) screen.classList.toggle('hidden', allowed);
+    if (workspace) workspace.classList.toggle('hidden', !allowed);
+    document.body.classList.toggle('admin-authenticated', allowed);
+  }
+
+  async function submitAdminLogin(form) {
+    const data = Object.fromEntries(new FormData(form).entries());
+    const email = String(data.email || '').trim().toLowerCase();
+    const password = String(data.password || '');
+    if (email !== ADMIN_EMAIL) return toast('هذا البريد غير مخوّل بفتح بوابة المشرفين.');
+    if (password.length < 6) return toast('اختر كلمة مرور محلية من 6 أحرف على الأقل.');
+    const passwordHash = await hashAdminPassword(password);
+    if (!adminCredential?.passwordHash) {
+      adminCredential = { email: ADMIN_EMAIL, passwordHash, configuredAt: Date.now() };
+      toast('تم إعداد كلمة مرور بوابة المشرفين على هذا المتصفح.');
+    } else if (adminCredential.email !== ADMIN_EMAIL || adminCredential.passwordHash !== passwordHash) {
+      return toast('كلمة المرور غير صحيحة.');
+    }
+    adminSession = { email: ADMIN_EMAIL, active: true, openedAt: Date.now() };
+    saveAdminAccess();
+    showAdminWorkspace(true);
+    initAdminDashboard();
+  }
+
+  function logoutAdmin() {
+    adminSession = null;
+    saveAdminAccess();
+    showAdminWorkspace(false);
+    const password = $('#adminPassword');
+    if (password) password.value = '';
+    toast('تم قفل بوابة المشرفين على هذا المتصفح.');
   }
 
   function toast(message) {
@@ -326,9 +385,9 @@
     if (completion) completion.classList.toggle('hidden', !profileIncomplete());
     const verificationState = student.verificationStatus || (student.verificationRequested ? 'pending' : '');
     const verificationStatus = $('#verificationStatus');
-    if (verificationStatus) { verificationStatus.classList.toggle('hidden', !verificationState); verificationStatus.className = `verification-status ${verificationState || 'hidden'}`; verificationStatus.innerHTML = verificationState === 'approved' ? '<i class="fa-solid fa-circle-check"></i> الحساب موثّق' : verificationState === 'rejected' ? '<i class="fa-solid fa-circle-xmark"></i> راجع بيانات التوثيق' : '<i class="fa-solid fa-circle-check"></i> طلب التوثيق قيد المراجعة'; }
+    if (verificationStatus) { verificationStatus.classList.toggle('hidden', !verificationState); verificationStatus.className = `verification-status ${verificationState || 'hidden'}`; verificationStatus.innerHTML = verificationState === 'approved' ? '<i class="fa-solid fa-circle-check"></i> الحساب موثّق' : verificationState === 'revoked' ? '<i class="fa-solid fa-circle-xmark"></i> تم إلغاء التوثيق' : verificationState === 'rejected' ? '<i class="fa-solid fa-circle-xmark"></i> راجع بيانات التوثيق' : '<i class="fa-solid fa-circle-check"></i> طلب التوثيق قيد المراجعة'; }
     const verificationButton = $('#verificationRequest');
-    if (verificationButton) { const title = $('.setting-copy strong', verificationButton); const detail = $('.setting-copy small', verificationButton); verificationButton.disabled = verificationState === 'pending' || verificationState === 'approved'; if (title) title.textContent = verificationState === 'approved' ? 'الحساب موثّق' : verificationState === 'pending' ? 'طلب التوثيق قيد المراجعة' : verificationState === 'rejected' ? 'إعادة طلب شارة التوثيق' : 'طلب شارة التوثيق'; if (detail) detail.textContent = verificationState === 'approved' ? 'تم اعتماد الشارة على هذا المتصفح' : verificationState === 'pending' ? 'تم إرسال طلبك وسيبقى ظاهرًا في ملفك' : verificationState === 'rejected' ? 'يمكنك مراجعة البيانات وإرسال طلب جديد' : 'راجع ملفك وأرسل الطلب للمراجعة'; }
+    if (verificationButton) { const title = $('.setting-copy strong', verificationButton); const detail = $('.setting-copy small', verificationButton); verificationButton.disabled = verificationState === 'pending' || verificationState === 'approved'; if (title) title.textContent = verificationState === 'approved' ? 'الحساب موثّق' : verificationState === 'pending' ? 'طلب التوثيق قيد المراجعة' : verificationState === 'revoked' ? 'إعادة طلب شارة التوثيق' : verificationState === 'rejected' ? 'إعادة طلب شارة التوثيق' : 'طلب شارة التوثيق'; if (detail) detail.textContent = verificationState === 'approved' ? 'تم اعتماد الشارة على هذا المتصفح' : verificationState === 'pending' ? 'تم إرسال طلبك وسيبقى ظاهرًا في ملفك' : verificationState === 'revoked' ? 'يمكنك مراجعة البيانات وإرسال طلب جديد' : verificationState === 'rejected' ? 'يمكنك مراجعة البيانات وإرسال طلب جديد' : 'راجع ملفك وأرسل الطلب للمراجعة'; }
     const notificationSwitch = $('#notificationsSwitch');
     if (notificationSwitch) notificationSwitch.checked = Boolean(student.notifications);
     setAvatar('profileAvatar', 'profile-avatar');
@@ -869,7 +928,7 @@
   }
 
   function adminStatusMarkup(status) {
-    const labels = { pending: 'قيد المراجعة', approved: 'تم القبول', rejected: 'مرفوض', open: 'مفتوحة', resolved: 'تمت المعالجة' };
+    const labels = { pending: 'قيد المراجعة', approved: 'تم القبول', rejected: 'مرفوض', revoked: 'أُلغي التوثيق', open: 'مفتوحة', resolved: 'تمت المعالجة' };
     return `<span class="admin-status ${escapeHTML(status)}">${labels[status] || 'غير محدد'}</span>`;
   }
 
@@ -897,12 +956,33 @@
     if (!rows) return;
     const normalized = String(query).trim();
     const visible = adminStudents.filter(entry => `${entry.name} ${entry.phone} ${entry.city} ${entry.studentId || entry.id}`.includes(normalized));
-    rows.innerHTML = visible.length ? visible.map(entry => `<article class="admin-student-card"><header class="admin-student-card-head"><div class="admin-student-cell">${adminAvatarMarkup(entry)}<span><b>${escapeHTML(entry.name)}</b><small>معرّف الطالب: ${escapeHTML(entry.id)}</small></span></div><div class="admin-row-actions"><button type="button" title="حذف من السجل المحلي" aria-label="حذف سجل ${escapeHTML(entry.name)}" data-admin-action="student-remove" data-admin-id="${escapeHTML(entry.id)}"><i class="fa-solid fa-trash"></i></button></div></header><div class="admin-student-fields"><div><span><i class="fa-solid fa-phone"></i> الرقم</span><b dir="ltr">${escapeHTML(entry.phone)}</b></div><div><span><i class="fa-solid fa-location-dot"></i> المنطقة</span><b>${escapeHTML(entry.city)}</b></div><div><span><i class="fa-solid fa-user"></i> الجنس</span>${adminGenderMarkup(entry.gender)}</div><div><span><i class="fa-solid fa-graduation-cap"></i> المرحلة</span><b>${escapeHTML(entry.stage)}</b></div></div><footer><span><i class="fa-regular fa-clock"></i> آخر تحديث</span><b>${displayAdminDate(entry.updatedAt)}</b></footer></article>`).join('') : '<div class="admin-empty">لا توجد بيانات مطابقة للبحث.</div>';
+    rows.innerHTML = visible.length ? visible.map(entry => { const verified = entry.verificationStatus === 'approved' || verificationRequests.some(request => request.studentId === entry.id && request.status === 'approved'); return `<article class="admin-student-card"><header class="admin-student-card-head"><div class="admin-student-cell">${adminAvatarMarkup(entry)}<span><b>${escapeHTML(entry.name)}</b><small>معرّف الطالب: ${escapeHTML(entry.id)}</small></span></div><div class="admin-row-actions"><button class="${verified ? 'admin-unverify' : 'admin-verify'}" type="button" title="${verified ? 'إلغاء توثيق الحساب' : 'توثيق الحساب'}" aria-label="${verified ? 'إلغاء توثيق' : 'توثيق'} ${escapeHTML(entry.name)}" data-admin-action="${verified ? 'student-unverify' : 'student-verify'}" data-admin-id="${escapeHTML(entry.id)}"><i class="fa-solid ${verified ? 'fa-user-xmark' : 'fa-circle-check'}"></i></button><button type="button" title="حذف من السجل المحلي" aria-label="حذف سجل ${escapeHTML(entry.name)}" data-admin-action="student-remove" data-admin-id="${escapeHTML(entry.id)}"><i class="fa-solid fa-trash"></i></button></div></header><div class="admin-student-fields"><div><span><i class="fa-solid fa-phone"></i> الرقم</span><b dir="ltr">${escapeHTML(entry.phone)}</b></div><div><span><i class="fa-solid fa-location-dot"></i> المنطقة</span><b>${escapeHTML(entry.city)}</b></div><div><span><i class="fa-solid fa-user"></i> الجنس</span>${adminGenderMarkup(entry.gender)}</div><div><span><i class="fa-solid fa-graduation-cap"></i> المرحلة</span><b>${escapeHTML(entry.stage)}</b></div></div><footer><span><i class="fa-solid ${verified ? 'fa-circle-check' : 'fa-clock'}"></i> ${verified ? 'حساب موثّق' : 'بانتظار التوثيق'}</span><b>${displayAdminDate(entry.updatedAt)}</b></footer></article>`; }).join('') : '<div class="admin-empty">لا توجد بيانات مطابقة للبحث.</div>';
+  }
+
+  function setStudentVerificationStatus(studentId, status, source = 'admin') {
+    const entry = adminStudents.find(item => item.id === studentId);
+    if (!entry) return null;
+    entry.verificationStatus = status;
+    entry.updatedAt = Date.now();
+    let request = verificationRequests.filter(item => item.studentId === studentId).sort((a, b) => b.createdAt - a.createdAt)[0];
+    if (!request) {
+      request = { id: `verification-${Date.now()}`, studentId, name: entry.name, phone: entry.phone, city: entry.city, gender: entry.gender, stage: entry.stage, status, source, createdAt: Date.now() };
+      verificationRequests.unshift(request);
+    } else request.status = status;
+    if (student.studentId === studentId) {
+      student.verificationStatus = status;
+      student.verificationRequested = status === 'pending';
+      saveState();
+      updateProfileUI();
+    }
+    return entry;
   }
 
   function handleAdminAction(button) {
     const action = button.dataset.adminAction;
     const id = button.dataset.adminId;
+    if (action === 'logout') return logoutAdmin();
+    if (!isAdminAuthenticated()) return toast('افتح بوابة المشرفين أولًا لتنفيذ هذا الإجراء.');
     if (action === 'verification-approve' || action === 'verification-reject') {
       const request = verificationRequests.find(item => item.id === id);
       if (!request) return;
@@ -915,6 +995,13 @@
       }
       adminLog('verification', `${request.status === 'approved' ? 'قبول' : 'رفض'} طلب توثيق: ${request.name}`, request.city);
       toast(request.status === 'approved' ? 'تم قبول طلب التوثيق محليًا.' : 'تم رفض طلب التوثيق محليًا.');
+    }
+    if (action === 'student-verify' || action === 'student-unverify') {
+      const status = action === 'student-verify' ? 'approved' : 'revoked';
+      const entry = setStudentVerificationStatus(id, status, 'manual');
+      if (!entry) return;
+      adminLog('verification', `${status === 'approved' ? 'توثيق يدوي' : 'إلغاء توثيق'}: ${entry.name}`, entry.city);
+      toast(status === 'approved' ? 'تم توثيق الحساب يدويًا.' : 'تم إلغاء توثيق الحساب.');
     }
     if (action === 'support-resolve') {
       const ticket = supportTickets.find(item => item.id === id);
@@ -951,9 +1038,14 @@
   }
 
   function initAdminDashboard() {
-    if (!$('#adminStudentCount')) return;
+    if (!$('#adminLoginScreen')) return;
+    const allowed = isAdminAuthenticated();
+    showAdminWorkspace(allowed);
+    if (!allowed || !$('#adminStudentCount')) return;
     syncAdminStudent(false);
     renderAdminDashboard();
+    if (adminControlsBound) return;
+    adminControlsBound = true;
     $$('.admin-tab').forEach(tab => tab.addEventListener('click', () => { $$('.admin-tab').forEach(item => item.classList.toggle('active', item === tab)); $$('.admin-pane').forEach(pane => pane.classList.toggle('active', pane.dataset.adminPane === tab.dataset.adminTab)); }));
     $('#adminStudentSearch')?.addEventListener('input', event => renderAdminStudents(event.target.value));
   }
@@ -1000,6 +1092,7 @@
       if (event.target.id === 'customCountdownForm') { event.preventDefault(); handleCountdownSave(event.target); }
       if (event.target.id === 'verificationForm') { event.preventDefault(); submitVerificationRequest(); }
       if (event.target.id === 'supportForm') { event.preventDefault(); submitSupportRequest(event.target); }
+      if (event.target.id === 'adminLoginForm') { event.preventDefault(); submitAdminLogin(event.target); }
       if (event.target.matches('.comment-form')) { event.preventDefault(); addComment(event.target); }
     });
 
