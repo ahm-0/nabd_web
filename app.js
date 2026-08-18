@@ -435,6 +435,29 @@
     updateCountdown();
   }
 
+  function initWelcomeScreen() {
+    const screen = $('#welcomeScreen');
+    if (!screen) return;
+    const sessionKey = `${STORE}welcome_seen`;
+    let seen = false;
+    try { seen = sessionStorage.getItem(sessionKey) === '1'; } catch { /* يستمر العرض عند تعذر التخزين */ }
+    if (seen) { screen.remove(); return; }
+    let closed = false;
+    const closeWelcome = () => {
+      if (closed) return;
+      closed = true;
+      try { sessionStorage.setItem(sessionKey, '1'); } catch { /* لا حاجة لإيقاف الواجهة */ }
+      screen.classList.add('is-leaving');
+      screen.setAttribute('aria-hidden', 'true');
+      window.setTimeout(() => screen.remove(), 560);
+    };
+    screen.classList.add('is-visible');
+    screen.setAttribute('aria-hidden', 'false');
+    $('#welcomeStart')?.addEventListener('click', closeWelcome);
+    $('#welcomeSkip')?.addEventListener('click', closeWelcome);
+    window.setTimeout(() => $('#welcomeStart')?.focus(), 160);
+  }
+
   function initHome() {
     if (!$('#homeExamTitle')) return;
     $$('.exam-tab').forEach(tab => tab.addEventListener('click', () => setExam(tab.dataset.exam)));
@@ -1125,6 +1148,7 @@
     syncAdminStudent(false);
     bindEvents();
     initAdminDashboard();
+    initWelcomeScreen();
     initHome();
     initIntensives();
     initNews();
