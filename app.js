@@ -11,7 +11,7 @@
   const defaultStudent = {
     first: '', last: '', phone: '', birth: '', city: 'دمشق', stage: 'بكالوريا علمي',
     bio: 'طالب في منصة نبض التفوق، أعمل على تنظيم رحلتي الدراسية والوصول إلى أهدافي.',
-    avatar: '', notifications: true, theme: 'dark', studentId: '', verificationRequested: false
+    avatar: '', notifications: true, theme: 'dark', studentId: '', gender: '', verificationRequested: false, verificationStatus: ''
   };
 
   function readStorage(key, fallback) {
@@ -32,6 +32,14 @@
   let postInteractions = storedInteractions && typeof storedInteractions === 'object' && !Array.isArray(storedInteractions) ? storedInteractions : {};
   let studyGallery = Array.isArray(storedGallery) ? storedGallery.slice(0, 12) : [];
   let gradeCalculator = storedGrade && typeof storedGrade === 'object' && !Array.isArray(storedGrade) ? storedGrade : {};
+  let adminStudents = readStorage('admin_students', []);
+  let verificationRequests = readStorage('verification_requests', []);
+  let supportTickets = readStorage('support_tickets', []);
+  let adminActivity = readStorage('admin_activity', []);
+  adminStudents = Array.isArray(adminStudents) ? adminStudents : [];
+  verificationRequests = Array.isArray(verificationRequests) ? verificationRequests : [];
+  supportTickets = Array.isArray(supportTickets) ? supportTickets : [];
+  adminActivity = Array.isArray(adminActivity) ? adminActivity : [];
   let customCountdown = readStorage('custom_countdown', {
     title: 'هدفي الخاص', target: new Date('2027-04-15T08:00:00').getTime()
   });
@@ -84,6 +92,57 @@
       student.studentId = String(Math.floor(1000000000 + Math.random() * 9000000000));
       saveState();
     }
+  }
+
+  function saveAdminState() {
+    try {
+      localStorage.setItem(STORE + 'admin_students', JSON.stringify(adminStudents.slice(0, 100)));
+      localStorage.setItem(STORE + 'verification_requests', JSON.stringify(verificationRequests.slice(0, 100)));
+      localStorage.setItem(STORE + 'support_tickets', JSON.stringify(supportTickets.slice(0, 100)));
+      localStorage.setItem(STORE + 'admin_activity', JSON.stringify(adminActivity.slice(0, 80)));
+      return true;
+    } catch (error) {
+      console.warn('تعذر حفظ بيانات الإشراف محليًا', error);
+      toast('تعذر حفظ بيانات الإشراف محليًا.');
+      return false;
+    }
+  }
+
+  function adminLog(type, title, detail = '') {
+    adminActivity.unshift({ id: `activity-${Date.now()}-${Math.random().toString(16).slice(2)}`, type, title, detail, createdAt: Date.now() });
+    adminActivity = adminActivity.slice(0, 80);
+    saveAdminState();
+  }
+
+  function studentSnapshot() {
+    ensureStudentId();
+    return {
+      id: student.studentId,
+      name: fullName(),
+      phone: student.phone || '—',
+      city: student.city || '—',
+      gender: student.gender || '',
+      stage: student.stage || '—',
+      birth: student.birth || '',
+      avatar: student.avatar || '',
+      updatedAt: Date.now()
+    };
+  }
+
+  function syncAdminStudent(logUpdate = false) {
+    if (!(student.first || student.last || student.phone || student.birth)) return;
+    const snapshot = studentSnapshot();
+    const index = adminStudents.findIndex(item => item.id === snapshot.id);
+    if (index >= 0) adminStudents[index] = { ...adminStudents[index], ...snapshot };
+    else adminStudents.unshift(snapshot);
+    if (logUpdate) adminLog('student', `تحديث ملف الطالب: ${snapshot.name}`, `${snapshot.city} · ${snapshot.stage}`);
+    else saveAdminState();
+  }
+
+  function displayAdminDate(timestamp) {
+    if (!timestamp) return '—';
+    try { return new Intl.DateTimeFormat('ar-SY', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(timestamp)); }
+    catch { return '—'; }
   }
 
   function toast(message) {
@@ -142,7 +201,7 @@
 
   function toggleSidebar(force) {
     const toggle = $('#sidebarToggle');
-    const mobile = window.matchMedia('(max-width: 820px)').matches;
+    const mobile = window.matchMedia('(max-width: 980px)').matches;
     if (mobile) {
       const shouldOpen = typeof force === 'boolean' ? force : !document.body.classList.contains('sidebar-open');
       document.body.classList.toggle('sidebar-open', shouldOpen);
@@ -186,7 +245,7 @@
         <nav class="side-nav compact">
           <a class="side-link ${PAGE === 'notifications' ? 'active' : ''}" href="notifications.html"><span class="nav-icon notify-nav"><i class="fa-regular fa-bell"></i></span><span>الإشعارات</span></a>
           <a class="side-link ${PAGE === 'about' ? 'active' : ''}" href="about.html"><span class="nav-icon about-nav"><i class="fa-solid fa-circle-info"></i></span><span>عن المنصة</span></a>
-          <a class="side-link ${PAGE === 'supervision' ? 'active' : ''}" href="supervision.html"><span class="nav-icon shield-nav"><i class="fa-solid fa-shield-halved"></i></span><span>بوابة الإشراف</span></a>
+          <a class="side-link ${PAGE === 'supervision' ? 'active' : ''}" href="admin-dashboard.html"><span class="nav-icon shield-nav"><i class="fa-solid fa-shield-halved"></i></span><span>بوابة الإشراف</span></a>
           <a class="side-link ${PAGE === 'privacy' ? 'active' : ''}" href="privacy.html"><span class="nav-icon lock-nav"><i class="fa-solid fa-lock"></i></span><span>الخصوصية والأمان</span></a>
         </nav>
         <a class="sidebar-edit-cta" href="profile.html"><i class="fa-solid fa-sliders"></i><span>${profileIncomplete() ? 'أكمل بياناتي' : 'تعديل بياناتي'}</span><i class="fa-solid fa-arrow-left"></i></a>`;
@@ -230,6 +289,7 @@
           <div class="form-group"><label>رقم الهاتف</label><input name="phone" type="tel" inputmode="tel" maxlength="20" value="${escapeHTML(student.phone)}"></div>
           <div class="form-group"><label>تاريخ الميلاد</label><input name="birth" type="date" value="${escapeHTML(student.birth)}"></div>
           <div class="form-group"><label>المنطقة</label><input name="city" maxlength="40" value="${escapeHTML(student.city)}"></div>
+          <div class="form-group"><label>الجنس</label><select name="gender"><option value="" ${!student.gender ? 'selected' : ''}>أفضل عدم التحديد</option><option value="ذكر" ${student.gender === 'ذكر' ? 'selected' : ''}>ذكر</option><option value="أنثى" ${student.gender === 'أنثى' ? 'selected' : ''}>أنثى</option></select></div>
           <div class="form-group"><label>المرحلة</label><select name="stage"><option ${student.stage === 'بكالوريا علمي' ? 'selected' : ''}>بكالوريا علمي</option><option ${student.stage === 'بكالوريا أدبي' ? 'selected' : ''}>بكالوريا أدبي</option><option ${student.stage === 'التاسع الأساسي' ? 'selected' : ''}>التاسع الأساسي</option></select></div>
           <div class="form-group full"><label>السيرة الذاتية</label><textarea name="bio" maxlength="240">${escapeHTML(student.bio)}</textarea></div>
         </div><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">حفظ التغييرات</button></div></form>`,
@@ -237,7 +297,7 @@
         <form id="customCountdownForm"><div class="form-group"><label>اسم الهدف</label><input name="title" required maxlength="34" value="${escapeHTML(customCountdown.title)}"></div><div class="form-group" style="margin-top:12px"><label>موعد الهدف</label><input name="target" type="datetime-local" required value="${formatDate(customCountdown.target)}"></div><p class="onboarding-note">يحفظ العداد على جهازك داخل المتصفح.</p><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">حفظ العداد</button></div></form>`,
       appGuide: `<div class="modal-head"><h3>شرح استخدام التطبيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-regular fa-circle-play"></i></div><h2>ابدأ بخطوات بسيطة</h2><p>من الرئيسية تابع عدادات الامتحان واستخدم الأدوات الدراسية. اختر «مخصص» لضبط هدفك وموعده.</p><p>في الملف الشخصي عدّل بياناتك وصورتك وإعداداتك، ثم استخدم مجتمع الأخبار لمشاركة الأخبار والصور والتفاعل باحترام.</p></div>`,
       contribute: `<div class="modal-head"><h3>ساهم في التطبيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-solid fa-hand-holding-heart"></i></div><h2>رأيك يصنع فرقًا</h2><p>شارك اقتراحاتك للأقسام والأدوات الدراسية التي ترغب برؤيتها في الإصدارات القادمة.</p></div>`,
-      contact: `<div class="modal-head"><h3>تواصل معنا</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-regular fa-comment-dots"></i></div><h2>نستمع لملاحظاتك</h2><p>استخدم القنوات الرسمية أو فريق الإشراف لإرسال الأسئلة والملاحظات الفنية المتعلقة بتجربة نبض التفوق.</p></div>`,
+      contact: `<div class="modal-head"><h3>تواصل مع الدعم</h3><button class="close-modal" aria-label="إغلاق">×</button></div><form id="supportForm"><div class="info-page"><div class="info-icon"><i class="fa-regular fa-comment-dots"></i></div><h2>كيف يمكننا مساعدتك؟</h2><p>اكتب رسالتك، وستظهر في صندوق الدعم داخل بوابة المشرفين على هذا المتصفح.</p><div class="form-group" style="text-align:right"><label>نوع الرسالة</label><select name="category"><option>مساعدة دراسية</option><option>مشكلة تقنية</option><option>اقتراح تطوير</option><option>استفسار عام</option></select></div><div class="form-group" style="text-align:right;margin-top:11px"><label>رسالتك</label><textarea name="message" required maxlength="700" placeholder="اكتب تفاصيل المساعدة التي تحتاجها..."></textarea></div><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">إرسال للدعم</button></div></div></form>`,
       verification: student.verificationRequested
         ? `<div class="modal-head"><h3>طلب شارة التوثيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-solid fa-circle-check"></i></div><h2>طلبك قيد المراجعة</h2><p>تم تسجيل طلب شارة التوثيق محليًا. ستظهر حالة الطلب في ملفك الشخصي داخل هذه النسخة التجريبية.</p></div>`
         : `<div class="modal-head"><h3>طلب شارة التوثيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><form id="verificationForm"><div class="info-page"><div class="info-icon"><i class="fa-solid fa-certificate"></i></div><h2>عرّف مجتمع نبض بحسابك</h2><p>سنراجع اكتمال بيانات ملفك الشخصي قبل اعتماد الطلب. هذه الواجهة تحفظ حالة الطلب محليًا في النسخة الثابتة.</p><div class="form-actions"><button type="button" class="outline-button close-modal">ليس الآن</button><button class="primary-button" type="submit">إرسال طلب التوثيق</button></div></div></form>`
@@ -264,10 +324,11 @@
     if (birth) birth.textContent = student.birth ? new Intl.DateTimeFormat('ar-SY', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(student.birth)) : '—';
     const completion = $('#completeProfile');
     if (completion) completion.classList.toggle('hidden', !profileIncomplete());
+    const verificationState = student.verificationStatus || (student.verificationRequested ? 'pending' : '');
     const verificationStatus = $('#verificationStatus');
-    if (verificationStatus) verificationStatus.classList.toggle('hidden', !student.verificationRequested);
+    if (verificationStatus) { verificationStatus.classList.toggle('hidden', !verificationState); verificationStatus.className = `verification-status ${verificationState || 'hidden'}`; verificationStatus.innerHTML = verificationState === 'approved' ? '<i class="fa-solid fa-circle-check"></i> الحساب موثّق' : verificationState === 'rejected' ? '<i class="fa-solid fa-circle-xmark"></i> راجع بيانات التوثيق' : '<i class="fa-solid fa-circle-check"></i> طلب التوثيق قيد المراجعة'; }
     const verificationButton = $('#verificationRequest');
-    if (verificationButton) { const title = $('.setting-copy strong', verificationButton); const detail = $('.setting-copy small', verificationButton); verificationButton.disabled = Boolean(student.verificationRequested); if (title) title.textContent = student.verificationRequested ? 'طلب التوثيق قيد المراجعة' : 'طلب شارة التوثيق'; if (detail) detail.textContent = student.verificationRequested ? 'تم إرسال طلبك وسيبقى ظاهرًا في ملفك' : 'راجع ملفك وأرسل الطلب للمراجعة'; }
+    if (verificationButton) { const title = $('.setting-copy strong', verificationButton); const detail = $('.setting-copy small', verificationButton); verificationButton.disabled = verificationState === 'pending' || verificationState === 'approved'; if (title) title.textContent = verificationState === 'approved' ? 'الحساب موثّق' : verificationState === 'pending' ? 'طلب التوثيق قيد المراجعة' : verificationState === 'rejected' ? 'إعادة طلب شارة التوثيق' : 'طلب شارة التوثيق'; if (detail) detail.textContent = verificationState === 'approved' ? 'تم اعتماد الشارة على هذا المتصفح' : verificationState === 'pending' ? 'تم إرسال طلبك وسيبقى ظاهرًا في ملفك' : verificationState === 'rejected' ? 'يمكنك مراجعة البيانات وإرسال طلب جديد' : 'راجع ملفك وأرسل الطلب للمراجعة'; }
     const notificationSwitch = $('#notificationsSwitch');
     if (notificationSwitch) notificationSwitch.checked = Boolean(student.notifications);
     setAvatar('profileAvatar', 'profile-avatar');
@@ -648,7 +709,7 @@
     home: { label: 'الذهاب إلى الرئيسية', href: 'index.html', icon: 'fa-solid fa-house' },
     notifications: { label: 'فتح الإشعارات', href: 'notifications.html', icon: 'fa-regular fa-bell' },
     privacy: { label: 'سياسة الخصوصية', href: 'privacy.html', icon: 'fa-solid fa-shield-halved' },
-    supervision: { label: 'بوابة الإشراف', href: 'supervision.html', icon: 'fa-solid fa-shield-halved' },
+    supervision: { label: 'بوابة الإشراف', href: 'admin-dashboard.html', icon: 'fa-solid fa-shield-halved' },
     about: { label: 'عن المنصة', href: 'about.html', icon: 'fa-solid fa-circle-info' }
   };
 
@@ -745,8 +806,10 @@
     const data = Object.fromEntries(new FormData(form).entries());
     student = { ...student, ...data, first: String(data.first || '').trim(), last: String(data.last || '').trim(), phone: String(data.phone || '').trim(), city: String(data.city || '').trim(), bio: String(data.bio || '').trim() || defaultStudent.bio };
     saveState();
+    syncAdminStudent(true);
     closeModal();
     updateProfileUI();
+    renderAdminDashboard();
     toast(profileIncomplete() ? 'تم حفظ البيانات. أكمل الحقول المتبقية متى شئت.' : 'تم حفظ بيانات الملف الشخصي.');
   }
 
@@ -762,11 +825,146 @@
     toast('تم حفظ العداد المخصص.');
   }
 
+  function submitVerificationRequest() {
+    syncAdminStudent(false);
+    const snapshot = studentSnapshot();
+    const existing = verificationRequests.find(request => request.studentId === snapshot.id && request.status === 'pending');
+    if (!existing) {
+      verificationRequests.unshift({ id: `verification-${Date.now()}`, studentId: snapshot.id, name: snapshot.name, phone: snapshot.phone, city: snapshot.city, gender: snapshot.gender, stage: snapshot.stage, status: 'pending', createdAt: Date.now() });
+      adminLog('verification', `طلب توثيق جديد: ${snapshot.name}`, `${snapshot.city} · ${snapshot.stage}`);
+    }
+    student.verificationRequested = true;
+    student.verificationStatus = 'pending';
+    saveState();
+    saveAdminState();
+    closeModal();
+    updateProfileUI();
+    renderAdminDashboard();
+    toast('تم إرسال طلب شارة التوثيق للمراجعة.');
+  }
+
+  function submitSupportRequest(form) {
+    const data = Object.fromEntries(new FormData(form).entries());
+    const message = String(data.message || '').trim();
+    if (!message) return toast('اكتب رسالتك قبل الإرسال.');
+    syncAdminStudent(false);
+    const snapshot = studentSnapshot();
+    supportTickets.unshift({ id: `support-${Date.now()}`, studentId: snapshot.id, name: snapshot.name, phone: snapshot.phone, city: snapshot.city, gender: snapshot.gender, category: String(data.category || 'استفسار عام'), message, status: 'open', createdAt: Date.now() });
+    adminLog('support', `رسالة دعم من ${snapshot.name}`, String(data.category || 'استفسار عام'));
+    saveAdminState();
+    closeModal();
+    renderAdminDashboard();
+    toast('تم إرسال رسالتك إلى صندوق الدعم.');
+  }
+
+  function adminAvatarMarkup(entry) {
+    if (entry.avatar) return `<img class="avatar" src="${escapeHTML(entry.avatar)}" alt="صورة ${escapeHTML(entry.name)}">`;
+    return `<span class="avatar">${escapeHTML(String(entry.name || 'ط').split(/\s+/).map(word => word[0]).join('').slice(0, 2))}</span>`;
+  }
+
+  function adminGenderMarkup(gender) {
+    if (gender === 'ذكر') return '<span class="admin-gender male"><i class="fa-solid fa-mars"></i> ذكر</span>';
+    if (gender === 'أنثى') return '<span class="admin-gender female"><i class="fa-solid fa-venus"></i> أنثى</span>';
+    return '<span class="admin-gender unspecified">غير محدد</span>';
+  }
+
+  function adminStatusMarkup(status) {
+    const labels = { pending: 'قيد المراجعة', approved: 'تم القبول', rejected: 'مرفوض', open: 'مفتوحة', resolved: 'تمت المعالجة' };
+    return `<span class="admin-status ${escapeHTML(status)}">${labels[status] || 'غير محدد'}</span>`;
+  }
+
+  function renderAdminDashboard() {
+    if (!$('#adminStudentCount')) return;
+    const pending = verificationRequests.filter(request => request.status === 'pending');
+    const open = supportTickets.filter(ticket => ticket.status === 'open');
+    $('#adminStudentCount').textContent = String(adminStudents.length);
+    $('#adminVerificationCount').textContent = String(pending.length);
+    $('#adminSupportCount').textContent = String(open.length);
+    $('#adminPostCount').textContent = String(posts.length);
+    const activities = $('#adminActivityList');
+    if (activities) activities.innerHTML = adminActivity.length ? adminActivity.slice(0, 7).map(item => `<div class="admin-activity"><i class="${item.type === 'verification' ? 'fa-solid fa-certificate' : item.type === 'support' ? 'fa-solid fa-headset' : item.type === 'content' ? 'fa-regular fa-newspaper' : 'fa-solid fa-user-pen'}"></i><div><b>${escapeHTML(item.title)}</b><span>${escapeHTML(item.detail || 'تحديث داخل المنصة')} · ${displayAdminDate(item.createdAt)}</span></div></div>`).join('') : '<div class="admin-empty">لا توجد أحداث إشرافية بعد. ستظهر هنا تحديثات ملفات الطلاب والطلبات والرسائل.</div>';
+    renderAdminStudents();
+    const verificationRows = $('#adminVerificationRows');
+    if (verificationRows) verificationRows.innerHTML = verificationRequests.length ? verificationRequests.map(request => `<article class="admin-request"><div class="admin-request-head"><div class="admin-request-person">${adminAvatarMarkup(request)}<div><b>${escapeHTML(request.name)}</b><small>${displayAdminDate(request.createdAt)}</small></div></div>${adminStatusMarkup(request.status)}</div><div class="admin-request-body"><span class="admin-detail-chip"><i class="fa-solid fa-phone"></i> ${escapeHTML(request.phone)}</span><span class="admin-detail-chip"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(request.city)}</span><span class="admin-detail-chip">${escapeHTML(request.gender || 'الجنس غير محدد')}</span><span class="admin-detail-chip">${escapeHTML(request.stage)}</span></div>${request.status === 'pending' ? `<div class="admin-request-actions"><button class="admin-approve" type="button" data-admin-action="verification-approve" data-admin-id="${escapeHTML(request.id)}"><i class="fa-solid fa-check"></i> قبول</button><button class="admin-reject" type="button" data-admin-action="verification-reject" data-admin-id="${escapeHTML(request.id)}"><i class="fa-solid fa-xmark"></i> رفض</button></div>` : ''}</article>`).join('') : '<div class="admin-empty">لا توجد طلبات توثيق حتى الآن.</div>';
+    const supportRows = $('#adminSupportRows');
+    if (supportRows) supportRows.innerHTML = supportTickets.length ? supportTickets.map(ticket => `<article class="admin-request"><div class="admin-request-head"><div class="admin-request-person">${adminAvatarMarkup(ticket)}<div><b>${escapeHTML(ticket.name)}</b><small>${escapeHTML(ticket.category)} · ${displayAdminDate(ticket.createdAt)}</small></div></div>${adminStatusMarkup(ticket.status)}</div><div class="admin-request-body"><span class="admin-detail-chip"><i class="fa-solid fa-phone"></i> ${escapeHTML(ticket.phone)}</span><span class="admin-detail-chip"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(ticket.city)}</span></div><p class="admin-request-message">${escapeHTML(ticket.message)}</p>${ticket.status === 'open' ? `<div class="admin-request-actions"><button class="admin-resolve" type="button" data-admin-action="support-resolve" data-admin-id="${escapeHTML(ticket.id)}"><i class="fa-solid fa-check"></i> تم الرد والمعالجة</button></div>` : ''}</article>`).join('') : '<div class="admin-empty">صندوق الدعم هادئ حاليًا، وستظهر الرسائل الجديدة هنا.</div>';
+    const postRows = $('#adminPostRows');
+    if (postRows) postRows.innerHTML = posts.length ? posts.map(post => `<article class="admin-post"><header><div><b>${escapeHTML(post.name || 'طالب')}</b><small>${escapeHTML(post.meta || 'منشور دراسي')} · ${displayAdminDate(post.createdAt || Date.now())}</small></div>${post.mine ? '<span class="admin-status open">منشور الطالب</span>' : ''}</header><p>${escapeHTML(post.text || 'منشور مرفق بصور دراسية')}</p><button type="button" data-admin-action="post-remove" data-admin-id="${escapeHTML(post.id)}"><i class="fa-solid fa-trash"></i> إزالة من العرض المحلي</button></article>`).join('') : '<div class="admin-empty">لا توجد منشورات محلية يحتاج المشرف إلى مراجعتها.</div>';
+  }
+
+  function renderAdminStudents(query = '') {
+    const rows = $('#adminStudentsRows');
+    if (!rows) return;
+    const normalized = String(query).trim();
+    const visible = adminStudents.filter(entry => `${entry.name} ${entry.phone} ${entry.city} ${entry.studentId || entry.id}`.includes(normalized));
+    rows.innerHTML = visible.length ? visible.map(entry => `<tr><td><div class="admin-student-cell">${adminAvatarMarkup(entry)}<span><b>${escapeHTML(entry.name)}</b><small>معرّف: ${escapeHTML(entry.id)}</small></span></div></td><td>${escapeHTML(entry.phone)}</td><td>${escapeHTML(entry.city)}</td><td>${adminGenderMarkup(entry.gender)}</td><td>${escapeHTML(entry.stage)}</td><td>${displayAdminDate(entry.updatedAt)}</td><td><div class="admin-row-actions"><button type="button" title="حذف من السجل المحلي" data-admin-action="student-remove" data-admin-id="${escapeHTML(entry.id)}"><i class="fa-solid fa-trash"></i></button></div></td></tr>`).join('') : '<tr><td colspan="7"><div class="admin-empty">لا توجد بيانات مطابقة للبحث.</div></td></tr>';
+  }
+
+  function handleAdminAction(button) {
+    const action = button.dataset.adminAction;
+    const id = button.dataset.adminId;
+    if (action === 'verification-approve' || action === 'verification-reject') {
+      const request = verificationRequests.find(item => item.id === id);
+      if (!request) return;
+      request.status = action === 'verification-approve' ? 'approved' : 'rejected';
+      if (request.studentId === student.studentId) {
+        student.verificationStatus = request.status;
+        student.verificationRequested = request.status === 'pending';
+        saveState();
+        updateProfileUI();
+      }
+      adminLog('verification', `${request.status === 'approved' ? 'قبول' : 'رفض'} طلب توثيق: ${request.name}`, request.city);
+      toast(request.status === 'approved' ? 'تم قبول طلب التوثيق محليًا.' : 'تم رفض طلب التوثيق محليًا.');
+    }
+    if (action === 'support-resolve') {
+      const ticket = supportTickets.find(item => item.id === id);
+      if (!ticket) return;
+      ticket.status = 'resolved';
+      adminLog('support', `إغلاق رسالة دعم: ${ticket.name}`, ticket.category);
+      toast('تم وضع رسالة الدعم كمعالجة.');
+    }
+    if (action === 'post-remove') {
+      const index = posts.findIndex(post => post.id === id);
+      if (index < 0) return;
+      const [removed] = posts.splice(index, 1);
+      saveState();
+      adminLog('content', `إزالة منشور: ${removed.name || 'طالب'}`, 'إزالة محلية من لوحة الإشراف');
+      toast('تمت إزالة المنشور من العرض المحلي.');
+    }
+    if (action === 'student-remove') {
+      adminStudents = adminStudents.filter(entry => entry.id !== id);
+      verificationRequests = verificationRequests.filter(request => request.studentId !== id);
+      supportTickets = supportTickets.filter(ticket => ticket.studentId !== id);
+      adminLog('student', 'إزالة سجل طالب', 'تم حذف السجل من بوابة هذا المتصفح فقط.');
+      toast('تمت إزالة سجل الطالب المحلي.');
+    }
+    if (action === 'clear-activity') { adminActivity = []; saveAdminState(); toast('تم تنظيف سجل النشاط.'); }
+    if (action === 'export') {
+      const report = { generatedAt: new Date().toISOString(), students: adminStudents, verificationRequests, supportTickets, posts };
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'nabd-supervision-export.json'; anchor.click(); URL.revokeObjectURL(url);
+      toast('تم تصدير ملخص الإشراف بصيغة JSON.');
+    }
+    saveAdminState();
+    renderAdminDashboard();
+  }
+
+  function initAdminDashboard() {
+    if (!$('#adminStudentCount')) return;
+    syncAdminStudent(false);
+    renderAdminDashboard();
+    $$('.admin-tab').forEach(tab => tab.addEventListener('click', () => { $$('.admin-tab').forEach(item => item.classList.toggle('active', item === tab)); $$('.admin-pane').forEach(pane => pane.classList.toggle('active', pane.dataset.adminPane === tab.dataset.adminTab)); }));
+    $('#adminStudentSearch')?.addEventListener('input', event => renderAdminStudents(event.target.value));
+  }
+
   function bindEvents() {
     document.addEventListener('click', event => {
       if (event.target.closest('.close-modal') || event.target.id === 'modalBackdrop') closeModal();
       const modalButton = event.target.closest('[data-modal]');
       if (modalButton) openNamedModal(modalButton.dataset.modal);
+      const adminButton = event.target.closest('[data-admin-action]');
+      if (adminButton) handleAdminAction(adminButton);
       if (event.target.closest('#openEditProfile, #editProfileSmall, #completeProfile, #profileDataUpdate')) openNamedModal('edit');
       if (event.target.closest('#verificationRequest')) { if (profileIncomplete()) { toast('أكمل بيانات الملف الشخصي قبل طلب التوثيق.'); openNamedModal('edit'); } else openNamedModal('verification'); }
       if (event.target.closest('#sharePlatform')) sharePlatform();
@@ -800,7 +998,8 @@
     document.addEventListener('submit', event => {
       if (event.target.id === 'editForm') { event.preventDefault(); handleProfileSave(event.target); }
       if (event.target.id === 'customCountdownForm') { event.preventDefault(); handleCountdownSave(event.target); }
-      if (event.target.id === 'verificationForm') { event.preventDefault(); student.verificationRequested = true; saveState(); closeModal(); updateProfileUI(); toast('تم إرسال طلب شارة التوثيق للمراجعة.'); }
+      if (event.target.id === 'verificationForm') { event.preventDefault(); submitVerificationRequest(); }
+      if (event.target.id === 'supportForm') { event.preventDefault(); submitSupportRequest(event.target); }
       if (event.target.matches('.comment-form')) { event.preventDefault(); addComment(event.target); }
     });
 
@@ -810,7 +1009,7 @@
       if (!file.type.startsWith('image/')) return toast('اختر ملف صورة صالحًا.');
       if (file.size > 700 * 1024) return toast('اختر صورة أصغر من 700 كيلوبايت للحفظ المحلي.');
       const reader = new FileReader();
-      reader.onload = () => { student.avatar = reader.result; saveState(); updateProfileUI(); toast('تم تحديث صورة الملف الشخصي.'); };
+      reader.onload = () => { student.avatar = reader.result; saveState(); syncAdminStudent(true); updateProfileUI(); renderAdminDashboard(); toast('تم تحديث صورة الملف الشخصي.'); };
       reader.readAsDataURL(file);
     });
     $('#themeSwitch')?.addEventListener('change', event => applyTheme(event.target.checked ? 'dark' : 'light'));
@@ -823,7 +1022,9 @@
     renderTopActions();
     applyTheme(student.theme, false);
     updateProfileUI();
+    syncAdminStudent(false);
     bindEvents();
+    initAdminDashboard();
     initHome();
     initIntensives();
     initNews();
