@@ -283,6 +283,10 @@
     }
   }
 
+  function verifiedBadgeMarkup(verified = false) {
+    return verified ? '<span class="verified-badge" role="img" aria-label="حساب موثّق" title="حساب موثّق"><i class="fa-solid fa-check"></i></span>' : '';
+  }
+
   function renderShell() {
     const sidebar = $('#desktopSidebar');
     if (sidebar) {
@@ -291,7 +295,7 @@
         : `${escapeHTML(student.stage)} · ${escapeHTML(student.city)}`;
       sidebar.innerHTML = `
         <div class="sidebar-brand"><img src="assets/nabd-logo.jpg" alt="شعار نبض التفوق" decoding="async"><div><b>نبض التفوق</b><span>منصتك نحو التميز</span></div><i class="fa-solid fa-sparkles"></i></div>
-        <div class="sidebar-student"><div class="sidebar-avatar-wrap">${avatarMarkup('sidebar-avatar')}<span class="online-ring"></span></div><div><strong>${escapeHTML(fullName())}</strong><span>${studentSubtitle}</span></div><a class="quick-edit" href="profile.html" title="تعديل الملف"><i class="fa-solid fa-pen"></i></a></div>
+        <div class="sidebar-student"><div class="sidebar-avatar-wrap">${avatarMarkup('sidebar-avatar')}<span class="online-ring"></span></div><div><strong>${escapeHTML(fullName())}${verifiedBadgeMarkup(student.verificationStatus === 'approved')}</strong><span>${studentSubtitle}</span></div><a class="quick-edit" href="profile.html" title="تعديل الملف"><i class="fa-solid fa-pen"></i></a></div>
         <div class="sidebar-overview"><div><span>مسار التفوق</span><b>${profileIncomplete() ? 'أكمل ملفك أولًا' : 'ملفك جاهز للانطلاق'}</b></div><div class="sidebar-meter"><i style="width:${profileIncomplete() ? '38' : '82'}%"></i></div><small>${profileIncomplete() ? '38' : '82'}% من إعداد الحساب</small></div>
         <div class="sidebar-label">التنقل الرئيسي</div>
         <nav class="side-nav">
@@ -377,6 +381,8 @@
       homeGreeting: `أهلاً ${student.first || 'بك'}، لنصنع يومًا دراسيًا رائعًا`
     };
     Object.entries(values).forEach(([id, text]) => { const element = $('#' + id); if (element) element.textContent = text; });
+    const profileName = $('#profileName');
+    if (profileName) profileName.innerHTML = `${escapeHTML(fullName())}${verifiedBadgeMarkup(student.verificationStatus === 'approved')}`;
     const stage = $('#profileStage');
     if (stage) stage.innerHTML = `<i class="fa-solid fa-graduation-cap"></i> ${escapeHTML(student.stage)}`;
     const birth = $('#profileBirth');
@@ -499,11 +505,12 @@
   function postTemplate(rawPost) {
     const post = enrichedPost(rawPost);
     const avatar = rawPost.mine ? avatarMarkup() : `<span class="avatar">${escapeHTML((post.name || 'ط')[0])}</span>`;
+    const verified = Boolean(post.verified || (rawPost.mine && student.verificationStatus === 'approved'));
     const images = (post.images || []).length
       ? `<div class="post-images ${(post.images || []).length > 1 ? 'multiple' : ''}">${post.images.map(src => `<img loading="lazy" src="${src}" alt="صورة مرفقة بالمنشور">`).join('')}</div><div class="post-media-indicator">${post.images.length > 1 ? `<i class="fa-solid fa-images"></i> اسحب لمشاهدة الصور ${post.images.length}` : ''}</div>`
       : '';
-    const comments = post.comments.map(comment => `<div class="comment"><b>${escapeHTML(comment.name)}</b><br>${escapeHTML(comment.text)}</div>`).join('');
-    return `<article class="post" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong>${escapeHTML(post.name)}</strong><span>${escapeHTML(post.meta || `${student.stage} · ${student.city}`)} · الآن</span></div><button class="post-menu" type="button" aria-label="المزيد"><i class="fa-solid fa-ellipsis"></i></button></div><p class="post-content">${escapeHTML(post.text)}</p>${images}<div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
+    const comments = post.comments.map(comment => `<div class="comment"><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(Boolean(comment.verified))}</b><br>${escapeHTML(comment.text)}</div>`).join('');
+    return `<article class="post" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong>${escapeHTML(post.name)}${verifiedBadgeMarkup(verified)}</strong><span>${escapeHTML(post.meta || `${student.stage} · ${student.city}`)} · الآن</span></div><button class="post-menu" type="button" aria-label="المزيد"><i class="fa-solid fa-ellipsis"></i></button></div><p class="post-content">${escapeHTML(post.text)}</p>${images}<div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
   }
 
   function renderFeed() {
@@ -536,7 +543,7 @@
     const text = $('#postText')?.value.trim() || '';
     if (!text && !uploadImages.length) return toast('اكتب الخبر أو أرفق صورة قبل النشر.');
     if (text.length > 1200) return toast('يرجى اختصار الخبر إلى 1200 حرف أو أقل.');
-    const draft = { id: `post-${Date.now()}`, name: fullName(), meta: `${student.stage} · ${student.city}`, text, images: [...uploadImages], likes: 0, comments: [], mine: true };
+    const draft = { id: `post-${Date.now()}`, name: fullName(), meta: `${student.stage} · ${student.city}`, text, images: [...uploadImages], likes: 0, comments: [], mine: true, verified: student.verificationStatus === 'approved' };
     posts.unshift(draft);
     if (!saveState()) { posts.shift(); return; }
     uploadImages = [];
@@ -580,7 +587,7 @@
     const input = $('input', form);
     const text = input?.value.trim();
     if (!post || !text) return;
-    const comment = { name: fullName(), text };
+    const comment = { name: fullName(), text, verified: student.verificationStatus === 'approved' };
     if (posts.some(item => item.id === postId)) {
       post.comments = [...(post.comments || []), comment];
     } else {
