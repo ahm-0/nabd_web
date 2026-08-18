@@ -319,6 +319,33 @@
     window.addEventListener('pagehide', () => window.clearInterval(timer), { once: true });
   }
 
+  function initIntensives() {
+    const track = $('#intensiveTrack');
+    if (!track) return;
+    let active = false;
+    let moved = false;
+    let startX = 0;
+    let startScroll = 0;
+    track.addEventListener('pointerdown', event => {
+      active = true;
+      moved = false;
+      startX = event.clientX;
+      startScroll = track.scrollLeft;
+      track.classList.add('is-dragging');
+      track.setPointerCapture?.(event.pointerId);
+    });
+    track.addEventListener('pointermove', event => {
+      if (!active) return;
+      const distance = event.clientX - startX;
+      if (Math.abs(distance) > 5) moved = true;
+      track.scrollLeft = startScroll - distance;
+    });
+    const endDrag = () => { active = false; track.classList.remove('is-dragging'); };
+    track.addEventListener('pointerup', endDrag);
+    track.addEventListener('pointercancel', endDrag);
+    track.addEventListener('click', event => { if (moved) { event.preventDefault(); event.stopPropagation(); } }, true);
+  }
+
   const seedPosts = [
     { id: 'sample-1', name: 'سارة الحلبي', meta: 'بكالوريا علمي · حلب', text: 'تم نشر برنامج المراجعة المكثفة لمادة الفيزياء في المدرسة، بالتوفيق للجميع في التحضير للامتحانات.', likes: 24, comments: [{ name: 'محمد', text: 'شكرًا على المشاركة، خبر مفيد جدًا.' }], images: [] },
     { id: 'sample-2', name: 'ياسر الدمشقي', meta: 'التاسع الأساسي · دمشق', text: 'شاركتكم صورًا من معرض المشاريع العلمية اليوم. كانت تجربة ملهمة ومليئة بالأفكار الجديدة.', likes: 38, comments: [], images: ['https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1000&q=80', 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1000&q=80'] }
@@ -458,6 +485,13 @@
     catch { return value; }
   }
 
+  function orderedGallery() {
+    const mode = $('#gallerySort')?.value || 'newest';
+    const items = [...studyGallery];
+    if (mode === 'manual') return items;
+    return items.sort((first, second) => mode === 'oldest' ? first.date.localeCompare(second.date) : second.date.localeCompare(first.date));
+  }
+
   function renderGallery() {
     const gallery = $('#studyGallery');
     const count = $('#galleryCount');
@@ -467,8 +501,8 @@
       gallery.innerHTML = '<div class="gallery-empty"><i class="fa-regular fa-images"></i><b>ألبومك الدراسي جاهز</b><span>ارفع صور ملخصاتك أو لوحاتك، وستظهر مرتبة حسب اليوم هنا.</span></div>';
       return;
     }
-    const grouped = studyGallery.reduce((groups, photo) => { (groups[photo.date] ||= []).push(photo); return groups; }, {});
-    gallery.innerHTML = Object.entries(grouped).sort(([a], [b]) => b.localeCompare(a)).map(([date, photos]) => `<section class="gallery-day"><header><div><i class="fa-regular fa-calendar"></i><b>${galleryDateLabel(date)}</b></div><span>${photos.length} صور</span></header><div class="gallery-grid">${photos.map(photo => `<article class="study-photo"><button type="button" class="gallery-image-open" data-gallery-image="${photo.id}" title="عرض الصورة بالحجم الكامل"><img loading="lazy" src="${photo.src}" alt="صورة دراسية بتاريخ ${escapeHTML(date)}"></button><button type="button" class="gallery-image-remove" data-gallery-remove="${photo.id}" title="حذف الصورة"><i class="fa-solid fa-xmark"></i></button></article>`).join('')}</div></section>`).join('');
+    const grouped = orderedGallery().reduce((groups, photo) => { (groups[photo.date] ||= []).push(photo); return groups; }, {});
+    gallery.innerHTML = Object.entries(grouped).map(([date, photos]) => `<section class="gallery-day"><header><div><i class="fa-regular fa-calendar"></i><b>${galleryDateLabel(date)}</b></div><span>${photos.length} صور</span></header><div class="gallery-grid">${photos.map(photo => `<article class="study-photo"><button type="button" class="gallery-image-open" data-gallery-image="${photo.id}" title="عرض الصورة بالحجم الكامل"><img loading="lazy" src="${photo.src}" alt="صورة دراسية بتاريخ ${escapeHTML(date)}"></button><div class="gallery-image-actions"><button type="button" data-gallery-move="${photo.id}" data-direction="up" title="تقديم الصورة"><i class="fa-solid fa-arrow-up"></i></button><button type="button" data-gallery-move="${photo.id}" data-direction="down" title="تأخير الصورة"><i class="fa-solid fa-arrow-down"></i></button><button type="button" class="gallery-image-remove" data-gallery-remove="${photo.id}" title="حذف الصورة"><i class="fa-solid fa-xmark"></i></button></div></article>`).join('')}</div></section>`).join('');
   }
 
   function openGalleryImage(id) {
@@ -484,12 +518,28 @@
     toast('تم حذف الصورة من الأرشيف.');
   }
 
+  function moveGalleryImage(id, direction) {
+    const index = studyGallery.findIndex(photo => photo.id === id);
+    if (index < 0) return;
+    const date = studyGallery[index].date;
+    const target = direction === 'up'
+      ? [...studyGallery.keys()].slice(0, index).reverse().find(position => studyGallery[position].date === date)
+      : [...studyGallery.keys()].slice(index + 1).find(position => studyGallery[position].date === date);
+    if (target === undefined) return toast(direction === 'up' ? 'هذه الصورة في أول ترتيب يومها.' : 'هذه الصورة في آخر ترتيب يومها.');
+    [studyGallery[index], studyGallery[target]] = [studyGallery[target], studyGallery[index]];
+    const sorter = $('#gallerySort');
+    if (sorter) sorter.value = 'manual';
+    saveGallery();
+    renderGallery();
+  }
+
   function initGallery() {
     const upload = $('#galleryUpload');
     if (!upload) return;
     const date = $('#galleryDate');
     if (date && !date.value) date.value = dateInputValue();
     renderGallery();
+    $('#gallerySort')?.addEventListener('change', renderGallery);
     upload.addEventListener('change', event => {
       const files = [...event.target.files].slice(0, 4);
       if (!files.length) return;
@@ -516,9 +566,15 @@
   }
 
   const gradeCurricula = {
-    nine: { title: 'مواد التاسع الأساسي', label: 'التاسع الأساسي', subjects: ['اللغة العربية', 'اللغة الإنكليزية', 'الرياضيات', 'العلوم', 'الفيزياء', 'الكيمياء', 'الاجتماعيات', 'التربية الإسلامية', 'اللغة الفرنسية'] },
-    science: { title: 'مواد البكالوريا العلمي', label: 'بكالوريا علمي', subjects: ['اللغة العربية', 'اللغة الإنكليزية', 'الرياضيات', 'الفيزياء', 'الكيمياء', 'العلوم', 'التربية الإسلامية', 'اللغة الفرنسية'] },
-    literary: { title: 'مواد البكالوريا الأدبي', label: 'بكالوريا أدبي', subjects: ['اللغة العربية', 'اللغة الإنكليزية', 'الفلسفة', 'التاريخ', 'الجغرافيا', 'الاقتصاد', 'التربية الإسلامية', 'اللغة الفرنسية'] }
+    nine: { title: 'مواد التاسع الأساسي', label: 'التاسع الأساسي', subjects: [
+      { name: 'اللغة العربية', max: 600, pass: 300 }, { name: 'الاجتماعيات', max: 600, pass: 240 }, { name: 'العلوم العامة', max: 400, pass: 120 }, { name: 'الرياضيات', max: 600, pass: 240 }, { name: 'التربية الإسلامية', max: 200, pass: 80 }, { name: 'اللغة الإنكليزية', max: 400, pass: 160 }, { name: 'اللغة الفرنسية', max: 400, pass: 160 }
+    ] },
+    science: { title: 'مواد البكالوريا العلمي', label: 'بكالوريا علمي', subjects: [
+      { name: 'اللغة العربية', max: 400, pass: 160 }, { name: 'الرياضيات', max: 600, pass: 240 }, { name: 'العلوم', max: 300, pass: 120 }, { name: 'التربية الإسلامية', max: 200, pass: 80 }, { name: 'الكيمياء', max: 200, pass: 80 }, { name: 'الفيزياء', max: 400, pass: 160 }, { name: 'اللغة الإنكليزية', max: 300, pass: 120 }, { name: 'اللغة الفرنسية', max: 300, pass: 120 }
+    ] },
+    literary: { title: 'مواد البكالوريا الأدبي', label: 'بكالوريا أدبي', subjects: [
+      { name: 'اللغة العربية', max: 600, pass: 300 }, { name: 'التربية الإسلامية', max: 200, pass: 80 }, { name: 'اللغة الإنكليزية', max: 400, pass: 160 }, { name: 'التاريخ', max: 200, pass: 80 }, { name: 'الجغرافيا', max: 200, pass: 80 }, { name: 'الفلسفة', max: 200, pass: 80 }, { name: 'اللغة الفرنسية', max: 400, pass: 160 }
+    ] }
   };
 
   function defaultGradeStage() {
@@ -540,19 +596,22 @@
     const count = $('#gradeSubjectCount');
     if (title) title.textContent = curriculum.title;
     if (count) count.textContent = `${curriculum.subjects.length} مواد`;
-    container.innerHTML = curriculum.subjects.map((subject, index) => `<label class="grade-subject"><span><b>${escapeHTML(subject)}</b><small>العلامة من 100</small></span><input class="grade-input" data-subject="${escapeHTML(subject)}" type="number" inputmode="decimal" min="0" max="100" step="0.01" placeholder="—" value="${gradeCalculator.marks[subject] ?? ''}"><i>${String(index + 1).padStart(2, '0')}</i></label>`).join('');
+    container.innerHTML = curriculum.subjects.map((subject, index) => `<label class="grade-subject"><span><b>${escapeHTML(subject.name)}</b><small>التامة ${subject.max} · حد الكسر ${subject.pass}</small></span><input class="grade-input" data-subject="${escapeHTML(subject.name)}" data-max="${subject.max}" data-pass="${subject.pass}" type="number" inputmode="decimal" min="0" max="${subject.max}" step="0.01" placeholder="/ ${subject.max}" value="${gradeCalculator.marks[subject.name] ?? ''}"><i>${String(index + 1).padStart(2, '0')}</i></label>`).join('');
   }
 
   function calculateGrade() {
     const inputs = $$('.grade-input');
-    const values = inputs.map(input => ({ subject: input.dataset.subject, raw: input.value.trim(), value: Number(input.value) })).filter(item => item.raw !== '' && Number.isFinite(item.value) && item.value >= 0 && item.value <= 100);
+    const values = inputs.map(input => ({ subject: input.dataset.subject, raw: input.value.trim(), value: Number(input.value), max: Number(input.dataset.max), pass: Number(input.dataset.pass) })).filter(item => item.raw !== '' && Number.isFinite(item.value) && item.value >= 0 && item.value <= item.max);
     if (!values.length) return toast('أدخل علامة مادة واحدة على الأقل لعرض المعدل.');
-    const average = values.reduce((sum, item) => sum + item.value, 0) / values.length;
+    const totalScore = values.reduce((sum, item) => sum + item.value, 0);
+    const totalMax = values.reduce((sum, item) => sum + item.max, 0);
+    const average = (totalScore / totalMax) * 100;
+    const passedSubjects = values.filter(item => item.value >= item.pass).length;
     const result = $('#gradeResult');
     if (!result) return;
     const resultClass = average >= 85 ? 'excellent' : average >= 65 ? 'good' : average >= 50 ? 'pass' : 'needs-work';
     result.className = `grade-result panel ${resultClass}`;
-    result.innerHTML = `<div class="grade-result-icon"><i class="fa-solid fa-chart-line"></i></div><div><span>معدلك التقريبي</span><b>${average.toFixed(2)}<small> / 100</small></b><p>تم الحساب من ${values.length} مواد مدخلة بالتساوي. أضف بقية العلامات للحصول على نتيجة أدق.</p></div><div class="grade-result-tag">${average >= 85 ? 'ممتاز' : average >= 65 ? 'جيد' : average >= 50 ? 'مقبول' : 'بحاجة إلى تحسين'}</div>`;
+    result.innerHTML = `<div class="grade-result-icon"><i class="fa-solid fa-chart-line"></i></div><div><span>نسبتك المئوية التقريبية</span><b>${average.toFixed(2)}<small> / 100</small></b><p>مجموعك الحالي ${totalScore.toFixed(0)} من ${totalMax.toFixed(0)} عبر ${values.length} مواد، وقد تجاوزت حد الكسر في ${passedSubjects} مواد.</p></div><div class="grade-result-tag">${average >= 85 ? 'ممتاز' : average >= 65 ? 'جيد' : average >= 50 ? 'مقبول' : 'بحاجة إلى تحسين'}</div>`;
     gradeCalculator.marks = Object.fromEntries(inputs.map(input => [input.dataset.subject, input.value]));
     gradeCalculator.lastAverage = average;
     saveGradeCalculator();
@@ -708,6 +767,8 @@
       if (galleryOpen) openGalleryImage(galleryOpen.dataset.galleryImage);
       const galleryRemove = event.target.closest('[data-gallery-remove]');
       if (galleryRemove) removeGalleryImage(galleryRemove.dataset.galleryRemove);
+      const galleryMove = event.target.closest('[data-gallery-move]');
+      if (galleryMove) moveGalleryImage(galleryMove.dataset.galleryMove, galleryMove.dataset.direction);
       const demo = event.target.closest('[data-demo]');
       if (demo) toast(demo.dataset.demo);
 
@@ -753,6 +814,7 @@
     updateProfileUI();
     bindEvents();
     initHome();
+    initIntensives();
     initNews();
     initGallery();
     initCalculator();
