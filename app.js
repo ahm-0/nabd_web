@@ -11,7 +11,7 @@
   const defaultStudent = {
     first: '', last: '', phone: '', birth: '', city: 'دمشق', stage: 'بكالوريا علمي',
     bio: 'طالب في منصة نبض التفوق، أعمل على تنظيم رحلتي الدراسية والوصول إلى أهدافي.',
-    avatar: '', notifications: true, theme: 'dark', studentId: ''
+    avatar: '', notifications: true, theme: 'dark', studentId: '', verificationRequested: false
   };
 
   function readStorage(key, fallback) {
@@ -31,6 +31,7 @@
   let uploadImages = [];
   let activeChatId = null;
   let activeExam = 'bac';
+  let activeFeedFilter = 'all';
   const openComments = new Set();
 
   const escapeHTML = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
@@ -111,6 +112,23 @@
     });
   }
 
+  function renderTopActions() {
+    const actions = $('.top-actions');
+    if (!actions || $('#sharePlatform')) return;
+    actions.insertAdjacentHTML('afterbegin', '<button class="icon-button share-platform" id="sharePlatform" type="button" title="مشاركة المنصة" aria-label="مشاركة المنصة"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>');
+  }
+
+  async function sharePlatform() {
+    const url = location.href;
+    try {
+      if (navigator.share) await navigator.share({ title: 'نبض التفوق', text: 'منصة نبض التفوق التعليمية', url });
+      else if (navigator.clipboard) { await navigator.clipboard.writeText(url); toast('تم نسخ رابط المنصة.'); }
+      else toast('ميزة المشاركة متاحة عند نشر التطبيق على الهاتف.');
+    } catch (error) {
+      if (error.name !== 'AbortError') toast('تعذر تنفيذ المشاركة حاليًا.');
+    }
+  }
+
   function renderShell() {
     const sidebar = $('#desktopSidebar');
     if (sidebar) {
@@ -120,6 +138,7 @@
       sidebar.innerHTML = `
         <div class="sidebar-brand"><img src="assets/nabd-logo.jpg" alt="شعار نبض التفوق" decoding="async"><div><b>نبض التفوق</b><span>منصتك نحو التميز</span></div><i class="fa-solid fa-sparkles"></i></div>
         <div class="sidebar-student"><div class="sidebar-avatar-wrap">${avatarMarkup('sidebar-avatar')}<span class="online-ring"></span></div><div><strong>${escapeHTML(fullName())}</strong><span>${studentSubtitle}</span></div><a class="quick-edit" href="profile.html" title="تعديل الملف"><i class="fa-solid fa-pen"></i></a></div>
+        <div class="sidebar-overview"><div><span>مسار التفوق</span><b>${profileIncomplete() ? 'أكمل ملفك أولًا' : 'ملفك جاهز للانطلاق'}</b></div><div class="sidebar-meter"><i style="width:${profileIncomplete() ? '38' : '82'}%"></i></div><small>${profileIncomplete() ? '38' : '82'}% من إعداد الحساب</small></div>
         <div class="sidebar-label">التنقل الرئيسي</div>
         <nav class="side-nav">
           <a class="side-link ${PAGE === 'home' ? 'active' : ''}" href="index.html"><span class="nav-icon home-nav"><i class="fa-solid fa-house"></i></span><span>الرئيسية</span></a>
@@ -182,7 +201,10 @@
         <form id="customCountdownForm"><div class="form-group"><label>اسم الهدف</label><input name="title" required maxlength="34" value="${escapeHTML(customCountdown.title)}"></div><div class="form-group" style="margin-top:12px"><label>موعد الهدف</label><input name="target" type="datetime-local" required value="${formatDate(customCountdown.target)}"></div><p class="onboarding-note">يحفظ العداد على جهازك داخل المتصفح.</p><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">حفظ العداد</button></div></form>`,
       appGuide: `<div class="modal-head"><h3>شرح استخدام التطبيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-regular fa-circle-play"></i></div><h2>ابدأ بخطوات بسيطة</h2><p>من الرئيسية تابع عدادات الامتحان واستخدم الأدوات الدراسية. اختر «مخصص» لضبط هدفك وموعده.</p><p>في الملف الشخصي عدّل بياناتك وصورتك وإعداداتك، ثم استخدم مجتمع الأخبار لمشاركة الأخبار والصور والتفاعل باحترام.</p></div>`,
       contribute: `<div class="modal-head"><h3>ساهم في التطبيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-solid fa-hand-holding-heart"></i></div><h2>رأيك يصنع فرقًا</h2><p>شارك اقتراحاتك للأقسام والأدوات الدراسية التي ترغب برؤيتها في الإصدارات القادمة.</p></div>`,
-      contact: `<div class="modal-head"><h3>تواصل معنا</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-regular fa-comment-dots"></i></div><h2>نستمع لملاحظاتك</h2><p>استخدم القنوات الرسمية أو فريق الإشراف لإرسال الأسئلة والملاحظات الفنية المتعلقة بتجربة نبض التفوق.</p></div>`
+      contact: `<div class="modal-head"><h3>تواصل معنا</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-regular fa-comment-dots"></i></div><h2>نستمع لملاحظاتك</h2><p>استخدم القنوات الرسمية أو فريق الإشراف لإرسال الأسئلة والملاحظات الفنية المتعلقة بتجربة نبض التفوق.</p></div>`,
+      verification: student.verificationRequested
+        ? `<div class="modal-head"><h3>طلب شارة التوثيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-solid fa-circle-check"></i></div><h2>طلبك قيد المراجعة</h2><p>تم تسجيل طلب شارة التوثيق محليًا. ستظهر حالة الطلب في ملفك الشخصي داخل هذه النسخة التجريبية.</p></div>`
+        : `<div class="modal-head"><h3>طلب شارة التوثيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><form id="verificationForm"><div class="info-page"><div class="info-icon"><i class="fa-solid fa-certificate"></i></div><h2>عرّف مجتمع نبض بحسابك</h2><p>سنراجع اكتمال بيانات ملفك الشخصي قبل اعتماد الطلب. هذه الواجهة تحفظ حالة الطلب محليًا في النسخة الثابتة.</p><div class="form-actions"><button type="button" class="outline-button close-modal">ليس الآن</button><button class="primary-button" type="submit">إرسال طلب التوثيق</button></div></div></form>`
     };
     openModal(modals[name] || modals.appGuide);
   }
@@ -206,6 +228,10 @@
     if (birth) birth.textContent = student.birth ? new Intl.DateTimeFormat('ar-SY', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(student.birth)) : '—';
     const completion = $('#completeProfile');
     if (completion) completion.classList.toggle('hidden', !profileIncomplete());
+    const verificationStatus = $('#verificationStatus');
+    if (verificationStatus) verificationStatus.classList.toggle('hidden', !student.verificationRequested);
+    const verificationButton = $('#verificationRequest');
+    if (verificationButton) { verificationButton.disabled = Boolean(student.verificationRequested); verificationButton.querySelector('span').textContent = student.verificationRequested ? 'طلب التوثيق قيد المراجعة' : 'طلب شارة التوثيق'; }
     const notificationSwitch = $('#notificationsSwitch');
     if (notificationSwitch) notificationSwitch.checked = Boolean(student.notifications);
     setAvatar('profileAvatar', 'profile-avatar');
@@ -290,7 +316,19 @@
     const feed = $('#feed');
     if (!feed) return;
     const entries = [...posts, ...seedPosts];
-    feed.innerHTML = entries.length ? entries.map(postTemplate).join('') : '<div class="empty-feed">لا توجد منشورات بعد. كن أول من يشارك خبرًا.</div>';
+    let visible = [...entries];
+    if (activeFeedFilter === 'mine') visible = entries.filter(post => post.mine);
+    if (activeFeedFilter === 'study') visible = entries.filter(post => /دراس|مراجعة|امتحان|فيزياء|رياض|منهاج|تعليم/.test(`${post.text} ${post.meta}`));
+    if (activeFeedFilter === 'popular') visible.sort((first, second) => enrichedPost(second).likes - enrichedPost(first).likes);
+    const headings = { all: ['الخلاصة التعليمية', 'أحدث المنشورات'], popular: ['اختيارات المجتمع', 'الأكثر تفاعلًا'], study: ['مساحة المذاكرة', 'أخبار الدراسة'], mine: ['مساحتك الشخصية', 'منشوراتي'] };
+    const [eyebrow, title] = headings[activeFeedFilter] || headings.all;
+    const feedTitle = $('#feedTitle');
+    const feedEyebrow = $('#feedEyebrow');
+    const communityPostCount = $('#communityPostCount');
+    if (feedTitle) feedTitle.textContent = title;
+    if (feedEyebrow) feedEyebrow.textContent = eyebrow;
+    if (communityPostCount) communityPostCount.textContent = entries.length;
+    feed.innerHTML = visible.length ? visible.map(postTemplate).join('') : '<div class="empty-feed"><i class="fa-regular fa-newspaper"></i><b>لا توجد منشورات في هذا القسم بعد.</b><span>جرّب فئة أخرى أو كن أول من يشارك خبرًا مفيدًا.</span></div>';
     const postCount = $('#profilePosts');
     if (postCount) postCount.textContent = posts.filter(post => post.mine).length;
   }
@@ -371,7 +409,7 @@
       if (invalid) { event.target.value = ''; return toast('اختر حتى صورتين، وحجم كل صورة لا يتجاوز 700 كيلوبايت.'); }
       Promise.all(files.map(file => new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(file); }))).then(images => { uploadImages = images; renderPreview(); });
     });
-    $$('.community-tab').forEach(tab => tab.addEventListener('click', () => $$('.community-tab').forEach(item => item.classList.toggle('active', item === tab))));
+    $$('.community-tab').forEach(tab => tab.addEventListener('click', () => { activeFeedFilter = tab.dataset.filter || 'all'; $$('.community-tab').forEach(item => item.classList.toggle('active', item === tab)); renderFeed(); }));
   }
 
   function getChat() {
@@ -452,6 +490,8 @@
       const modalButton = event.target.closest('[data-modal]');
       if (modalButton) openNamedModal(modalButton.dataset.modal);
       if (event.target.closest('#openEditProfile, #editProfileSmall, #completeProfile, #profileDataUpdate')) openNamedModal('edit');
+      if (event.target.closest('#verificationRequest')) { if (profileIncomplete()) { toast('أكمل بيانات الملف الشخصي قبل طلب التوثيق.'); openNamedModal('edit'); } else openNamedModal('verification'); }
+      if (event.target.closest('#sharePlatform')) sharePlatform();
       if (event.target.closest('#profileThemeButton')) applyTheme(student.theme === 'dark' ? 'light' : 'dark');
       const demo = event.target.closest('[data-demo]');
       if (demo) toast(demo.dataset.demo);
@@ -473,6 +513,7 @@
     document.addEventListener('submit', event => {
       if (event.target.id === 'editForm') { event.preventDefault(); handleProfileSave(event.target); }
       if (event.target.id === 'customCountdownForm') { event.preventDefault(); handleCountdownSave(event.target); }
+      if (event.target.id === 'verificationForm') { event.preventDefault(); student.verificationRequested = true; saveState(); closeModal(); updateProfileUI(); toast('تم إرسال طلب شارة التوثيق للمراجعة.'); }
       if (event.target.matches('.comment-form')) { event.preventDefault(); addComment(event.target); }
     });
 
@@ -492,6 +533,7 @@
   function init() {
     if (typeof android !== 'undefined' && android.webReady) android.webReady();
     renderBrand();
+    renderTopActions();
     applyTheme(student.theme);
     updateProfileUI();
     bindEvents();
