@@ -320,46 +320,41 @@
   }
 
   function initIntensives() {
-    const track = $('#intensiveTrack');
     const carousel = $('#intensiveCarousel');
-    if (!track || !carousel) return;
-    const slides = $$('.intensive-slide', track);
+    const post = $('#intensivePost');
+    const link = $('#intensivePostLink');
+    const current = $('#intensiveCurrent');
+    if (!carousel || !post || !link) return;
+    const covers = [
+      { theme: 'theme-math', href: 'intensive-math.html' },
+      { theme: 'theme-science', href: 'intensive-science.html' },
+      { theme: 'theme-arabic', href: 'intensive-arabic.html' },
+      { theme: 'theme-advert', href: 'advertising.html' }
+    ];
     const dots = $$('.intensive-dot', carousel);
-    let active = false;
-    let moved = false;
+    let activeIndex = 0;
     let startX = 0;
-    let startScroll = 0;
-    const activeIndex = () => {
-      const index = Math.max(0, Math.min(slides.length - 1, Math.round(Math.abs(track.scrollLeft) / Math.max(1, track.clientWidth))));
-      dots.forEach((dot, position) => dot.classList.toggle('active', position === index));
-      return index;
+    let dragging = false;
+    const showCover = index => {
+      activeIndex = (index + covers.length) % covers.length;
+      post.className = `intensive-post ${covers[activeIndex].theme}`;
+      link.href = covers[activeIndex].href;
+      if (current) current.textContent = String(activeIndex + 1);
+      dots.forEach((dot, position) => dot.classList.toggle('active', position === activeIndex));
+      post.classList.remove('cover-changing');
+      void post.offsetWidth;
+      post.classList.add('cover-changing');
     };
-    const goTo = index => slides[Math.max(0, Math.min(slides.length - 1, index))]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-    track.addEventListener('pointerdown', event => {
-      active = true;
-      moved = false;
-      startX = event.clientX;
-      startScroll = track.scrollLeft;
-      track.classList.add('is-dragging');
-      track.setPointerCapture?.(event.pointerId);
-    });
-    track.addEventListener('pointermove', event => {
-      if (!active) return;
+    post.addEventListener('pointerdown', event => { startX = event.clientX; dragging = true; post.setPointerCapture?.(event.pointerId); });
+    post.addEventListener('pointerup', event => {
+      if (!dragging) return;
       const distance = event.clientX - startX;
-      if (Math.abs(distance) > 5) moved = true;
-      track.scrollLeft = startScroll - distance;
+      dragging = false;
+      if (Math.abs(distance) > 42) showCover(activeIndex + (distance < 0 ? 1 : -1));
     });
-    const endDrag = () => { active = false; track.classList.remove('is-dragging'); };
-    track.addEventListener('pointerup', endDrag);
-    track.addEventListener('pointercancel', endDrag);
-    track.addEventListener('scroll', () => window.requestAnimationFrame(activeIndex), { passive: true });
-    track.addEventListener('click', event => { if (moved) { event.preventDefault(); event.stopPropagation(); } }, true);
-    dots.forEach(dot => dot.addEventListener('click', () => goTo(Number(dot.dataset.intensiveSlide))));
-    $$('[data-intensive-nav]', carousel).forEach(button => button.addEventListener('click', () => {
-      const direction = button.dataset.intensiveNav === 'next' ? 1 : -1;
-      const next = (activeIndex() + direction + slides.length) % slides.length;
-      goTo(next);
-    }));
+    post.addEventListener('pointercancel', () => { dragging = false; });
+    dots.forEach(dot => dot.addEventListener('click', () => showCover(Number(dot.dataset.intensiveSlide))));
+    $$('[data-intensive-nav]', carousel).forEach(button => button.addEventListener('click', () => showCover(activeIndex + (button.dataset.intensiveNav === 'next' ? 1 : -1))));
   }
 
   const seedPosts = [
