@@ -24,10 +24,14 @@
   const storedPosts = readStorage('posts', []);
   const storedChats = readStorage('chats', []);
   const storedInteractions = readStorage('post_interactions', {});
+  const storedGallery = readStorage('study_gallery', []);
+  const storedGrade = readStorage('grade_calculator', {});
   let student = { ...defaultStudent, ...readStorage('student', {}) };
   let posts = Array.isArray(storedPosts) ? storedPosts : [];
   let chats = Array.isArray(storedChats) ? storedChats : [];
   let postInteractions = storedInteractions && typeof storedInteractions === 'object' && !Array.isArray(storedInteractions) ? storedInteractions : {};
+  let studyGallery = Array.isArray(storedGallery) ? storedGallery.slice(0, 12) : [];
+  let gradeCalculator = storedGrade && typeof storedGrade === 'object' && !Array.isArray(storedGrade) ? storedGrade : {};
   let customCountdown = readStorage('custom_countdown', {
     title: 'هدفي الخاص', target: new Date('2027-04-15T08:00:00').getTime()
   });
@@ -58,6 +62,21 @@
       toast('تعذر حفظ البيانات؛ جرّب تقليل عدد أو حجم الصور المرفقة.');
       return false;
     }
+  }
+
+  function saveGallery() {
+    try {
+      localStorage.setItem(STORE + 'study_gallery', JSON.stringify(studyGallery.slice(0, 12)));
+      return true;
+    } catch (error) {
+      toast('تعذر حفظ الصور محليًا؛ احذف بعض الصور ثم حاول مرة أخرى.');
+      return false;
+    }
+  }
+
+  function saveGradeCalculator() {
+    try { localStorage.setItem(STORE + 'grade_calculator', JSON.stringify(gradeCalculator)); }
+    catch { toast('تعذر حفظ العلامات محليًا.'); }
   }
 
   function ensureStudentId() {
@@ -429,10 +448,133 @@
     $$('.community-tab').forEach(tab => tab.addEventListener('click', () => { activeFeedFilter = tab.dataset.filter || 'all'; $$('.community-tab').forEach(item => item.classList.toggle('active', item === tab)); renderFeed(); }));
   }
 
+  function dateInputValue(date = new Date()) {
+    const offset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+  }
+
+  function galleryDateLabel(value) {
+    try { return new Intl.DateTimeFormat('ar-SY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(`${value}T12:00:00`)); }
+    catch { return value; }
+  }
+
+  function renderGallery() {
+    const gallery = $('#studyGallery');
+    const count = $('#galleryCount');
+    if (!gallery) return;
+    if (count) count.textContent = `${studyGallery.length} ${studyGallery.length === 1 ? 'صورة' : 'صورة'}`;
+    if (!studyGallery.length) {
+      gallery.innerHTML = '<div class="gallery-empty"><i class="fa-regular fa-images"></i><b>ألبومك الدراسي جاهز</b><span>ارفع صور ملخصاتك أو لوحاتك، وستظهر مرتبة حسب اليوم هنا.</span></div>';
+      return;
+    }
+    const grouped = studyGallery.reduce((groups, photo) => { (groups[photo.date] ||= []).push(photo); return groups; }, {});
+    gallery.innerHTML = Object.entries(grouped).sort(([a], [b]) => b.localeCompare(a)).map(([date, photos]) => `<section class="gallery-day"><header><div><i class="fa-regular fa-calendar"></i><b>${galleryDateLabel(date)}</b></div><span>${photos.length} صور</span></header><div class="gallery-grid">${photos.map(photo => `<article class="study-photo"><button type="button" class="gallery-image-open" data-gallery-image="${photo.id}" title="عرض الصورة بالحجم الكامل"><img loading="lazy" src="${photo.src}" alt="صورة دراسية بتاريخ ${escapeHTML(date)}"></button><button type="button" class="gallery-image-remove" data-gallery-remove="${photo.id}" title="حذف الصورة"><i class="fa-solid fa-xmark"></i></button></article>`).join('')}</div></section>`).join('');
+  }
+
+  function openGalleryImage(id) {
+    const photo = studyGallery.find(item => item.id === id);
+    if (!photo) return;
+    openModal(`<div class="modal-head"><h3>صورة دراسية</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="image-viewer"><img src="${photo.src}" alt="صورة دراسية"><span><i class="fa-regular fa-calendar"></i> ${galleryDateLabel(photo.date)}</span></div>`);
+  }
+
+  function removeGalleryImage(id) {
+    studyGallery = studyGallery.filter(photo => photo.id !== id);
+    saveGallery();
+    renderGallery();
+    toast('تم حذف الصورة من الأرشيف.');
+  }
+
+  function initGallery() {
+    const upload = $('#galleryUpload');
+    if (!upload) return;
+    const date = $('#galleryDate');
+    if (date && !date.value) date.value = dateInputValue();
+    renderGallery();
+    upload.addEventListener('change', event => {
+      const files = [...event.target.files].slice(0, 4);
+      if (!files.length) return;
+      if (studyGallery.length + files.length > 12) { event.target.value = ''; return toast('يمكن حفظ 12 صورة دراسية كحد أقصى. احذف صورة ثم حاول مجددًا.'); }
+      if (files.some(file => !file.type.startsWith('image/') || file.size > 650 * 1024)) { event.target.value = ''; return toast('اختر صورًا صالحة بحجم لا يتجاوز 650 كيلوبايت للصورة.'); }
+      const before = [...studyGallery];
+      Promise.all(files.map(file => new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(file); }))).then(images => {
+        const selectedDate = date?.value || dateInputValue();
+        studyGallery = images.map((src, index) => ({ id: `study-${Date.now()}-${index}`, src, date: selectedDate })).concat(studyGallery);
+        if (!saveGallery()) { studyGallery = before; return; }
+        event.target.value = '';
+        renderGallery();
+        toast(`تمت إضافة ${images.length} صور إلى الأرشيف الدراسي.`);
+      });
+    });
+    $('#galleryClear')?.addEventListener('click', () => {
+      if (!studyGallery.length) return toast('لا توجد صور لحذفها.');
+      if (!confirm('هل تريد حذف جميع الصور الدراسية المحفوظة؟')) return;
+      studyGallery = [];
+      saveGallery();
+      renderGallery();
+      toast('تم إفراغ الألبوم الدراسي.');
+    });
+  }
+
+  const gradeCurricula = {
+    nine: { title: 'مواد التاسع الأساسي', label: 'التاسع الأساسي', subjects: ['اللغة العربية', 'اللغة الإنكليزية', 'الرياضيات', 'العلوم', 'الفيزياء', 'الكيمياء', 'الاجتماعيات', 'التربية الإسلامية', 'اللغة الفرنسية'] },
+    science: { title: 'مواد البكالوريا العلمي', label: 'بكالوريا علمي', subjects: ['اللغة العربية', 'اللغة الإنكليزية', 'الرياضيات', 'الفيزياء', 'الكيمياء', 'العلوم', 'التربية الإسلامية', 'اللغة الفرنسية'] },
+    literary: { title: 'مواد البكالوريا الأدبي', label: 'بكالوريا أدبي', subjects: ['اللغة العربية', 'اللغة الإنكليزية', 'الفلسفة', 'التاريخ', 'الجغرافيا', 'الاقتصاد', 'التربية الإسلامية', 'اللغة الفرنسية'] }
+  };
+
+  function defaultGradeStage() {
+    if (gradeCalculator.stage) return gradeCalculator.stage;
+    if (/تاسع/.test(student.stage)) return 'nine';
+    if (/أدبي/.test(student.stage)) return 'literary';
+    return 'science';
+  }
+
+  function renderGradeSubjects() {
+    const select = $('#gradeStage');
+    const container = $('#gradeSubjects');
+    if (!select || !container) return;
+    const stage = select.value || defaultGradeStage();
+    const curriculum = gradeCurricula[stage];
+    gradeCalculator.stage = stage;
+    gradeCalculator.marks ||= {};
+    const title = $('#gradeTitle');
+    const count = $('#gradeSubjectCount');
+    if (title) title.textContent = curriculum.title;
+    if (count) count.textContent = `${curriculum.subjects.length} مواد`;
+    container.innerHTML = curriculum.subjects.map((subject, index) => `<label class="grade-subject"><span><b>${escapeHTML(subject)}</b><small>العلامة من 100</small></span><input class="grade-input" data-subject="${escapeHTML(subject)}" type="number" inputmode="decimal" min="0" max="100" step="0.01" placeholder="—" value="${gradeCalculator.marks[subject] ?? ''}"><i>${String(index + 1).padStart(2, '0')}</i></label>`).join('');
+  }
+
+  function calculateGrade() {
+    const inputs = $$('.grade-input');
+    const values = inputs.map(input => ({ subject: input.dataset.subject, raw: input.value.trim(), value: Number(input.value) })).filter(item => item.raw !== '' && Number.isFinite(item.value) && item.value >= 0 && item.value <= 100);
+    if (!values.length) return toast('أدخل علامة مادة واحدة على الأقل لعرض المعدل.');
+    const average = values.reduce((sum, item) => sum + item.value, 0) / values.length;
+    const result = $('#gradeResult');
+    if (!result) return;
+    const resultClass = average >= 85 ? 'excellent' : average >= 65 ? 'good' : average >= 50 ? 'pass' : 'needs-work';
+    result.className = `grade-result panel ${resultClass}`;
+    result.innerHTML = `<div class="grade-result-icon"><i class="fa-solid fa-chart-line"></i></div><div><span>معدلك التقريبي</span><b>${average.toFixed(2)}<small> / 100</small></b><p>تم الحساب من ${values.length} مواد مدخلة بالتساوي. أضف بقية العلامات للحصول على نتيجة أدق.</p></div><div class="grade-result-tag">${average >= 85 ? 'ممتاز' : average >= 65 ? 'جيد' : average >= 50 ? 'مقبول' : 'بحاجة إلى تحسين'}</div>`;
+    gradeCalculator.marks = Object.fromEntries(inputs.map(input => [input.dataset.subject, input.value]));
+    gradeCalculator.lastAverage = average;
+    saveGradeCalculator();
+    result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function initCalculator() {
+    const select = $('#gradeStage');
+    if (!select) return;
+    select.value = defaultGradeStage();
+    renderGradeSubjects();
+    select.addEventListener('change', () => { gradeCalculator.marks = {}; renderGradeSubjects(); saveGradeCalculator(); $('#gradeResult')?.classList.add('hidden'); });
+    $('#gradeForm')?.addEventListener('submit', event => { event.preventDefault(); calculateGrade(); });
+    $('#gradeReset')?.addEventListener('click', () => { gradeCalculator.marks = {}; saveGradeCalculator(); renderGradeSubjects(); $('#gradeResult')?.classList.add('hidden'); toast('تم مسح العلامات المدخلة.'); });
+  }
+
   const assistantServices = {
     profile: { label: 'فتح ملفي الشخصي', href: 'profile.html', icon: 'fa-regular fa-user' },
     news: { label: 'فتح مجتمع الأخبار', href: 'news.html', icon: 'fa-regular fa-newspaper' },
     tools: { label: 'فتح أدوات الدراسة', href: 'index.html#tools', icon: 'fa-solid fa-toolbox' },
+    gallery: { label: 'فتح تنظيم الصور', href: 'gallery.html', icon: 'fa-regular fa-images' },
+    calculator: { label: 'فتح حاسبة المعدل', href: 'grade-calculator.html', icon: 'fa-solid fa-calculator' },
     home: { label: 'الذهاب إلى الرئيسية', href: 'index.html', icon: 'fa-solid fa-house' },
     notifications: { label: 'فتح الإشعارات', href: 'notifications.html', icon: 'fa-regular fa-bell' },
     privacy: { label: 'سياسة الخصوصية', href: 'privacy.html', icon: 'fa-solid fa-shield-halved' },
@@ -459,6 +601,12 @@
     if (/ملف|حساب|صوره|بيان|اسم|منطقه|مواليد|توثيق/.test(query)) {
       return answer(`ملفك الشخصي هو مركز تخصيص المنصة يا ${student.first || 'صديقي'}. منه تعدّل الاسم والرقم والمنطقة والمواليد والصورة والنبذة، وتدير الإشعارات والوضع الليلي. بعد اكتمال البيانات يمكنك إرسال طلب شارة التوثيق.`, [assistantServices.profile]);
     }
+    if (/تنظيم الصور|صور دراسي|البوم|ارشيف الصور|لوحات|ملاحظات مصور/.test(query)) {
+      return answer('تنظيم الصور الدراسية يحفظ صور الملاحظات واللوحات على جهازك، ويرتبها حسب اليوم. تستطيع رفع عدة صور، ثم الضغط على أي صورة لعرضها بالحجم الكامل أو حذفها عند الحاجة.', [assistantServices.gallery]);
+    }
+    if (/حاسبه المعدل|حساب المعدل|معدلي|علامات المواد|المعدل/.test(query)) {
+      return answer('حاسبة المعدل تبدأ باختيار المرحلة: تاسع، بكالوريا علمي أو بكالوريا أدبي. بعدها تظهر مواد المرحلة؛ أدخل العلامات المتاحة واضغط «عرض المعدل» للحصول على متوسط تقريبي من المواد المدخلة.', [assistantServices.calculator]);
+    }
     if (/خبر|مجتمع|منشور|تعليق|اعجاب|صور/.test(query)) {
       return answer('مجتمع الأخبار مخصص لمشاركة الأخبار التعليمية والإنجازات. اكتب الخبر، وأرفق حتى صورتين، ثم انشره. تستطيع التفاعل بالإعجاب والتعليقات، واستخدام الفلاتر لمشاهدة الأحدث أو الأكثر تفاعلًا أو منشوراتك.', [assistantServices.news]);
     }
@@ -466,7 +614,7 @@
       return answer('من الرئيسية ستجد عدادات البكالوريا والتاسع والعداد المخصص. لاستخدام العداد الشخصي اختر «مخصص»، ثم اضغط «ضبط» واكتب اسم هدفك وموعده. سيبقى محفوظًا في متصفحك.', [assistantServices.home]);
     }
     if (/اختبار|حاسب|معدل|بومودورو|دروس|مكتبه|جامع|توقع|تنظيم/.test(query)) {
-      return answer('تضم الرئيسية أدوات الدراسة مثل حاسبة المعدل والاختبارات وبومودورو وتنظيم الوقت والمكتبة والدروس والتوقعات. اختر الأداة المناسبة من بطاقات الخدمات، وسأرشدك إلى المكان الصحيح.', [assistantServices.tools]);
+      return answer('تضم الرئيسية أدوات الدراسة مثل حاسبة المعدل والاختبارات وبومودورو وتنظيم الوقت والمكتبة والدروس والتوقعات. اختر الأداة المناسبة من بطاقات الخدمات، وسأرشدك إلى المكان الصحيح.', [assistantServices.tools, assistantServices.calculator, assistantServices.gallery]);
     }
     if (/اشعار|تنبيه/.test(query)) return answer('يمكنك إدارة تنبيهات الأخبار والأنشطة من صفحة الإشعارات أو من إعدادات الملف الشخصي.', [assistantServices.notifications, assistantServices.profile]);
     if (/خصوص|امان|حفظ|بيانات/.test(query)) return answer('هذه النسخة الثابتة تحفظ ملفك والمنشورات والمحادثات على جهازك داخل المتصفح. يمكنك مراجعة سياسة الخصوصية لمعرفة التفاصيل.', [assistantServices.privacy]);
@@ -556,6 +704,10 @@
       if (document.body.classList.contains('sidebar-open') && event.target.closest('.side-link, .sidebar-edit-cta')) toggleSidebar(false);
       if (document.body.classList.contains('sidebar-open') && !event.target.closest('#desktopSidebar, #sidebarToggle')) toggleSidebar(false);
       if (event.target.closest('#profileThemeButton')) applyTheme(student.theme === 'dark' ? 'light' : 'dark');
+      const galleryOpen = event.target.closest('[data-gallery-image]');
+      if (galleryOpen) openGalleryImage(galleryOpen.dataset.galleryImage);
+      const galleryRemove = event.target.closest('[data-gallery-remove]');
+      if (galleryRemove) removeGalleryImage(galleryRemove.dataset.galleryRemove);
       const demo = event.target.closest('[data-demo]');
       if (demo) toast(demo.dataset.demo);
 
@@ -602,6 +754,8 @@
     bindEvents();
     initHome();
     initNews();
+    initGallery();
+    initCalculator();
     initChat();
   }
 

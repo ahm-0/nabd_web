@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080d19">
+  <title>نبض التفوق | تنظيم الصور الدراسية</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="gallery">
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a>
+      <div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div>
+    </header>
+    <div class="layout">
+      <aside class="sidebar panel" id="desktopSidebar"></aside>
+      <main class="main-content">
+        <header class="tool-page-head gallery-head">
+          <div><span class="eyebrow"><i class="fa-regular fa-images"></i> أرشيفك الدراسي</span><h2>تنظيم الصور الدراسية</h2><p>ارفع صور الملاحظات واللوحات، صنّفها حسب اليوم، ثم افتحها بالحجم الكامل عندما تحتاجها.</p></div>
+          <div class="tool-head-icon"><i class="fa-regular fa-images"></i></div>
+        </header>
+        <section class="gallery-upload panel">
+          <div class="gallery-upload-copy"><b>أضف صورًا إلى أرشيفك</b><span>حتى 4 صور في المرة الواحدة، وبحد أقصى 650 كيلوبايت لكل صورة للحفظ المحلي.</span></div>
+          <div class="gallery-controls"><label class="date-control"><i class="fa-regular fa-calendar"></i><input id="galleryDate" type="date" aria-label="تاريخ الصور"></label><label class="upload-gallery-button"><i class="fa-solid fa-cloud-arrow-up"></i><span>رفع صور</span><input id="galleryUpload" type="file" accept="image/*" multiple class="hidden"></label></div>
+        </section>
+        <div class="gallery-toolbar"><div><b id="galleryCount">0 صورة</b><span>اضغط على الصورة لعرضها وتكبيرها</span></div><button class="gallery-clear" id="galleryClear" type="button"><i class="fa-regular fa-trash-can"></i> حذف الكل</button></div>
+        <section class="study-gallery" id="studyGallery" aria-live="polite"></section>
+      </main>
+    </div>
+  </div>
+  <nav class="bottom-nav" id="bottomNav"></nav>
+  <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div>
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
