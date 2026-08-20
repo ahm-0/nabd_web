@@ -276,14 +276,23 @@
   }
 
   async function sharePlatform() {
-    const url = location.href;
+    const url = location.href; const payload = { title: 'نبض التفوق', text: 'منصة نبض التفوق التعليمية', url, dialogTitle: 'مشاركة نبض التفوق' };
     try {
-      if (navigator.share) await navigator.share({ title: 'نبض التفوق', text: 'منصة نبض التفوق التعليمية', url });
+      const nativeShare = capacitorPlugin('Share');
+      if (isNativeNabd() && nativeShare?.share) { await nativeShare.share(payload); return; }
+      if (navigator.share) await navigator.share(payload);
       else if (navigator.clipboard) { await navigator.clipboard.writeText(url); toast('تم نسخ رابط المنصة.'); }
       else toast('ميزة المشاركة متاحة عند نشر التطبيق على الهاتف.');
     } catch (error) {
       if (error.name !== 'AbortError') toast('تعذر تنفيذ المشاركة حاليًا.');
     }
+  }
+
+  function openNativeChatViewer(url, title) {
+    try {
+      if (isNativeNabd() && typeof window.NabdAndroid?.openNativeChatViewer === 'function') { window.NabdAndroid.openNativeChatViewer(url, title, 'dark'); return; }
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (error) { console.warn('تعذر فتح نافذة الدردشة الأصلية', error); toast('تعذر فتح الصفحة الآن.'); }
   }
 
   function verifiedBadgeMarkup(verified = false) {
@@ -320,8 +329,8 @@
     const bottomNav = $('#bottomNav');
     if (bottomNav) {
       bottomNav.innerHTML = `
-        <a class="bottom-link" href="assistant.html"><i class="fa-solid fa-circle-play"></i><span>الدروس</span></a>
-        <a class="bottom-link" href="index.html#tools"><i class="fa-solid fa-clipboard-check"></i><span>الاختبارات</span></a>
+        <button class="bottom-link" type="button" data-native-chat-url="https://open-chat-vibe.lovable.app" data-native-chat-title="الدردشة"><i class="fa-solid fa-comments"></i><span>الدردشة</span></button>
+        <button class="bottom-link" type="button" data-native-chat-url="https://rtl-pulse-chat.lovable.app/" data-native-chat-title="AI"><i class="fa-solid fa-robot"></i><span>AI</span></button>
         <a class="bottom-link ${PAGE === 'home' ? 'active' : ''}" href="index.html"><i class="fa-solid fa-house"></i><span>الرئيسية</span></a>
         <a class="bottom-link ${PAGE === 'news' ? 'active' : ''}" href="news.html"><i class="fa-regular fa-newspaper"></i><span>الأخبار</span></a>
         <a class="bottom-link ${PAGE === 'profile' ? 'active' : ''}" href="profile.html"><i class="fa-regular fa-user"></i><span>حسابي</span></a>`;
@@ -478,52 +487,28 @@
     window.setTimeout(() => $('#welcomeStart')?.focus(), 160);
   }
 
+  function setExamCountdownCollapsed(collapsed, persist = true) {
+    const wrap = $('#examCountdownWrap'); const toggle = $('#examCountdownToggle');
+    if (!wrap || !toggle) return;
+    wrap.classList.toggle('is-collapsed', collapsed);
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    toggle.setAttribute('aria-label', collapsed ? 'إظهار عداد الامتحانات' : 'إخفاء عداد الامتحانات');
+    toggle.title = collapsed ? 'إظهار عداد الامتحانات' : 'إخفاء عداد الامتحانات';
+    toggle.innerHTML = `<i class="fa-solid ${collapsed ? 'fa-chevron-down' : 'fa-chevron-up'}"></i>`;
+    if (persist) { try { localStorage.setItem(STORE + 'exam_countdown_collapsed', JSON.stringify(Boolean(collapsed))); } catch { /* يظل السلوك مرئيًا عند تعذر حفظ التفضيل */ } }
+  }
+
   function initHome() {
     if (!$('#homeExamTitle')) return;
     $$('.exam-tab').forEach(tab => tab.addEventListener('click', () => setExam(tab.dataset.exam)));
     $('#customCountdownButton')?.addEventListener('click', () => openNamedModal('customCountdown'));
+    const storedCollapsed = readStorage('exam_countdown_collapsed', false);
+    setExamCountdownCollapsed(Boolean(storedCollapsed), false);
+    $('#examCountdownToggle')?.addEventListener('click', () => setExamCountdownCollapsed(!$('#examCountdownWrap')?.classList.contains('is-collapsed')));
     setExam('bac');
     let timer = window.setInterval(() => { if (!document.hidden) updateCountdown(); }, 1000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) updateCountdown(); });
     window.addEventListener('pagehide', () => window.clearInterval(timer), { once: true });
-  }
-
-  function initIntensives() {
-    const carousel = $('#intensiveCarousel');
-    const post = $('#intensivePost');
-    const link = $('#intensivePostLink');
-    const current = $('#intensiveCurrent');
-    if (!carousel || !post || !link) return;
-    const covers = [
-      { theme: 'theme-math', href: 'intensive-math.html' },
-      { theme: 'theme-science', href: 'intensive-science.html' },
-      { theme: 'theme-arabic', href: 'intensive-arabic.html' },
-      { theme: 'theme-advert', href: 'advertising.html' }
-    ];
-    const dots = $$('.intensive-dot', carousel);
-    let activeIndex = 0;
-    let startX = 0;
-    let dragging = false;
-    const showCover = index => {
-      activeIndex = (index + covers.length) % covers.length;
-      post.className = `intensive-post ${covers[activeIndex].theme}`;
-      link.href = covers[activeIndex].href;
-      if (current) current.textContent = String(activeIndex + 1);
-      dots.forEach((dot, position) => dot.classList.toggle('active', position === activeIndex));
-      post.classList.remove('cover-changing');
-      void post.offsetWidth;
-      post.classList.add('cover-changing');
-    };
-    post.addEventListener('pointerdown', event => { startX = event.clientX; dragging = true; post.setPointerCapture?.(event.pointerId); });
-    post.addEventListener('pointerup', event => {
-      if (!dragging) return;
-      const distance = event.clientX - startX;
-      dragging = false;
-      if (Math.abs(distance) > 42) showCover(activeIndex + (distance < 0 ? 1 : -1));
-    });
-    post.addEventListener('pointercancel', () => { dragging = false; });
-    dots.forEach(dot => dot.addEventListener('click', () => showCover(Number(dot.dataset.intensiveSlide))));
-    $$('[data-intensive-nav]', carousel).forEach(button => button.addEventListener('click', () => showCover(activeIndex + (button.dataset.intensiveNav === 'next' ? 1 : -1))));
   }
 
   const seedPosts = [
@@ -1127,7 +1112,8 @@
       const permissions = await native.checkPermissions?.();
       const display = permissions?.display;
       if (display !== 'granted') { const requested = await native.requestPermissions?.(); if (requested?.display !== 'granted') { toast('فعّل صلاحية الإشعارات للحصول على تذكيرات الدراسة.'); return false; } }
-      await native.schedule({ notifications: [{ id: Number(task.notificationId), title: '📚 تذكير دراسي', body: `حان وقت ${task.title} في مادة ${task.subject}.`, schedule: { at: scheduledAt }, extra: { taskId: task.id } }] });
+      const subjectText = task.subject ? ` في مادة ${task.subject}` : '';
+      await native.schedule({ notifications: [{ id: Number(task.notificationId), title: '📚 تذكير دراسي', body: `حان وقت ${task.title}${subjectText}.`, schedule: { at: scheduledAt }, extra: { taskId: task.id } }] });
       return true;
     } catch (error) { console.warn('فشل جدولة التذكير الأصلي', error); toast('تعذر جدولة التذكير الآن، لكن المهمة حُفظت.'); return false; }
   }
@@ -1140,26 +1126,29 @@
 
   function renderStudyTasks() {
     const holder = $('#studyTasks'), empty = $('#studyEmpty'); if (!holder || !empty) return;
-    const todayKey = new Date().toISOString().slice(0, 10); const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); const tomorrowKey = tomorrow.toISOString().slice(0, 10);
+    const todayKey = localDateKey(); const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); const tomorrowKey = localDateKey(tomorrow);
     const counts = { today: studyTasks.filter(t => !t.completed && t.date === todayKey).length, tomorrow: studyTasks.filter(t => !t.completed && t.date === tomorrowKey).length, upcoming: studyTasks.filter(t => !t.completed && t.date > tomorrowKey).length, overdue: studyTasks.filter(t => studyStatus(t) === 'overdue').length, completed: studyTasks.filter(t => t.completed).length };
     Object.entries(counts).forEach(([key, count]) => { const el = $(`#study${key[0].toUpperCase()}${key.slice(1)}Count`); if (el) el.textContent = count; });
     const summary = $('#studySummary');
     if (summary) summary.innerHTML = `<div class="study-summary-card"><i class="fa-solid fa-list-check"></i><div><b>${studyTasks.filter(task => !task.completed).length}</b><span>مهام قيد الإنجاز</span></div></div><div class="study-summary-card"><i class="fa-solid fa-clock"></i><div><b>${counts.overdue}</b><span>مهام متأخرة</span></div></div><div class="study-summary-card"><i class="fa-solid fa-circle-check"></i><div><b>${counts.completed}</b><span>مهام مكتملة</span></div></div>`;
     $$('#studyTaskTabs button').forEach(button => button.classList.toggle('active', button.dataset.studyFilter === activeStudyFilter));
-    const visible = studyFilterTasks(); holder.innerHTML = visible.map(task => { const status = studyStatus(task); const statusText = status === 'completed' ? 'مكتملة' : status === 'overdue' ? 'متأخرة' : 'قيد الإنجاز'; return `<article class="study-task-card ${status}"><div class="study-task-icon"><i class="fa-solid ${status === 'completed' ? 'fa-circle-check' : status === 'overdue' ? 'fa-clock' : 'fa-book-open'}"></i></div><div class="study-task-main"><div class="study-task-title"><span>${escapeHTML(task.subject)}</span><h3>${escapeHTML(task.title)}</h3></div>${task.notes ? `<p>${escapeHTML(task.notes)}</p>` : ''}<div class="study-task-meta"><span><i class="fa-regular fa-calendar"></i>${studyDateText(task.date)}</span><span><i class="fa-regular fa-clock"></i>${studyTimeText(task.reminderTime)}</span>${task.reminderEnabled ? '<span><i class="fa-solid fa-bell"></i>تذكير</span>' : ''}</div></div><div class="study-task-actions"><span class="study-status ${status}">${statusText}</span><button data-study-action="edit" data-task-id="${task.id}" title="تعديل المهمة"><i class="fa-solid fa-pen"></i></button><button data-study-action="delete" data-task-id="${task.id}" title="حذف المهمة"><i class="fa-regular fa-trash-can"></i></button><button class="study-complete" data-study-action="complete" data-task-id="${task.id}" title="${task.completed ? 'إعادة المهمة' : 'تم الإنجاز'}"><i class="fa-solid ${task.completed ? 'fa-rotate-left' : 'fa-check'}"></i></button></div></article>`; }).join('');
+    const visible = studyFilterTasks(); holder.innerHTML = visible.map(task => { const status = studyStatus(task); const statusText = status === 'completed' ? 'مكتملة' : status === 'overdue' ? 'متأخرة' : 'قيد الإنجاز'; const legacySubject = task.subject ? `<span>${escapeHTML(task.subject)}</span>` : ''; return `<article class="study-task-card ${status}"><div class="study-task-icon"><i class="fa-solid ${status === 'completed' ? 'fa-circle-check' : status === 'overdue' ? 'fa-clock' : 'fa-book-open'}"></i></div><div class="study-task-main"><div class="study-task-title">${legacySubject}<h3>${escapeHTML(task.title)}</h3></div>${task.notes ? `<p>${escapeHTML(task.notes)}</p>` : ''}<div class="study-task-meta"><span><i class="fa-regular fa-calendar"></i>${studyDateText(task.date)}</span><span><i class="fa-regular fa-clock"></i>${studyTimeText(task.reminderTime)}</span>${task.reminderEnabled ? '<span><i class="fa-solid fa-bell"></i>تذكير</span>' : ''}</div></div><div class="study-task-actions"><span class="study-status ${status}">${statusText}</span><button data-study-action="edit" data-task-id="${task.id}" title="تعديل المهمة"><i class="fa-solid fa-pen"></i></button><button data-study-action="delete" data-task-id="${task.id}" title="حذف المهمة"><i class="fa-regular fa-trash-can"></i></button><button class="study-complete" data-study-action="complete" data-task-id="${task.id}" title="${task.completed ? 'إعادة المهمة' : 'تم الإنجاز'}"><i class="fa-solid ${task.completed ? 'fa-rotate-left' : 'fa-check'}"></i></button></div></article>`; }).join('');
     empty.classList.toggle('hidden', visible.length > 0);
   }
 
   function openStudyTaskEditor(taskId = '') {
-    const task = studyTasks.find(item => item.id === taskId) || {}; const today = localDateKey();
-    openModal(`<div class="modal-head"><h3>${task.id ? 'تعديل المهمة' : 'إضافة مهمة دراسية'}</h3><button class="close-modal" aria-label="إغلاق">×</button></div><form id="studyTaskForm" data-task-id="${task.id || ''}"><div class="form-grid"><div class="form-group"><label>المادة</label><input name="subject" required maxlength="60" placeholder="مثل: الرياضيات" value="${escapeHTML(task.subject || '')}"></div><div class="form-group"><label>اسم المهمة</label><input name="title" required maxlength="120" placeholder="مثل: مراجعة الفصل الثالث" value="${escapeHTML(task.title || '')}"></div><div class="form-group"><label>التاريخ</label><input name="date" type="date" required min="${today}" value="${escapeHTML(task.date || today)}"></div><div class="form-group"><label>وقت التذكير</label><input name="reminderTime" type="time" required value="${escapeHTML(task.reminderTime || '18:00')}"></div><div class="form-group full"><label>ملاحظات <small>اختياري</small></label><textarea name="notes" maxlength="400" placeholder="تفاصيل أو هدف قصير للمهمة">${escapeHTML(task.notes || '')}</textarea></div><label class="study-reminder-toggle full"><input name="reminderEnabled" type="checkbox" ${task.reminderEnabled !== false ? 'checked' : ''}><span><i class="fa-solid fa-bell"></i><b>تفعيل التذكير</b><small>يُجدول كتذكير أصلي عند توفره داخل التطبيق.</small></span></label></div><div class="form-actions"><button class="outline-button close-modal" type="button">إلغاء</button><button class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ المهمة</button></div></form>`);
+    const task = studyTasks.find(item => item.id === taskId) || {}; const today = localDateKey(); const [hour = '18', savedMinute = '01'] = String(task.reminderTime || '18:01').split(':'); const minute = savedMinute === '00' ? '01' : savedMinute;
+    const timeOptions = (total, selected, start = 0) => Array.from({ length: total - start }, (_, index) => { const value = String(index + start).padStart(2, '0'); return `<option value="${value}" ${value === selected ? 'selected' : ''}>${value}</option>`; }).join('');
+    openModal(`<div class="modal-head"><h3>${task.id ? 'تعديل المهمة' : 'إضافة مهمة دراسية'}</h3><button class="close-modal" aria-label="إغلاق">×</button></div><form id="studyTaskForm" data-task-id="${task.id || ''}"><div class="form-grid"><div class="form-group full"><label>اسم المهمة</label><input name="title" required maxlength="120" placeholder="مثل: دراسة مادة العربي" value="${escapeHTML(task.title || '')}" autofocus></div><div class="form-group full"><label>اليوم</label><input name="date" type="date" required min="${today}" value="${escapeHTML(task.date || today)}"></div><div class="form-group"><label>الساعة</label><select name="reminderHour" required>${timeOptions(24, hour)}</select></div><div class="form-group"><label>الدقيقة</label><select name="reminderMinute" required>${timeOptions(60, minute, 1)}</select></div><div class="study-reminder-note full"><i class="fa-solid fa-bell"></i><span>سيصلك تذكير عند حلول الموعد المحدد.</span></div></div><div class="form-actions"><button class="outline-button close-modal" type="button">إلغاء</button><button class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ المهمة</button></div></form>`);
   }
 
   async function saveStudyTask(form) {
-    const data = new FormData(form), id = form.dataset.taskId, old = studyTasks.find(item => item.id === id); const task = { id: id || `task-${Date.now()}-${Math.random().toString(16).slice(2)}`, subject: String(data.get('subject')).trim(), title: String(data.get('title')).trim(), notes: String(data.get('notes') || '').trim(), date: String(data.get('date')), reminderTime: String(data.get('reminderTime')), reminderEnabled: data.get('reminderEnabled') === 'on', completed: old?.completed || false, notificationId: old?.notificationId || nextStudyNotificationId(), createdAt: old?.createdAt || Date.now(), updatedAt: Date.now() };
-    if (!task.subject || !task.title) return toast('أكمل المادة واسم المهمة.'); if (task.reminderEnabled && studyAt(task).getTime() <= Date.now()) return toast('يرجى اختيار وقت مستقبلي للتذكير.');
-    if (old) await cancelStudyNotification(old); const scheduled = await scheduleStudyNotification(task); if (task.reminderEnabled && isNativeNabd() && capacitorPlugin('LocalNotifications')?.schedule && !scheduled) return;
-    if (old) studyTasks = studyTasks.map(item => item.id === id ? task : item); else studyTasks.unshift(task); saveStudyTasks(); closeModal(); renderStudyTasks(); const nativeReminder = isNativeNabd() && Boolean(capacitorPlugin('LocalNotifications')?.schedule); toast(task.reminderEnabled ? (nativeReminder ? 'تم حفظ المهمة وجدولة التذكير.' : 'تم حفظ المهمة. فعّل جسر التطبيق للإشعار الأصلي.') : 'تم حفظ المهمة.');
+    const data = new FormData(form), id = form.dataset.taskId, old = studyTasks.find(item => item.id === id); const hour = String(data.get('reminderHour') || '').padStart(2, '0'); const minute = String(data.get('reminderMinute') || '').padStart(2, '0');
+    if (!/^([01]\d|2[0-3])$/.test(hour) || !/^(0[1-9]|[1-5]\d)$/.test(minute)) return toast('اختر ساعة ودقيقة من 01 إلى 59.');
+    const task = { id: id || `task-${Date.now()}-${Math.random().toString(16).slice(2)}`, subject: old?.subject || '', title: String(data.get('title')).trim(), notes: old?.notes || '', date: String(data.get('date')), reminderTime: `${hour}:${minute}`, reminderEnabled: true, completed: old?.completed || false, notificationId: old?.notificationId || nextStudyNotificationId(), createdAt: old?.createdAt || Date.now(), updatedAt: Date.now() };
+    if (!task.title) return toast('أدخل اسم المهمة.'); if (studyAt(task).getTime() <= Date.now()) return toast('يرجى اختيار وقت مستقبلي للتذكير.');
+    if (old) await cancelStudyNotification(old); const scheduled = await scheduleStudyNotification(task); if (isNativeNabd() && capacitorPlugin('LocalNotifications')?.schedule && !scheduled) return;
+    if (old) studyTasks = studyTasks.map(item => item.id === id ? task : item); else studyTasks.unshift(task); saveStudyTasks(); closeModal(); renderStudyTasks(); const nativeReminder = isNativeNabd() && Boolean(capacitorPlugin('LocalNotifications')?.schedule); toast(nativeReminder ? 'تم حفظ المهمة وجدولة التذكير.' : 'تم حفظ المهمة. فعّل جسر التطبيق للإشعار الأصلي.');
   }
 
   async function handleStudyAction(button) { const task = studyTasks.find(item => item.id === button.dataset.taskId); if (!task) return; const action = button.dataset.studyAction; if (action === 'edit') return openStudyTaskEditor(task.id); if (action === 'delete') { if (!window.confirm('هل أنت متأكد من حذف هذه المهمة؟')) return; await cancelStudyNotification(task); studyTasks = studyTasks.filter(item => item.id !== task.id); saveStudyTasks(); renderStudyTasks(); return toast('تم حذف المهمة وإلغاء تذكيرها.'); } task.completed = !task.completed; task.updatedAt = Date.now(); if (task.completed) { task.reminderEnabled = false; await cancelStudyNotification(task); } else if (task.reminderEnabled) await scheduleStudyNotification(task); saveStudyTasks(); renderStudyTasks(); toast(task.completed ? 'أحسنت، تم تسجيل المهمة كمكتملة.' : 'أعيدت المهمة إلى قائمة الإنجاز.'); }
@@ -1189,6 +1178,8 @@
       if (event.target.closest('#openEditProfile, #editProfileSmall, #completeProfile, #profileDataUpdate')) openNamedModal('edit');
       if (event.target.closest('#verificationRequest')) { if (profileIncomplete()) { toast('أكمل بيانات الملف الشخصي قبل طلب التوثيق.'); openNamedModal('edit'); } else openNamedModal('verification'); }
       if (event.target.closest('#sharePlatform')) sharePlatform();
+      const nativeChat = event.target.closest('[data-native-chat-url]');
+      if (nativeChat) { event.preventDefault(); openNativeChatViewer(nativeChat.dataset.nativeChatUrl, nativeChat.dataset.nativeChatTitle); }
       if (event.target.closest('#sidebarToggle')) toggleSidebar();
       if (document.body.classList.contains('sidebar-open') && event.target.closest('.side-link, .sidebar-edit-cta')) toggleSidebar(false);
       if (document.body.classList.contains('sidebar-open') && !event.target.closest('#desktopSidebar, #sidebarToggle')) toggleSidebar(false);
@@ -1256,7 +1247,6 @@
     initAdminDashboard();
     initWelcomeScreen();
     initHome();
-    initIntensives();
     initNews();
     initGallery();
     initCalculator();
