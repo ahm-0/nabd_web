@@ -504,10 +504,20 @@
 
   function updateHomeMetrics() {
     const activeTasks = studyTasks.filter(task => !task.completed).length;
+    const activePlans = Array.isArray(completionPlans) ? completionPlans.filter(plan => completionProgress(plan) < 100).length : 0;
+    const savedResources = Array.isArray(personalLibraryResources) ? personalLibraryResources.length : 0;
+    const average = Number(gradeCalculator.lastAverage);
     const taskMetric = $('#homeTaskMetric'); const gradeMetric = $('#homeGradeMetric'); const galleryMetric = $('#homeGalleryMetric');
+    const setServiceStatus = (id, value) => { const element = $('#' + id); if (element) element.textContent = value; };
     if (taskMetric) taskMetric.textContent = activeTasks ? `${activeTasks} مهام` : 'ابدأ خطتك';
-    if (gradeMetric) gradeMetric.textContent = Number.isFinite(Number(gradeCalculator.lastAverage)) ? `${Number(gradeCalculator.lastAverage).toFixed(1)}%` : 'احسب نتيجتك';
+    if (gradeMetric) gradeMetric.textContent = Number.isFinite(average) ? `${average.toFixed(1)}%` : 'احسب نتيجتك';
     if (galleryMetric) galleryMetric.textContent = studyGallery.length ? `${studyGallery.length} صور` : 'أضف أول صورة';
+    setServiceStatus('serviceStatusGrade', Number.isFinite(average) ? `آخر معدل ${average.toFixed(1)}%` : 'اختر النظام المناسب');
+    setServiceStatus('serviceStatusSchedule', activeTasks ? `${activeTasks} مهام قيد الإنجاز` : 'أضف أول مهمة');
+    setServiceStatus('serviceStatusTests', 'نماذج ونتائج مراجعة');
+    setServiceStatus('serviceStatusGallery', studyGallery.length ? `${studyGallery.length} صور محفوظة` : 'أضف أول صورة');
+    setServiceStatus('serviceStatusCompletion', activePlans ? `${activePlans} خطط قيد التنفيذ` : 'أنشئ خطة جديدة');
+    setServiceStatus('serviceStatusLibrary', savedResources ? `${savedResources} موارد شخصية` : 'أضف موردك الأول');
   }
 
   function initHome() {
