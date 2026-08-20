@@ -8,11 +8,20 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body data-page="service">
+<body data-page="library">
   <div class="app">
     <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
-    <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content"><section class="service-hub service-amber"><header class="service-hub-hero panel"><div class="service-hub-icon"><i class="fa-solid fa-book-bookmark"></i></div><div><span class="eyebrow">مصادر وملخصات</span><h2>المكتبة</h2><p>مساحة مرجعية لحفظ مصادر الدراسة والملخصات التي تحتاجها أثناء التحضير.</p></div></header><section class="service-hub-panel panel"><div class="service-hub-panel-head"><div><span class="eyebrow">ابدأ بخطوات منظمة</span><h3>ماذا ستجد في هذا القسم؟</h3></div><a class="outline-button" href="index.html"><i class="fa-solid fa-arrow-right"></i> الرئيسية</a></div><div class="service-feature-grid"><article><span>01</span><h4>ملخصات مركزة</h4><p>احفظ أهم الأفكار في مكان واحد.</p></article><article><span>02</span><h4>مصادر مفيدة</h4><p>نظّم روابطك وملفاتك الدراسية.</p></article><article><span>03</span><h4>مراجعة سريعة</h4><p>ارجع إلى ما تحتاجه قبل الاختبار.</p></article></div><button class="primary-button service-hub-action" type="button" data-demo="سيتم ربط تفاصيل المكتبة ومحتواه قريبًا."><i class="fa-solid fa-book-bookmark"></i> تصفح المكتبة</button></section></section></main></div>
+    <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content">
+      <section class="library-page"><header class="library-hero panel"><div><span class="eyebrow"><i class="fa-solid fa-book-bookmark"></i> مصادر منظمة</span><h2>المكتبة الدراسية</h2><p>مساحة بسيطة تجمع بطاقات مراجعة وملخصات وروابطك التعليمية في مكان واحد قابل للبحث.</p></div><button class="primary-button" id="addLibraryResource" type="button"><i class="fa-solid fa-plus"></i> إضافة مورد</button></header>
+      <section class="library-toolbar panel"><label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="librarySearch" type="search" placeholder="ابحث باسم مورد أو مادة"></label><div class="segmented-control" id="libraryFilters"><button class="active" type="button" data-library-filter="all">الكل</button><button type="button" data-library-filter="ملخص">ملخصات</button><button type="button" data-library-filter="قواعد">قواعد</button><button type="button" data-library-filter="تدريب">تدريب</button><button type="button" data-library-filter="شخصي">مواردي</button></div></section>
+      <section class="library-grid" id="libraryGrid" aria-live="polite"></section>
+      <section class="library-empty panel hidden" id="libraryEmpty"><i class="fa-solid fa-book-open"></i><h3>لا توجد موارد مطابقة</h3><p>جرّب تصنيفًا آخر أو أضف أول مورد شخصي.</p></section>
+      </section>
+    </main></div>
   </div>
-  <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script src="app.js"></script>
+  <nav class="bottom-nav" id="bottomNav"></nav>
+  <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div>
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
 </body>
 </html>

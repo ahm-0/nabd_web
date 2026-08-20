@@ -4,15 +4,24 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#080d19">
-  <title>نبض التفوق | التوقعات</title>
+  <title>نبض التفوق | محاور المراجعة</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body data-page="service">
+<body data-page="predictions">
   <div class="app">
     <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
-    <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content"><section class="service-hub service-cyan"><header class="service-hub-hero panel"><div class="service-hub-icon"><i class="fa-solid fa-bullseye"></i></div><div><span class="eyebrow">أسئلة متوقعة</span><h2>التوقعات</h2><p>صفحة مخصصة لتجميع المحاور والأسئلة الجديرة بالمراجعة قبل الامتحان.</p></div></header><section class="service-hub-panel panel"><div class="service-hub-panel-head"><div><span class="eyebrow">ابدأ بخطوات منظمة</span><h3>ماذا ستجد في هذا القسم؟</h3></div><a class="outline-button" href="index.html"><i class="fa-solid fa-arrow-right"></i> الرئيسية</a></div><div class="service-feature-grid"><article><span>01</span><h4>محاور مركزة</h4><p>حدّد الأجزاء التي تحتاج مراجعة إضافية.</p></article><article><span>02</span><h4>خطة مراجعة</h4><p>أدرج الأسئلة المهمة ضمن خطتك.</p></article><article><span>03</span><h4>تنبيه مسؤول</h4><p>استخدم التوقعات للمراجعة لا بدلًا من المنهاج.</p></article></div><button class="primary-button service-hub-action" type="button" data-demo="سيتم ربط تفاصيل التوقعات ومحتواه قريبًا."><i class="fa-solid fa-bullseye"></i> عرض المحاور المهمة</button></section></section></main></div>
+    <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content">
+      <section class="predictions-page"><header class="predictions-hero panel"><div><span class="eyebrow"><i class="fa-solid fa-bullseye"></i> مراجعة مركزة</span><h2>محاور وأسئلة للمراجعة</h2><p>بطاقات إرشادية تساعدك على تحديد الأولويات في المراجعة، وليست بديلًا عن المنهاج أو نماذج الامتحان الرسمية.</p></div><div class="prediction-update"><i class="fa-solid fa-clock-rotate-left"></i><span><small>آخر تحديث للمحتوى الإرشادي</small><b>20 آب 2026</b></span></div></header>
+      <section class="responsible-note panel"><i class="fa-solid fa-shield-heart"></i><div><b>استخدمها بوعي</b><p>هذه المحاور أدوات تنظيم ومراجعة. تحقق من أي إعلان أو نموذج رسمي من الجهة التعليمية المعتمدة، ولا تبنِ خطتك على توقع منفرد.</p></div></section>
+      <section class="prediction-filters panel" id="predictionFilters"><button class="active" type="button" data-prediction-filter="all">الكل</button><button type="button" data-prediction-filter="science">علمي</button><button type="button" data-prediction-filter="literary">أدبي</button><button type="button" data-prediction-filter="nine">تاسع</button><label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="predictionSearch" type="search" placeholder="ابحث بمادة أو محور"></label></section>
+      <section class="prediction-grid" id="predictionGrid" aria-live="polite"></section>
+      </section>
+    </main></div>
   </div>
-  <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script src="app.js"></script>
+  <nav class="bottom-nav" id="bottomNav"></nav>
+  <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div>
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
 </body>
 </html>

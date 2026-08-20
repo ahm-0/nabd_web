@@ -4,15 +4,24 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#080d19">
-  <title>نبض التفوق | تاسع وبكالوريا</title>
+  <title>نبض التفوق | بوابة المناهج</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body data-page="service">
+<body data-page="curriculum">
   <div class="app">
     <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
-    <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content"><section class="service-hub service-blue"><header class="service-hub-hero panel"><div class="service-hub-icon"><i class="fa-solid fa-user-graduate"></i></div><div><span class="eyebrow">المنهاج والملخصات</span><h2>تاسع وبكالوريا</h2><p>نقطة انطلاق واحدة لمسارات التاسع والبكالوريا والملخصات ذات الصلة.</p></div></header><section class="service-hub-panel panel"><div class="service-hub-panel-head"><div><span class="eyebrow">ابدأ بخطوات منظمة</span><h3>ماذا ستجد في هذا القسم؟</h3></div><a class="outline-button" href="index.html"><i class="fa-solid fa-arrow-right"></i> الرئيسية</a></div><div class="service-feature-grid"><article><span>01</span><h4>التاسع الأساسي</h4><p>محتوى منظم للمراجعة الأساسية.</p></article><article><span>02</span><h4>بكالوريا علمي</h4><p>مسار المواد العلمية والنماذج.</p></article><article><span>03</span><h4>بكالوريا أدبي</h4><p>مسار المواد الأدبية والمراجعات.</p></article></div><button class="primary-button service-hub-action" type="button" data-demo="سيتم ربط تفاصيل تاسع وبكالوريا ومحتواه قريبًا."><i class="fa-solid fa-user-graduate"></i> اختر مرحلتك</button></section></section></main></div>
+    <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content">
+      <section class="curriculum-page"><header class="curriculum-hero panel"><div><span class="eyebrow"><i class="fa-solid fa-user-graduate"></i> موادك في مكان واحد</span><h2>بوابة تاسع وبكالوريا</h2><p>اختر مرحلتك ومادتك، ثم ابدأ من مراجعة منظمة تضم محاور دراسة وأسئلة تدريب وأفكار تلخيص.</p></div><div class="curriculum-hero-tabs" id="curriculumStageTabs"><button type="button" class="active" data-curriculum-stage="nine">التاسع</button><button type="button" data-curriculum-stage="science">بكالوريا علمي</button><button type="button" data-curriculum-stage="literary">بكالوريا أدبي</button></div></header>
+      <section class="curriculum-toolbar panel"><label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="curriculumSearch" type="search" placeholder="ابحث عن مادة أو محور"></label><div class="curriculum-summary"><span><b id="curriculumSubjectCount">0</b> مواد متاحة</span><span><i class="fa-solid fa-book-open"></i> محتوى إرشادي منظم</span></div></section>
+      <section class="curriculum-grid" id="curriculumGrid" aria-live="polite"></section>
+      <section class="curriculum-guide panel"><div><i class="fa-solid fa-lightbulb"></i><div><b>كيف تستفيد من البوابة؟</b><p>اختر مادة، حدد المحور الذي ستراجعه، ثم أضفه إلى جدولك الدراسي أو ابدأ باختبار قصير لتثبيت الفكرة.</p></div></div><a class="outline-button" href="time-organizer.html"><i class="fa-solid fa-calendar-plus"></i> افتح الجدول الدراسي</a></section>
+      </section>
+    </main></div>
   </div>
-  <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script src="app.js"></script>
+  <nav class="bottom-nav" id="bottomNav"></nav>
+  <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div>
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
 </body>
 </html>

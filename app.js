@@ -382,6 +382,8 @@
 
   function updateProfileUI() {
     ensureStudentId();
+    const activeTaskCount = Array.isArray(studyTasks) ? studyTasks.filter(task => !task.completed).length : 0;
+    const savedAverage = Number(gradeCalculator?.lastAverage);
     const values = {
       profileName: fullName(),
       profileHandle: '@' + fullName().replaceAll(' ', '_'),
@@ -390,6 +392,8 @@
       profileCity: student.city || '—',
       profileStudentId: student.studentId,
       profilePosts: posts.filter(post => post.mine).length,
+      profileActiveTasks: activeTaskCount,
+      profileStudyAverage: Number.isFinite(savedAverage) ? `${savedAverage.toFixed(1)}%` : '—',
       homeGreeting: `أهلاً ${student.first || 'بك'}، لنصنع يومًا دراسيًا رائعًا`
     };
     Object.entries(values).forEach(([id, text]) => { const element = $('#' + id); if (element) element.textContent = text; });
@@ -498,6 +502,14 @@
     if (persist) { try { localStorage.setItem(STORE + 'exam_countdown_collapsed_v2', JSON.stringify(Boolean(collapsed))); } catch { /* يظل السلوك مرئيًا عند تعذر حفظ التفضيل */ } }
   }
 
+  function updateHomeMetrics() {
+    const activeTasks = studyTasks.filter(task => !task.completed).length;
+    const taskMetric = $('#homeTaskMetric'); const gradeMetric = $('#homeGradeMetric'); const galleryMetric = $('#homeGalleryMetric');
+    if (taskMetric) taskMetric.textContent = activeTasks ? `${activeTasks} مهام` : 'ابدأ خطتك';
+    if (gradeMetric) gradeMetric.textContent = Number.isFinite(Number(gradeCalculator.lastAverage)) ? `${Number(gradeCalculator.lastAverage).toFixed(1)}%` : 'احسب نتيجتك';
+    if (galleryMetric) galleryMetric.textContent = studyGallery.length ? `${studyGallery.length} صور` : 'أضف أول صورة';
+  }
+
   function initHome() {
     if (!$('#homeExamTitle')) return;
     $$('.exam-tab').forEach(tab => tab.addEventListener('click', () => setExam(tab.dataset.exam)));
@@ -505,6 +517,7 @@
     const storedCollapsed = readStorage('exam_countdown_collapsed_v2', true);
     setExamCountdownCollapsed(Boolean(storedCollapsed), false);
     $('#examCountdownToggle')?.addEventListener('click', () => setExamCountdownCollapsed(!$('#examCountdownWrap')?.classList.contains('is-collapsed')));
+    updateHomeMetrics();
     setExam('bac');
     let timer = window.setInterval(() => { if (!document.hidden) updateCountdown(); }, 1000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) updateCountdown(); });
@@ -652,30 +665,39 @@
   }
 
   function orderedGallery() {
-    const mode = $('#gallerySort')?.value || 'newest';
-    const items = [...studyGallery];
+    const mode = $('#gallerySort')?.value || 'newest'; const query = String($('#gallerySearch')?.value || '').trim().toLowerCase();
+    const items = studyGallery.filter(photo => !query || `${photo.category || 'أخرى'} ${photo.date} ${galleryDateLabel(photo.date)}`.toLowerCase().includes(query));
     if (mode === 'manual') return items;
     return items.sort((first, second) => mode === 'oldest' ? first.date.localeCompare(second.date) : second.date.localeCompare(first.date));
   }
 
   function renderGallery() {
-    const gallery = $('#studyGallery');
-    const count = $('#galleryCount');
-    if (!gallery) return;
-    if (count) count.textContent = `${studyGallery.length} ${studyGallery.length === 1 ? 'صورة' : 'صورة'}`;
-    if (!studyGallery.length) {
-      gallery.innerHTML = '<div class="gallery-empty"><i class="fa-regular fa-images"></i><b>ألبومك الدراسي جاهز</b><span>ارفع صور ملخصاتك أو لوحاتك، وستظهر مرتبة حسب اليوم هنا.</span></div>';
-      return;
-    }
-    const grouped = orderedGallery().reduce((groups, photo) => { (groups[photo.date] ||= []).push(photo); return groups; }, {});
-    gallery.innerHTML = Object.entries(grouped).map(([date, photos]) => `<section class="gallery-day"><header><div><i class="fa-regular fa-calendar"></i><b>${galleryDateLabel(date)}</b></div><span>${photos.length} صور</span></header><div class="gallery-grid">${photos.map(photo => `<article class="study-photo"><button type="button" class="gallery-image-open" data-gallery-image="${photo.id}" title="عرض الصورة بالحجم الكامل"><img loading="lazy" src="${photo.src}" alt="صورة دراسية بتاريخ ${escapeHTML(date)}"></button><div class="gallery-image-actions"><button type="button" data-gallery-move="${photo.id}" data-direction="up" title="تقديم الصورة"><i class="fa-solid fa-arrow-up"></i></button><button type="button" data-gallery-move="${photo.id}" data-direction="down" title="تأخير الصورة"><i class="fa-solid fa-arrow-down"></i></button><button type="button" class="gallery-image-remove" data-gallery-remove="${photo.id}" title="حذف الصورة"><i class="fa-solid fa-xmark"></i></button></div></article>`).join('')}</div></section>`).join('');
+    const gallery = $('#studyGallery'); const count = $('#galleryCount'); if (!gallery) return;
+    const visiblePhotos = orderedGallery(); if (count) count.textContent = `${studyGallery.length} صورة${studyGallery.length ? ` · ${visiblePhotos.length} ظاهرة` : ''}`;
+    if (!studyGallery.length) { gallery.innerHTML = '<div class="gallery-empty"><i class="fa-regular fa-images"></i><b>ألبومك الدراسي جاهز</b><span>ارفع صور ملخصاتك أو لوحاتك، وستظهر مرتبة حسب اليوم هنا.</span></div>'; return; }
+    if (!visiblePhotos.length) { gallery.innerHTML = '<div class="gallery-empty"><i class="fa-solid fa-magnifying-glass"></i><b>لا توجد صور مطابقة</b><span>جرّب البحث باسم تصنيف آخر أو بتاريخ مختلف.</span></div>'; return; }
+    const grouped = visiblePhotos.reduce((groups, photo) => { (groups[photo.date] ||= []).push(photo); return groups; }, {});
+    gallery.innerHTML = Object.entries(grouped).map(([date, photos]) => `<section class="gallery-day"><header><div><i class="fa-regular fa-calendar"></i><b>${galleryDateLabel(date)}</b></div><span>${photos.length} صور</span></header><div class="gallery-grid">${photos.map(photo => `<article class="study-photo"><button type="button" class="gallery-image-open" data-gallery-image="${photo.id}" title="عرض الصورة بالحجم الكامل"><img loading="lazy" src="${photo.src}" alt="صورة دراسية بتاريخ ${escapeHTML(date)}"><em>${escapeHTML(photo.category || 'أخرى')}</em></button><div class="gallery-image-actions"><button type="button" data-gallery-share="${photo.id}" title="مشاركة الصورة"><i class="fa-solid fa-share-nodes"></i></button><button type="button" data-gallery-move="${photo.id}" data-direction="up" title="تقديم الصورة"><i class="fa-solid fa-arrow-up"></i></button><button type="button" data-gallery-move="${photo.id}" data-direction="down" title="تأخير الصورة"><i class="fa-solid fa-arrow-down"></i></button><button type="button" class="gallery-image-remove" data-gallery-remove="${photo.id}" title="حذف الصورة"><i class="fa-solid fa-xmark"></i></button></div></article>`).join('')}</div></section>`).join('');
   }
 
   function openGalleryImage(id) {
-    const photo = studyGallery.find(item => item.id === id);
-    if (!photo) return;
-    openModal(`<div class="modal-head"><h3>صورة دراسية</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="image-viewer"><img src="${photo.src}" alt="صورة دراسية"><span><i class="fa-regular fa-calendar"></i> ${galleryDateLabel(photo.date)}</span></div>`);
+    const photo = studyGallery.find(item => item.id === id); if (!photo) return; const position = studyGallery.findIndex(item => item.id === id);
+    openModal(`<div class="modal-head"><div><span class="eyebrow">${escapeHTML(photo.category || 'أخرى')}</span><h3>صورة دراسية</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><div class="image-viewer"><img src="${photo.src}" alt="صورة دراسية"><span><i class="fa-regular fa-calendar"></i> ${galleryDateLabel(photo.date)}</span></div><div class="gallery-viewer-actions"><button class="outline-button" type="button" data-gallery-nav="previous" data-gallery-current="${photo.id}" ${position <= 0 ? 'disabled' : ''}><i class="fa-solid fa-arrow-right"></i> السابقة</button><button class="outline-button" type="button" data-gallery-share="${photo.id}"><i class="fa-solid fa-share-nodes"></i> مشاركة</button><button class="outline-button" type="button" data-gallery-nav="next" data-gallery-current="${photo.id}" ${position >= studyGallery.length - 1 ? 'disabled' : ''}>التالية <i class="fa-solid fa-arrow-left"></i></button></div>`);
   }
+
+  async function shareGalleryImage(id) {
+    const photo = studyGallery.find(item => item.id === id); if (!photo) return;
+    const title = `صورة دراسية · ${photo.category || 'أخرى'}`; const text = `صورة دراسية محفوظة بتاريخ ${galleryDateLabel(photo.date)} ضمن منصة نبض التفوق.`;
+    try {
+      const response = await fetch(photo.src); const blob = await response.blob(); const file = new File([blob], 'nabd-study-image.jpg', { type: blob.type || 'image/jpeg' });
+      if (navigator.canShare?.({ files: [file] }) && navigator.share) { await navigator.share({ title, text, files: [file] }); return; }
+      const nativeShare = capacitorPlugin('Share'); if (isNativeNabd() && nativeShare?.share) { await nativeShare.share({ title, text, dialogTitle: 'مشاركة صورة دراسية' }); return; }
+      if (navigator.share) { await navigator.share({ title, text }); return; }
+      await navigator.clipboard?.writeText(text); toast('تم نسخ وصف الصورة للمشاركة.');
+    } catch (error) { if (error?.name !== 'AbortError') toast('تعذر مشاركة الصورة حاليًا.'); }
+  }
+
+  function navigateGalleryImage(id, direction) { const index = studyGallery.findIndex(item => item.id === id); const next = studyGallery[index + (direction === 'next' ? 1 : -1)]; if (next) openGalleryImage(next.id); }
 
   function removeGalleryImage(id) {
     studyGallery = studyGallery.filter(photo => photo.id !== id);
@@ -706,6 +728,7 @@
     if (date && !date.value) date.value = dateInputValue();
     renderGallery();
     $('#gallerySort')?.addEventListener('change', renderGallery);
+    $('#gallerySearch')?.addEventListener('input', renderGallery);
     upload.addEventListener('change', event => {
       const files = [...event.target.files].slice(0, 4);
       if (!files.length) return;
@@ -713,8 +736,8 @@
       if (files.some(file => !file.type.startsWith('image/') || file.size > 650 * 1024)) { event.target.value = ''; return toast('اختر صورًا صالحة بحجم لا يتجاوز 650 كيلوبايت للصورة.'); }
       const before = [...studyGallery];
       Promise.all(files.map(file => new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(file); }))).then(images => {
-        const selectedDate = date?.value || dateInputValue();
-        studyGallery = images.map((src, index) => ({ id: `study-${Date.now()}-${index}`, src, date: selectedDate })).concat(studyGallery);
+        const selectedDate = date?.value || dateInputValue(); const category = $('#galleryCategory')?.value || 'أخرى';
+        studyGallery = images.map((src, index) => ({ id: `study-${Date.now()}-${index}`, src, date: selectedDate, category })).concat(studyGallery);
         if (!saveGallery()) { studyGallery = before; return; }
         event.target.value = '';
         renderGallery();
@@ -750,16 +773,32 @@
     return 'science';
   }
 
+  const gradeLabel = average => average >= 85 ? 'ممتاز' : average >= 65 ? 'جيد' : average >= 50 ? 'مقبول' : 'بحاجة إلى تحسين';
+
+  function updateGradeSummary() {
+    const average = Number(gradeCalculator.lastAverage);
+    const savedMarkCount = Object.values(gradeCalculator.marks || {}).filter(value => String(value ?? '').trim() !== '').length;
+    const fallbackSubjectCount = gradeCalculator.mode === 'custom' ? customGradeSubjects().length : savedMarkCount;
+    const subjectCount = Number(gradeCalculator.lastSubjectCount || fallbackSubjectCount || 0);
+    const summaryAverage = $('#gradeSummaryAverage'); const summarySubjects = $('#gradeSummarySubjects');
+    if (summaryAverage) summaryAverage.textContent = Number.isFinite(average) ? `${average.toFixed(1)}%` : '—';
+    if (summarySubjects) summarySubjects.textContent = subjectCount || 0;
+  }
+
+  function showGradeResult({ average, totalScore, totalMax, subjectCount, label, detail, weighted = false }) {
+    const result = $('#gradeResult'); if (!result) return;
+    const resultClass = average >= 85 ? 'excellent' : average >= 65 ? 'good' : average >= 50 ? 'pass' : 'needs-work';
+    result.className = `grade-result panel ${resultClass}`;
+    result.innerHTML = `<div class="grade-result-icon"><i class="fa-solid fa-chart-line"></i></div><div class="grade-result-copy"><span>معدلك الحالي</span><b>${average.toFixed(2)}<small> / 100</small></b><p>${escapeHTML(detail)}</p><div class="grade-result-breakdown"><span><b>${Number(totalScore).toFixed(1)}</b><small>${weighted ? 'إجمالي العلامات المرجّحة' : 'مجموع العلامات'}</small></span><span><b>${Number(totalMax).toFixed(1)}</b><small>${weighted ? 'إجمالي الأوزان الممكنة' : 'المجموع التام'}</small></span><span><b>${subjectCount}</b><small>مواد محسوبة</small></span></div></div><div class="grade-result-tag">${escapeHTML(label || gradeLabel(average))}</div>`;
+    result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
   function renderGradeSubjects() {
-    const select = $('#gradeStage');
-    const container = $('#gradeSubjects');
+    const select = $('#gradeStage'); const container = $('#gradeSubjects');
     if (!select || !container) return;
-    const stage = select.value || defaultGradeStage();
-    const curriculum = gradeCurricula[stage];
-    gradeCalculator.stage = stage;
-    gradeCalculator.marks ||= {};
-    const title = $('#gradeTitle');
-    const count = $('#gradeSubjectCount');
+    const stage = select.value || defaultGradeStage(); const curriculum = gradeCurricula[stage];
+    gradeCalculator.stage = stage; gradeCalculator.marks ||= {};
+    const title = $('#gradeTitle'); const count = $('#gradeSubjectCount');
     if (title) title.textContent = curriculum.title;
     if (count) count.textContent = `${curriculum.subjects.length} مواد`;
     container.innerHTML = curriculum.subjects.map((subject, index) => `<label class="grade-subject"><span><b>${escapeHTML(subject.name)}</b><small>التامة ${subject.max} · حد الكسر ${subject.pass}</small></span><input class="grade-input" data-subject="${escapeHTML(subject.name)}" data-max="${subject.max}" data-pass="${subject.pass}" type="number" inputmode="decimal" min="0" max="${subject.max}" step="0.01" placeholder="/ ${subject.max}" value="${gradeCalculator.marks[subject.name] ?? ''}"><i>${String(index + 1).padStart(2, '0')}</i></label>`).join('');
@@ -769,29 +808,320 @@
     const inputs = $$('.grade-input');
     const values = inputs.map(input => ({ subject: input.dataset.subject, raw: input.value.trim(), value: Number(input.value), max: Number(input.dataset.max), pass: Number(input.dataset.pass) })).filter(item => item.raw !== '' && Number.isFinite(item.value) && item.value >= 0 && item.value <= item.max);
     if (!values.length) return toast('أدخل علامة مادة واحدة على الأقل لعرض المعدل.');
-    const totalScore = values.reduce((sum, item) => sum + item.value, 0);
-    const totalMax = values.reduce((sum, item) => sum + item.max, 0);
-    const average = (totalScore / totalMax) * 100;
-    const passedSubjects = values.filter(item => item.value >= item.pass).length;
-    const result = $('#gradeResult');
-    if (!result) return;
-    const resultClass = average >= 85 ? 'excellent' : average >= 65 ? 'good' : average >= 50 ? 'pass' : 'needs-work';
-    result.className = `grade-result panel ${resultClass}`;
-    result.innerHTML = `<div class="grade-result-icon"><i class="fa-solid fa-chart-line"></i></div><div><span>نسبتك المئوية التقريبية</span><b>${average.toFixed(2)}<small> / 100</small></b><p>مجموعك الحالي ${totalScore.toFixed(0)} من ${totalMax.toFixed(0)} عبر ${values.length} مواد، وقد تجاوزت حد الكسر في ${passedSubjects} مواد.</p></div><div class="grade-result-tag">${average >= 85 ? 'ممتاز' : average >= 65 ? 'جيد' : average >= 50 ? 'مقبول' : 'بحاجة إلى تحسين'}</div>`;
+    const totalScore = values.reduce((sum, item) => sum + item.value, 0); const totalMax = values.reduce((sum, item) => sum + item.max, 0);
+    const average = (totalScore / totalMax) * 100; const passedSubjects = values.filter(item => item.value >= item.pass).length;
     gradeCalculator.marks = Object.fromEntries(inputs.map(input => [input.dataset.subject, input.value]));
-    gradeCalculator.lastAverage = average;
-    saveGradeCalculator();
-    result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    gradeCalculator.lastAverage = average; gradeCalculator.lastSubjectCount = values.length; gradeCalculator.mode = 'official';
+    saveGradeCalculator(); updateGradeSummary();
+    showGradeResult({ average, totalScore, totalMax, subjectCount: values.length, label: gradeLabel(average), detail: `مجموعك الحالي ${totalScore.toFixed(0)} من ${totalMax.toFixed(0)} عبر ${values.length} مواد، وقد تجاوزت حد الكسر في ${passedSubjects} مواد.` });
+  }
+
+  function customGradeSubjects() { return Array.isArray(gradeCalculator.customSubjects) ? gradeCalculator.customSubjects : []; }
+
+  function renderCustomGradeSubjects() {
+    const list = $('#customGradeList'); const count = $('#customGradeCount'); if (!list) return;
+    const subjects = customGradeSubjects(); if (count) count.textContent = `${subjects.length} مواد`;
+    list.innerHTML = subjects.length ? subjects.map((subject, index) => `<article class="custom-grade-row"><span class="custom-grade-index">${String(index + 1).padStart(2, '0')}</span><div><b>${escapeHTML(subject.name)}</b><small>${Number(subject.score).toFixed(1)} من ${Number(subject.max).toFixed(1)} · وزن ${Number(subject.weight).toFixed(1)}</small></div><b class="custom-grade-percent">${((Number(subject.score) / Number(subject.max)) * 100).toFixed(1)}%</b><button type="button" data-custom-grade-remove="${escapeHTML(subject.id)}" aria-label="حذف مادة ${escapeHTML(subject.name)}"><i class="fa-solid fa-xmark"></i></button></article>`).join('') : `<div class="custom-grade-empty"><i class="fa-solid fa-layer-group"></i><div><b>لم تضف موادًا بعد</b><small>أضف أول مادة ثم احسب المعدل المرجّح.</small></div></div>`;
+  }
+
+  function setGradeMode(mode, persist = true) {
+    const chosen = mode === 'custom' ? 'custom' : 'official'; gradeCalculator.mode = chosen;
+    $('#gradeOfficialView')?.classList.toggle('hidden', chosen !== 'official'); $('#gradeCustomView')?.classList.toggle('hidden', chosen !== 'custom');
+    $$('[data-grade-mode]').forEach(button => button.classList.toggle('active', button.dataset.gradeMode === chosen));
+    $('#gradeResult')?.classList.add('hidden'); if (persist) saveGradeCalculator();
+  }
+
+  function addCustomGradeSubject(form) {
+    const data = new FormData(form); const name = String(data.get('name') || '').trim(); const score = Number(data.get('score')); const max = Number(data.get('max')); const weight = Number(data.get('weight'));
+    if (!name || !Number.isFinite(score) || !Number.isFinite(max) || !Number.isFinite(weight) || score < 0 || max <= 0 || score > max || weight <= 0) return toast('تحقق من اسم المادة والعلامة والوزن قبل الإضافة.');
+    gradeCalculator.customSubjects = [...customGradeSubjects(), { id: `custom-grade-${Date.now()}-${Math.random().toString(16).slice(2)}`, name, score, max, weight }];
+    saveGradeCalculator(); form.reset(); form.elements.max.value = '100'; form.elements.weight.value = '1'; renderCustomGradeSubjects(); updateGradeSummary(); toast('تمت إضافة المادة إلى قائمتك.');
+  }
+
+  function calculateCustomGrade() {
+    const subjects = customGradeSubjects(); if (!subjects.length) return toast('أضف مادة واحدة على الأقل لحساب المعدل.');
+    const weightedScore = subjects.reduce((sum, subject) => sum + ((Number(subject.score) / Number(subject.max)) * 100 * Number(subject.weight)), 0); const totalWeight = subjects.reduce((sum, subject) => sum + Number(subject.weight), 0);
+    const average = weightedScore / totalWeight; gradeCalculator.lastAverage = average; gradeCalculator.lastSubjectCount = subjects.length; gradeCalculator.mode = 'custom'; saveGradeCalculator(); updateGradeSummary();
+    showGradeResult({ average, totalScore: weightedScore, totalMax: totalWeight * 100, subjectCount: subjects.length, label: gradeLabel(average), weighted: true, detail: `حُسب المعدل من نسب المواد بعد ضرب كل مادة بوزنها أو عدد ساعاتها. مجموع الأوزان المستخدمة ${totalWeight.toFixed(1)}.` });
   }
 
   function initCalculator() {
-    const select = $('#gradeStage');
-    if (!select) return;
-    select.value = defaultGradeStage();
-    renderGradeSubjects();
+    const select = $('#gradeStage'); if (!select) return;
+    select.value = defaultGradeStage(); renderGradeSubjects(); renderCustomGradeSubjects(); updateGradeSummary(); setGradeMode(gradeCalculator.mode || 'official', false);
     select.addEventListener('change', () => { gradeCalculator.marks = {}; renderGradeSubjects(); saveGradeCalculator(); $('#gradeResult')?.classList.add('hidden'); });
     $('#gradeForm')?.addEventListener('submit', event => { event.preventDefault(); calculateGrade(); });
-    $('#gradeReset')?.addEventListener('click', () => { gradeCalculator.marks = {}; saveGradeCalculator(); renderGradeSubjects(); $('#gradeResult')?.classList.add('hidden'); toast('تم مسح العلامات المدخلة.'); });
+    $('#gradeReset')?.addEventListener('click', () => { gradeCalculator.marks = {}; saveGradeCalculator(); renderGradeSubjects(); $('#gradeResult')?.classList.add('hidden'); updateGradeSummary(); toast('تم مسح العلامات المدخلة.'); });
+    $$('[data-grade-mode]').forEach(button => button.addEventListener('click', () => setGradeMode(button.dataset.gradeMode)));
+    $('#customGradeSubjectForm')?.addEventListener('submit', event => { event.preventDefault(); addCustomGradeSubject(event.currentTarget); });
+    $('#customGradeList')?.addEventListener('click', event => { const remove = event.target.closest('[data-custom-grade-remove]'); if (!remove) return; gradeCalculator.customSubjects = customGradeSubjects().filter(subject => subject.id !== remove.dataset.customGradeRemove); saveGradeCalculator(); renderCustomGradeSubjects(); updateGradeSummary(); });
+    $('#customGradeReset')?.addEventListener('click', () => { if (!customGradeSubjects().length || !confirm('هل تريد مسح جميع المواد المخصصة؟')) return; gradeCalculator.customSubjects = []; saveGradeCalculator(); renderCustomGradeSubjects(); updateGradeSummary(); $('#gradeResult')?.classList.add('hidden'); });
+    $('#customGradeCalculate')?.addEventListener('click', calculateCustomGrade);
+  }
+
+  const testCatalogData = [
+    { id: 'physics-motion', title: 'مراجعة الحركة والقوى', subject: 'الفيزياء', category: 'science', level: 'متوسط', duration: 8, score: 20, questions: [
+      { text: 'ما وحدة قياس القوة في النظام الدولي؟', options: ['نيوتن', 'جول', 'واط', 'باسكال'], correct: 0, explain: 'القوة تقاس بوحدة النيوتن (N).' },
+      { text: 'تزداد سرعة جسم عندما تكون محصلة القوى المؤثرة عليه:', options: ['تساوي صفرًا', 'غير متوازنة', 'ثابتة عند الصفر', 'معدومة دائمًا'], correct: 1, explain: 'القوة المحصلة غير الصفرية تسبب تسارعًا، أي تغيرًا في السرعة أو الاتجاه.' },
+      { text: 'أي كمية مما يلي تعد كمية متجهة؟', options: ['الزمن', 'الكتلة', 'الإزاحة', 'الطاقة'], correct: 2, explain: 'الإزاحة تحتاج مقدارًا واتجاهًا، لذلك هي كمية متجهة.' }
+    ] },
+    { id: 'arabic-grammar', title: 'أساسيات النحو العربي', subject: 'اللغة العربية', category: 'language', level: 'أساسي', duration: 7, score: 20, questions: [
+      { text: 'الاسم الذي يأتي بعد حرف الجر يسمى:', options: ['مبتدأ', 'مفعولًا به', 'اسمًا مجرورًا', 'خبرًا'], correct: 2, explain: 'كل اسم يأتي بعد حرف جر يكون مجرورًا.' },
+      { text: 'في الجملة «كتبَ الطالبُ الدرسَ»، كلمة «الطالبُ» هي:', options: ['فاعل', 'مفعول به', 'خبر', 'حال'], correct: 0, explain: 'الطالب هو من قام بالفعل، لذا يعرب فاعلًا مرفوعًا.' },
+      { text: 'أي الكلمات التالية فعل مضارع؟', options: ['درسَ', 'يدرسُ', 'اُدرسْ', 'دراسةٌ'], correct: 1, explain: 'يدرس فعل مضارع يدل على الحاضر أو المستقبل.' }
+    ] },
+    { id: 'math-functions', title: 'الدوال والمعادلات', subject: 'الرياضيات', category: 'science', level: 'متقدم', duration: 10, score: 30, questions: [
+      { text: 'حل المعادلة 2س + 6 = 14 هو:', options: ['2', '3', '4', '5'], correct: 2, explain: 'بطرح 6 نحصل على 2س = 8، وبالتالي س = 4.' },
+      { text: 'الدالة التي تربط كل عنصر من المجال بعنصر واحد فقط في المجال المقابل تسمى:', options: ['علاقة عكسية', 'دالة', 'متباينة', 'متجهة'], correct: 1, explain: 'هذا هو تعريف الدالة.' },
+      { text: 'قيمة س² عند س = -3 هي:', options: ['-9', '6', '9', '3'], correct: 2, explain: 'تربيع العدد السالب يعطي قيمة موجبة: (-3)² = 9.' }
+    ] },
+    { id: 'general-study', title: 'مهارات الدراسة الذكية', subject: 'مهارات عامة', category: 'general', level: 'أساسي', duration: 5, score: 15, questions: [
+      { text: 'أفضل خطوة عند مواجهة درس طويل هي:', options: ['تأجيله دائمًا', 'تقسيمه إلى أجزاء قصيرة', 'قراءته مرة واحدة بسرعة', 'حفظه دون فهم'], correct: 1, explain: 'تقسيم الدرس إلى أهداف قصيرة يجعل المتابعة أسهل وأكثر واقعية.' },
+      { text: 'أي ممارسة تساعد على تثبيت التعلم؟', options: ['الاسترجاع النشط', 'تجنب الأسئلة', 'القراءة دون توقف', 'إلغاء المراجعة'], correct: 0, explain: 'استرجاع الفكرة والإجابة عنها يساعد على كشف ما تحتاجه من مراجعة.' },
+      { text: 'متى يُفضل مراجعة أخطاء الاختبار؟', options: ['بعد الحصول على النتيجة مباشرة', 'بعد شهر دون ملاحظات', 'لا حاجة لمراجعتها', 'قبل بدء الاختبار فقط'], correct: 0, explain: 'المراجعة المباشرة تربط الخطأ بتفسيره وتساعد على منع تكراره.' }
+    ] }
+  ];
+  let activeTestFilter = 'all'; let activeTestId = ''; let activeTestIndex = 0; let activeTestAnswers = {};
+  const savedTestHistory = () => { const history = readStorage('test_history', []); return Array.isArray(history) ? history : []; };
+  const saveTestHistory = history => { try { localStorage.setItem(STORE + 'test_history', JSON.stringify(history.slice(0, 20))); } catch { toast('تعذر حفظ نتيجة الاختبار محليًا.'); } };
+  const activeTest = () => testCatalogData.find(test => test.id === activeTestId);
+
+  function renderTestCatalog() {
+    const catalog = $('#testCatalog'); if (!catalog) return;
+    const query = String($('#testSearch')?.value || '').trim().toLowerCase();
+    const filtered = testCatalogData.filter(test => (activeTestFilter === 'all' || test.category === activeTestFilter) && `${test.title} ${test.subject} ${test.level}`.toLowerCase().includes(query));
+    const history = savedTestHistory(); const best = history.reduce((highest, record) => Math.max(highest, Number(record.percentage) || 0), 0);
+    if ($('#testAvailableCount')) $('#testAvailableCount').textContent = testCatalogData.length;
+    if ($('#testBestScore')) $('#testBestScore').textContent = history.length ? `${best.toFixed(0)}%` : '—';
+    catalog.innerHTML = filtered.length ? filtered.map(test => { const previous = history.find(record => record.testId === test.id); return `<article class="test-card"><div class="test-card-top"><span class="test-subject-chip ${escapeHTML(test.category)}">${escapeHTML(test.subject)}</span><span class="test-level">${escapeHTML(test.level)}</span></div><h3>${escapeHTML(test.title)}</h3><div class="test-meta"><span><i class="fa-regular fa-circle-question"></i> ${test.questions.length} أسئلة</span><span><i class="fa-regular fa-clock"></i> ${test.duration} دقائق</span><span><i class="fa-solid fa-star"></i> ${test.score} درجة</span></div>${previous ? `<p class="test-previous"><i class="fa-solid fa-clock-rotate-left"></i> آخر نتيجة: ${Number(previous.percentage).toFixed(0)}%</p>` : '<p class="test-previous muted">لم تبدأ هذا النموذج بعد</p>'}<button class="primary-button test-start" type="button" data-start-test="${escapeHTML(test.id)}"><i class="fa-solid fa-play"></i> ابدأ الاختبار</button></article>`; }).join('') : `<div class="learning-empty panel"><i class="fa-solid fa-magnifying-glass"></i><h3>لا توجد نماذج مطابقة</h3><p>جرّب البحث باسم مادة أخرى أو اختر تصنيفًا مختلفًا.</p></div>`;
+  }
+
+  function renderTestSession() {
+    const test = activeTest(); const session = $('#testSession'); if (!test || !session) return;
+    const question = test.questions[activeTestIndex]; const answered = Object.keys(activeTestAnswers).length;
+    $('#testCatalogToolbar')?.classList.add('hidden'); $('#testCatalog')?.classList.add('hidden'); $('#testResultView')?.classList.add('hidden'); session.classList.remove('hidden');
+    session.innerHTML = `<header class="test-session-head panel"><button class="test-quiet-button" type="button" data-exit-test><i class="fa-solid fa-arrow-right"></i> العودة للنماذج</button><div><span>${escapeHTML(test.subject)} · ${escapeHTML(test.level)}</span><h2>${escapeHTML(test.title)}</h2></div><div class="test-clock"><i class="fa-regular fa-clock"></i><b>${test.duration} د</b><small>مدة مقترحة</small></div></header><section class="test-progress-wrap"><div><span>السؤال ${activeTestIndex + 1} من ${test.questions.length}</span><b>${answered}/${test.questions.length} مجاب</b></div><div class="test-progress"><i style="width:${((activeTestIndex + 1) / test.questions.length) * 100}%"></i></div></section><article class="question-card panel"><span class="question-number">${String(activeTestIndex + 1).padStart(2, '0')}</span><h3>${escapeHTML(question.text)}</h3><div class="answer-options">${question.options.map((option, index) => `<button type="button" class="answer-option ${activeTestAnswers[activeTestIndex] === index ? 'selected' : ''}" data-test-answer="${index}"><span>${String.fromCharCode(1571 + index)}</span>${escapeHTML(option)}</button>`).join('')}</div></article><footer class="test-navigation"><button class="outline-button" type="button" data-test-nav="previous" ${activeTestIndex === 0 ? 'disabled' : ''}><i class="fa-solid fa-arrow-right"></i> السابق</button>${activeTestIndex === test.questions.length - 1 ? '<button class="primary-button" type="button" data-finish-test>إنهاء وعرض النتيجة <i class="fa-solid fa-check"></i></button>' : '<button class="primary-button" type="button" data-test-nav="next">التالي <i class="fa-solid fa-arrow-left"></i></button>'}</footer>`;
+  }
+
+  function startTest(testId) { activeTestId = testId; activeTestIndex = 0; activeTestAnswers = {}; renderTestSession(); }
+  function exitTest() { activeTestId = ''; activeTestIndex = 0; activeTestAnswers = {}; $('#testSession')?.classList.add('hidden'); $('#testResultView')?.classList.add('hidden'); $('#testCatalogToolbar')?.classList.remove('hidden'); $('#testCatalog')?.classList.remove('hidden'); renderTestCatalog(); }
+  function chooseTestAnswer(index) { activeTestAnswers[activeTestIndex] = Number(index); renderTestSession(); }
+  function moveTestQuestion(direction) { const test = activeTest(); if (!test) return; activeTestIndex = Math.min(test.questions.length - 1, Math.max(0, activeTestIndex + direction)); renderTestSession(); }
+
+  function finishTest() {
+    const test = activeTest(); if (!test) return; const missing = test.questions.findIndex((_, index) => activeTestAnswers[index] === undefined);
+    if (missing >= 0) { activeTestIndex = missing; renderTestSession(); return toast('أجب عن جميع الأسئلة قبل إنهاء الاختبار.'); }
+    const correct = test.questions.filter((question, index) => activeTestAnswers[index] === question.correct).length; const percentage = (correct / test.questions.length) * 100;
+    const record = { id: `test-${Date.now()}`, testId: test.id, title: test.title, subject: test.subject, correct, total: test.questions.length, percentage, completedAt: Date.now() }; saveTestHistory([record, ...savedTestHistory()]);
+    const result = $('#testResultView'); if (!result) return; $('#testSession')?.classList.add('hidden'); result.classList.remove('hidden');
+    result.innerHTML = `<section class="test-result-summary panel"><span class="test-result-icon ${percentage >= 65 ? 'success' : 'retry'}"><i class="fa-solid ${percentage >= 65 ? 'fa-trophy' : 'fa-rotate-right'}"></i></span><div><span>نتيجتك في ${escapeHTML(test.title)}</span><b>${percentage.toFixed(0)}<small>%</small></b><p>${percentage >= 85 ? 'أداء ممتاز، حافظ على هذا المستوى.' : percentage >= 65 ? 'نتيجة جيدة، راجع الإجابات التي أخطأت فيها.' : 'هذه فرصة جيدة لمعرفة المحاور التي تحتاج مراجعة إضافية.'}</p></div><div class="test-result-numbers"><span><b>${correct}</b><small>صحيحة</small></span><span><b>${test.questions.length - correct}</b><small>خاطئة</small></span><span><b>${test.questions.length}</b><small>إجمالي</small></span></div></section><section class="answer-review"><div class="section-list-head"><div><span class="eyebrow">مراجعة الإجابات</span><h3>تعلم من كل سؤال</h3></div><button class="outline-button" type="button" data-retry-test="${escapeHTML(test.id)}"><i class="fa-solid fa-rotate-right"></i> إعادة الاختبار</button></div>${test.questions.map((question, index) => { const selected = activeTestAnswers[index]; const right = selected === question.correct; return `<article class="review-item ${right ? 'right' : 'wrong'}"><span><i class="fa-solid ${right ? 'fa-check' : 'fa-xmark'}"></i></span><div><b>${index + 1}. ${escapeHTML(question.text)}</b><p>إجابتك: ${escapeHTML(question.options[selected])}</p>${!right ? `<p class="correct-answer">الإجابة الصحيحة: ${escapeHTML(question.options[question.correct])}</p>` : ''}<small><i class="fa-solid fa-lightbulb"></i> ${escapeHTML(question.explain)}</small></div></article>`; }).join('')}</section><button class="test-back-catalog" type="button" data-exit-test><i class="fa-solid fa-arrow-right"></i> العودة إلى جميع الاختبارات</button>`;
+    renderTestCatalog();
+  }
+
+  function initTests() {
+    if (!$('#testCatalog')) return; renderTestCatalog();
+    $('#testSearch')?.addEventListener('input', renderTestCatalog);
+    $$('[data-test-filter]').forEach(button => button.addEventListener('click', () => { activeTestFilter = button.dataset.testFilter; $$('[data-test-filter]').forEach(item => item.classList.toggle('active', item === button)); renderTestCatalog(); }));
+    $('#testCatalog')?.addEventListener('click', event => { const start = event.target.closest('[data-start-test]'); if (start) startTest(start.dataset.startTest); });
+    $('#testSession')?.addEventListener('click', event => { const answer = event.target.closest('[data-test-answer]'); const navigation = event.target.closest('[data-test-nav]'); if (answer) chooseTestAnswer(answer.dataset.testAnswer); if (navigation) moveTestQuestion(navigation.dataset.testNav === 'next' ? 1 : -1); if (event.target.closest('[data-finish-test]')) finishTest(); if (event.target.closest('[data-exit-test]')) exitTest(); });
+    $('#testResultView')?.addEventListener('click', event => { const retry = event.target.closest('[data-retry-test]'); if (retry) startTest(retry.dataset.retryTest); if (event.target.closest('[data-exit-test]')) exitTest(); });
+  }
+
+  let completionPlans = readStorage('completion_plans', []); completionPlans = Array.isArray(completionPlans) ? completionPlans : [];
+  const saveCompletionPlans = () => { try { localStorage.setItem(STORE + 'completion_plans', JSON.stringify(completionPlans)); } catch { toast('تعذر حفظ خطة الختم محليًا.'); } };
+  const completionDateKey = date => localDateKey(new Date(`${date}T12:00:00`));
+  const completionDaysBetween = (start, end) => Math.max(1, Math.floor((new Date(`${end}T12:00:00`) - new Date(`${start}T12:00:00`)) / 86400000) + 1);
+  const completionProgress = plan => Math.min(100, (Number(plan.completedUnits || 0) / Number(plan.totalUnits || 1)) * 100);
+  const completionRemainingDays = plan => Math.max(1, completionDaysBetween(localDateKey(), plan.endDate));
+  const completionTodayTarget = plan => Math.ceil(Math.max(0, Number(plan.totalUnits) - Number(plan.completedUnits || 0)) / completionRemainingDays(plan));
+
+  function renderCompletionPlans() {
+    const list = $('#completionList'); const empty = $('#completionEmpty'); const overview = $('#completionOverview'); if (!list || !empty) return;
+    const totalPlans = completionPlans.length; const activePlans = completionPlans.filter(plan => Number(plan.completedUnits || 0) < Number(plan.totalUnits)).length;
+    const average = totalPlans ? completionPlans.reduce((sum, plan) => sum + completionProgress(plan), 0) / totalPlans : 0;
+    if (overview) overview.innerHTML = `<article><i class="fa-solid fa-list-check"></i><span><small>خطط نشطة</small><b>${activePlans}</b></span></article><article><i class="fa-solid fa-chart-line"></i><span><small>متوسط الإنجاز</small><b>${totalPlans ? `${average.toFixed(0)}%` : '—'}</b></span></article><article><i class="fa-solid fa-calendar-day"></i><span><small>مطلوب اليوم</small><b>${completionPlans.reduce((sum, plan) => sum + (completionProgress(plan) >= 100 ? 0 : completionTodayTarget(plan)), 0)} وحدات</b></span></article>`;
+    empty.classList.toggle('hidden', totalPlans > 0); if (!totalPlans) { list.innerHTML = ''; return; }
+    list.innerHTML = completionPlans.sort((a, b) => Number(b.updatedAt || 0) - Number(a.updatedAt || 0)).map(plan => { const progress = completionProgress(plan); const done = Number(plan.completedUnits || 0); const total = Number(plan.totalUnits); const complete = progress >= 100; const remaining = Math.max(0, total - done); const today = complete ? 0 : completionTodayTarget(plan); return `<article class="completion-card panel ${complete ? 'complete' : ''}"><header><div><span class="eyebrow">${escapeHTML(plan.unitLabel || 'وحدات دراسية')}</span><h3>${escapeHTML(plan.title)}</h3><p><i class="fa-regular fa-calendar"></i> من ${studyDateText(plan.startDate)} إلى ${studyDateText(plan.endDate)}</p></div><div class="completion-percent"><b>${progress.toFixed(0)}%</b><span>الإنجاز</span></div></header><div class="completion-progress"><i style="width:${progress}%"></i></div><div class="completion-stats"><span><b>${done} / ${total}</b><small>تم إنجازه</small></span><span><b>${remaining}</b><small>المتبقي</small></span><span><b>${today}</b><small>المطلوب اليوم</small></span></div>${complete ? '<div class="completion-done"><i class="fa-solid fa-circle-check"></i> اكتملت الخطة، أحسنت الاستمرار.</div>' : `<div class="completion-update"><label>سجّل المنجز الآن<input id="completionProgress-${escapeHTML(plan.id)}" type="number" min="0" max="${total}" value="${done}"></label><button class="primary-button" type="button" data-completion-action="update" data-plan-id="${escapeHTML(plan.id)}"><i class="fa-solid fa-check"></i> تحديث الإنجاز</button></div>`}<footer><button type="button" data-completion-action="edit" data-plan-id="${escapeHTML(plan.id)}"><i class="fa-solid fa-pen"></i> تعديل الخطة</button><button type="button" data-completion-action="delete" data-plan-id="${escapeHTML(plan.id)}"><i class="fa-regular fa-trash-can"></i> حذف</button></footer></article>`; }).join('');
+  }
+
+  function openCompletionPlanEditor(planId = '') {
+    const plan = completionPlans.find(item => item.id === planId) || {}; const start = plan.startDate || localDateKey(); const endDate = new Date(`${start}T12:00:00`); endDate.setDate(endDate.getDate() + 14); const end = plan.endDate || localDateKey(endDate);
+    openModal(`<div class="modal-head"><h3>${plan.id ? 'تعديل خطة الختم' : 'إنشاء خطة ختم'}</h3><button class="close-modal" aria-label="إغلاق">×</button></div><form id="completionPlanForm" data-plan-id="${plan.id || ''}"><div class="form-grid"><div class="form-group full"><label>اسم المادة أو الخطة</label><input name="title" maxlength="100" required placeholder="مثال: خطة ختم الكيمياء" value="${escapeHTML(plan.title || '')}"></div><div class="form-group"><label>نوع الوحدة</label><select name="unitLabel"><option value="صفحات" ${(plan.unitLabel || 'صفحات') === 'صفحات' ? 'selected' : ''}>صفحات</option><option value="دروس" ${plan.unitLabel === 'دروس' ? 'selected' : ''}>دروس</option><option value="وحدات" ${plan.unitLabel === 'وحدات' ? 'selected' : ''}>وحدات</option><option value="فصول" ${plan.unitLabel === 'فصول' ? 'selected' : ''}>فصول</option></select></div><div class="form-group"><label>إجمالي الوحدات</label><input name="totalUnits" type="number" min="1" required value="${escapeHTML(plan.totalUnits || '')}" placeholder="200"></div><div class="form-group"><label>تاريخ البداية</label><input name="startDate" type="date" required value="${escapeHTML(start)}"></div><div class="form-group"><label>تاريخ النهاية</label><input name="endDate" type="date" required value="${escapeHTML(end)}"></div>${plan.id ? `<div class="form-group full"><label>ما أنجزته حتى الآن</label><input name="completedUnits" type="number" min="0" max="${escapeHTML(plan.totalUnits || 1)}" value="${escapeHTML(plan.completedUnits || 0)}"></div>` : ''}</div><div class="form-actions"><button class="outline-button close-modal" type="button">إلغاء</button><button class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ الخطة</button></div></form>`);
+  }
+
+  function saveCompletionPlan(form) {
+    const data = new FormData(form); const id = form.dataset.planId; const old = completionPlans.find(item => item.id === id); const title = String(data.get('title') || '').trim(); const totalUnits = Number(data.get('totalUnits')); const startDate = String(data.get('startDate')); const endDate = String(data.get('endDate')); const completedUnits = Math.max(0, Math.min(totalUnits, Number(data.get('completedUnits') ?? old?.completedUnits ?? 0)));
+    if (!title || !Number.isFinite(totalUnits) || totalUnits <= 0 || !startDate || !endDate || new Date(`${endDate}T12:00:00`) < new Date(`${startDate}T12:00:00`)) return toast('تحقق من اسم الخطة وعدد الوحدات وتواريخها.');
+    const plan = { id: id || `plan-${Date.now()}-${Math.random().toString(16).slice(2)}`, title, unitLabel: String(data.get('unitLabel') || 'وحدات'), totalUnits, completedUnits, startDate, endDate, createdAt: old?.createdAt || Date.now(), updatedAt: Date.now() };
+    completionPlans = old ? completionPlans.map(item => item.id === id ? plan : item) : [plan, ...completionPlans]; saveCompletionPlans(); closeModal(); renderCompletionPlans(); toast('تم حفظ خطة الختم.');
+  }
+
+  function handleCompletionAction(button) {
+    const plan = completionPlans.find(item => item.id === button.dataset.planId); if (!plan) return; const action = button.dataset.completionAction;
+    if (action === 'edit') return openCompletionPlanEditor(plan.id);
+    if (action === 'delete') { if (!confirm('هل تريد حذف خطة الختم؟')) return; completionPlans = completionPlans.filter(item => item.id !== plan.id); saveCompletionPlans(); renderCompletionPlans(); return toast('تم حذف الخطة.'); }
+    const input = $(`#completionProgress-${plan.id}`); const value = Number(input?.value); if (!Number.isFinite(value) || value < 0 || value > Number(plan.totalUnits)) return toast('أدخل عددًا صالحًا لما أنجزته.'); plan.completedUnits = value; plan.updatedAt = Date.now(); saveCompletionPlans(); renderCompletionPlans(); toast(value >= Number(plan.totalUnits) ? 'اكتملت الخطة، أحسنت!' : 'تم تحديث إنجازك.');
+  }
+
+  function initCompletion() {
+    if (!$('#completionList')) return; renderCompletionPlans(); $('#createCompletionPlan, #createFirstCompletionPlan');
+    $('#createCompletionPlan')?.addEventListener('click', () => openCompletionPlanEditor()); $('#createFirstCompletionPlan')?.addEventListener('click', () => openCompletionPlanEditor());
+    $('#completionList')?.addEventListener('click', event => { const action = event.target.closest('[data-completion-action]'); if (action) handleCompletionAction(action); });
+  }
+
+  const universityDirectory = [
+    { id: 'damascus', name: 'جامعة دمشق', city: 'دمشق', type: 'حكومية', fields: ['صحي', 'هندسي', 'علمي', 'إنساني'], highlights: ['طب وعلوم صحية', 'هندسات', 'علوم وإنسانيات'], note: 'مسارات متنوعة للبحث الأكاديمي.' },
+    { id: 'aleppo', name: 'جامعة حلب', city: 'حلب', type: 'حكومية', fields: ['صحي', 'هندسي', 'علمي', 'إنساني'], highlights: ['طب وعلوم صحية', 'هندسات', 'آداب وعلوم'], note: 'خيارات واسعة في المجالات النظرية والتطبيقية.' },
+    { id: 'tishreen', name: 'جامعة تشرين', city: 'اللاذقية', type: 'حكومية', fields: ['صحي', 'هندسي', 'علمي', 'إنساني'], highlights: ['طب وعلوم صحية', 'تقانات وهندسات', 'علوم وتربية'], note: 'مسارات متعددة تناسب ميولًا علمية وإنسانية.' },
+    { id: 'baath', name: 'جامعة البعث', city: 'حمص', type: 'حكومية', fields: ['صحي', 'هندسي', 'علمي', 'إنساني'], highlights: ['طب وعلوم صحية', 'هندسات', 'اقتصاد وآداب'], note: 'تشكيلة من الاختصاصات الأكاديمية والتطبيقية.' },
+    { id: 'furat', name: 'جامعة الفرات', city: 'دير الزور', type: 'حكومية', fields: ['صحي', 'هندسي', 'علمي', 'إنساني'], highlights: ['علوم', 'هندسات', 'تربية وآداب'], note: 'مسارات محلية متنوعة للبحث وفق الإعلانات الرسمية.' },
+    { id: 'aiu', name: 'الجامعة العربية الدولية', city: 'دمشق', type: 'خاصة', fields: ['صحي', 'هندسي', 'علمي', 'إنساني'], highlights: ['إدارة وأعمال', 'هندسات', 'علوم صحية'], note: 'تحقق من البرامج المتاحة والرسوم عبر الجامعة مباشرة.' }
+  ];
+  let comparedUniversities = readStorage('university_compare', []); comparedUniversities = Array.isArray(comparedUniversities) ? comparedUniversities.slice(0, 3) : [];
+  const saveUniversityCompare = () => { try { localStorage.setItem(STORE + 'university_compare', JSON.stringify(comparedUniversities)); } catch {} };
+
+  function filteredUniversities() {
+    const query = String($('#universitySearch')?.value || '').trim().toLowerCase(); const city = $('#universityCity')?.value || 'all'; const type = $('#universityType')?.value || 'all'; const field = $('#universityField')?.value || 'all';
+    return universityDirectory.filter(item => (city === 'all' || item.city === city) && (type === 'all' || item.type === type) && (field === 'all' || item.fields.includes(field)) && (!query || `${item.name} ${item.city} ${item.type} ${item.highlights.join(' ')}`.toLowerCase().includes(query)));
+  }
+
+  function renderUniversityDirectory() {
+    const grid = $('#universityGrid'); if (!grid) return; const items = filteredUniversities(); const bar = $('#universityCompareBar');
+    if (bar) bar.classList.toggle('hidden', !comparedUniversities.length); if ($('#universityCompareCount')) $('#universityCompareCount').textContent = comparedUniversities.length;
+    grid.innerHTML = items.length ? items.map(item => { const selected = comparedUniversities.includes(item.id); return `<article class="university-card panel"><header><span class="university-type ${item.type === 'خاصة' ? 'private' : 'public'}">${escapeHTML(item.type)}</span><label class="compare-toggle"><input type="checkbox" data-university-compare="${item.id}" ${selected ? 'checked' : ''}><span>قارن</span></label></header><div class="university-card-title"><span><i class="fa-solid fa-building-columns"></i></span><div><h3>${escapeHTML(item.name)}</h3><p><i class="fa-solid fa-location-dot"></i> ${escapeHTML(item.city)}</p></div></div><p class="university-note">${escapeHTML(item.note)}</p><div class="university-fields">${item.fields.map(field => `<span>${escapeHTML(field)}</span>`).join('')}</div><div class="university-highlights"><b>مسارات للبحث</b>${item.highlights.map(highlight => `<span>${escapeHTML(highlight)}</span>`).join('')}</div><button class="outline-button" type="button" data-university-details="${item.id}"><i class="fa-solid fa-circle-info"></i> معلومات إرشادية</button></article>`; }).join('') : '<div class="learning-empty panel"><i class="fa-solid fa-building-columns"></i><h3>لا توجد نتائج مطابقة</h3><p>غيّر المدينة أو المجال أو كلمات البحث للعثور على مسار آخر.</p></div>';
+  }
+
+  function toggleUniversityCompare(id, checked) {
+    if (checked && !comparedUniversities.includes(id)) { if (comparedUniversities.length >= 3) { renderUniversityDirectory(); return toast('يمكن مقارنة ثلاث جامعات كحد أقصى.'); } comparedUniversities.push(id); }
+    if (!checked) comparedUniversities = comparedUniversities.filter(item => item !== id); saveUniversityCompare(); renderUniversityDirectory();
+  }
+
+  function openUniversityDetails(id) {
+    const item = universityDirectory.find(university => university.id === id); if (!item) return;
+    openModal(`<div class="modal-head"><div><span class="eyebrow">معلومات إرشادية</span><h3>${escapeHTML(item.name)}</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><div class="university-modal"><p><i class="fa-solid fa-location-dot"></i> ${escapeHTML(item.city)} · ${escapeHTML(item.type)}</p><h4>مجالات استكشاف مقترحة</h4><div class="university-fields">${item.fields.map(field => `<span>${escapeHTML(field)}</span>`).join('')}</div><h4>أسئلة تقارن بها</h4><ul><li>هل يناسبك المجال والمدينة وطبيعة الدراسة؟</li><li>ما البرامج المتاحة فعليًا هذا العام؟</li><li>ما الشروط والمواعيد والرسوم أو المفاضلة المنشورة رسميًا؟</li></ul><a class="primary-button" href="https://mohe.gov.sy/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> تحقق من المصدر الرسمي</a></div>`);
+  }
+
+  function openUniversityCompare() {
+    const items = comparedUniversities.map(id => universityDirectory.find(item => item.id === id)).filter(Boolean); if (!items.length) return;
+    openModal(`<div class="modal-head"><div><span class="eyebrow">مقارنة إرشادية</span><h3>قارن خياراتك</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><div class="university-compare-table" style="--cols:${items.length + 1}"><div class="compare-row heading"><b>المعيار</b>${items.map(item => `<b>${escapeHTML(item.name)}</b>`).join('')}</div><div class="compare-row"><span>المدينة</span>${items.map(item => `<span>${escapeHTML(item.city)}</span>`).join('')}</div><div class="compare-row"><span>النوع</span>${items.map(item => `<span>${escapeHTML(item.type)}</span>`).join('')}</div><div class="compare-row"><span>المجالات</span>${items.map(item => `<span>${escapeHTML(item.fields.join(' · '))}</span>`).join('')}</div><div class="compare-row"><span>مسارات للبحث</span>${items.map(item => `<span>${escapeHTML(item.highlights.join(' · '))}</span>`).join('')}</div></div><p class="comparison-disclaimer"><i class="fa-solid fa-circle-info"></i> المقارنة لا تمثل مفاضلة أو قبولًا أو رسومًا؛ تحقق من الإعلان الرسمي الأحدث.</p>`);
+  }
+
+  function initUniversities() {
+    if (!$('#universityGrid')) return; renderUniversityDirectory();
+    ['universitySearch', 'universityCity', 'universityType', 'universityField'].forEach(id => $(`#${id}`)?.addEventListener(id === 'universitySearch' ? 'input' : 'change', renderUniversityDirectory));
+    $('#universityGrid')?.addEventListener('change', event => { const input = event.target.closest('[data-university-compare]'); if (input) toggleUniversityCompare(input.dataset.universityCompare, input.checked); });
+    $('#universityGrid')?.addEventListener('click', event => { const details = event.target.closest('[data-university-details]'); if (details) openUniversityDetails(details.dataset.universityDetails); });
+    $('#openUniversityCompare')?.addEventListener('click', openUniversityCompare); $('#clearUniversityCompare')?.addEventListener('click', () => { comparedUniversities = []; saveUniversityCompare(); renderUniversityDirectory(); });
+  }
+
+  const curriculumCatalog = {
+    nine: [
+      { subject: 'اللغة العربية', icon: 'fa-language', tone: 'rose', units: ['النصوص والفهم', 'القواعد الأساسية', 'التعبير والقراءة'], study: 'اقرأ النص ثم استخرج الفكرة والقواعد قبل حل أسئلة التدريب.' },
+      { subject: 'الرياضيات', icon: 'fa-square-root-variable', tone: 'indigo', units: ['الجبر والمعادلات', 'الهندسة', 'المسائل والتطبيقات'], study: 'ابدأ بالقانون، ثم مثال محلول، ثم مسألة مستقلة.' },
+      { subject: 'العلوم العامة', icon: 'fa-flask', tone: 'cyan', units: ['الفيزياء الأساسية', 'الكيمياء', 'علوم الحياة'], study: 'استخدم خرائط ذهنية للعمليات والمصطلحات والرسوم.' },
+      { subject: 'الاجتماعيات', icon: 'fa-earth-americas', tone: 'amber', units: ['التاريخ', 'الجغرافيا', 'التربية الوطنية'], study: 'لخّص التواريخ والخرائط في بطاقات قصيرة للمراجعة.' },
+      { subject: 'اللغة الإنكليزية', icon: 'fa-book-open', tone: 'violet', units: ['القواعد', 'المفردات', 'القراءة'], study: 'ثبّت المفردات ضمن جمل ثم أجب عن أسئلة فهم قصيرة.' }
+    ],
+    science: [
+      { subject: 'الرياضيات', icon: 'fa-square-root-variable', tone: 'indigo', units: ['التفاضل والتكامل', 'الجبر', 'الاحتمالات'], study: 'خصص جلسة للقانون وجلسة مستقلة للمسائل المتدرجة.' },
+      { subject: 'الفيزياء', icon: 'fa-atom', tone: 'cyan', units: ['الميكانيك', 'الكهرباء', 'الحديثة'], study: 'اربط كل قانون بالوحدة والمخطط ثم تدرب على النماذج.' },
+      { subject: 'الكيمياء', icon: 'fa-flask', tone: 'rose', units: ['العضوية', 'اللاعضوية', 'الحسابات'], study: 'قسم التفاعلات إلى جداول ومقارنات لتسهيل الاسترجاع.' },
+      { subject: 'العلوم', icon: 'fa-dna', tone: 'green', units: ['الوراثة', 'الأجهزة الحيوية', 'التوازن'], study: 'ارسم العمليات الحيوية ثم راجع الكلمات المفتاحية.' },
+      { subject: 'اللغة العربية', icon: 'fa-language', tone: 'amber', units: ['الأدب', 'النحو', 'القراءة'], study: 'اجمع الشواهد والقواعد في ورقة مراجعة واحدة.' }
+    ],
+    literary: [
+      { subject: 'اللغة العربية', icon: 'fa-language', tone: 'rose', units: ['الأدب', 'النحو', 'القراءة'], study: 'اجمع الشواهد والقواعد في ورقة مراجعة واحدة.' },
+      { subject: 'التاريخ', icon: 'fa-landmark', tone: 'amber', units: ['العصور الحديثة', 'الأحداث والشخصيات', 'الخرائط الزمنية'], study: 'رتّب الأحداث زمنيًا واربط كل حدث بأسبابه ونتائجه.' },
+      { subject: 'الجغرافيا', icon: 'fa-map-location-dot', tone: 'cyan', units: ['السكان', 'الاقتصاد', 'الخرائط'], study: 'راجع الخرائط والمصطلحات في بطاقات صغيرة.' },
+      { subject: 'الفلسفة', icon: 'fa-brain', tone: 'violet', units: ['المنطق', 'المدارس الفلسفية', 'المفاهيم'], study: 'قارن بين المفاهيم المتشابهة واكتب أمثلة من عندك.' },
+      { subject: 'اللغة الإنكليزية', icon: 'fa-book-open', tone: 'indigo', units: ['القواعد', 'المفردات', 'القراءة'], study: 'ثبت القاعدة بأمثلة قصيرة ثم راجع النصوص.' }
+    ]
+  };
+  let activeCurriculumStage = 'nine';
+
+  function renderCurriculum() {
+    const grid = $('#curriculumGrid'); if (!grid) return; const query = String($('#curriculumSearch')?.value || '').trim().toLowerCase(); const subjects = curriculumCatalog[activeCurriculumStage] || [];
+    const filtered = subjects.filter(item => !query || `${item.subject} ${item.units.join(' ')}`.toLowerCase().includes(query)); if ($('#curriculumSubjectCount')) $('#curriculumSubjectCount').textContent = filtered.length;
+    $$('#curriculumStageTabs [data-curriculum-stage]').forEach(button => button.classList.toggle('active', button.dataset.curriculumStage === activeCurriculumStage));
+    grid.innerHTML = filtered.length ? filtered.map((item, index) => `<article class="curriculum-card ${escapeHTML(item.tone)}"><span class="curriculum-card-index">${String(index + 1).padStart(2, '0')}</span><div class="curriculum-icon"><i class="fa-solid ${escapeHTML(item.icon)}"></i></div><h3>${escapeHTML(item.subject)}</h3><p>${escapeHTML(item.study)}</p><div class="curriculum-units">${item.units.map(unit => `<span>${escapeHTML(unit)}</span>`).join('')}</div><button class="outline-button" type="button" data-curriculum-details="${escapeHTML(item.subject)}"><i class="fa-solid fa-arrow-left"></i> خطة مراجعة</button></article>`).join('') : '<div class="learning-empty panel"><i class="fa-solid fa-magnifying-glass"></i><h3>لا توجد مادة مطابقة</h3><p>جرّب البحث بمصطلح آخر أو اختر مرحلة مختلفة.</p></div>';
+  }
+
+  function openCurriculumDetails(subject) {
+    const item = (curriculumCatalog[activeCurriculumStage] || []).find(entry => entry.subject === subject); if (!item) return;
+    openModal(`<div class="modal-head"><div><span class="eyebrow">خطة مراجعة إرشادية</span><h3>${escapeHTML(item.subject)}</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><div class="curriculum-modal"><div class="curriculum-modal-icon ${escapeHTML(item.tone)}"><i class="fa-solid ${escapeHTML(item.icon)}"></i></div><p>${escapeHTML(item.study)}</p><h4>محاور ابدأ بها</h4><ol>${item.units.map(unit => `<li>${escapeHTML(unit)}</li>`).join('')}</ol><div class="modal-actions"><a class="outline-button" href="time-organizer.html"><i class="fa-solid fa-calendar-plus"></i> أضفها لجدولك</a><a class="primary-button" href="tests.html"><i class="fa-solid fa-clipboard-check"></i> اختبر نفسك</a></div></div>`);
+  }
+
+  function initCurriculum() {
+    if (!$('#curriculumGrid')) return; renderCurriculum(); $('#curriculumSearch')?.addEventListener('input', renderCurriculum);
+    $$('#curriculumStageTabs [data-curriculum-stage]').forEach(button => button.addEventListener('click', () => { activeCurriculumStage = button.dataset.curriculumStage; renderCurriculum(); }));
+    $('#curriculumGrid')?.addEventListener('click', event => { const details = event.target.closest('[data-curriculum-details]'); if (details) openCurriculumDetails(details.dataset.curriculumDetails); });
+  }
+
+  const predictionItems = [
+    { id: 'physics-laws', stage: 'science', subject: 'الفيزياء', title: 'قوانين الحركة والكهرباء', type: 'محور مراجعة', source: 'إرشادي · تنظيم دراسة', points: ['اكتب القانون ووحداته قبل البدء بالحل.', 'راجع المسائل التي تجمع أكثر من فكرة.', 'قارن بين الحالات المتشابهة في جدول صغير.'], updated: '20 آب 2026' },
+    { id: 'math-functions', stage: 'science', subject: 'الرياضيات', title: 'الدوال والتفاضل والتكامل', type: 'تدريب مركز', source: 'إرشادي · تمارين ذاتية', points: ['ابدأ بالتعريفات ثم القواعد الأساسية.', 'انتقل من سؤال مباشر إلى سؤال مركب.', 'دوّن الأخطاء المتكررة في ورقة مستقلة.'], updated: '20 آب 2026' },
+    { id: 'arabic-reading', stage: 'literary', subject: 'اللغة العربية', title: 'النصوص والقواعد والتعبير', type: 'محور مراجعة', source: 'إرشادي · بناء مهارة', points: ['خصّص مراجعة منفصلة للنص والقواعد.', 'اجمع الشواهد في بطاقات مختصرة.', 'تدرّب على كتابة إجابة مرتبة وواضحة.'], updated: '20 آب 2026' },
+    { id: 'history-maps', stage: 'literary', subject: 'التاريخ والجغرافيا', title: 'التسلسل الزمني والخرائط', type: 'تدريب مركز', source: 'إرشادي · تنظيم معلومات', points: ['اربط الأحداث بأسبابها ونتائجها.', 'راجع الخرائط بالمفتاح والموقع.', 'ضع التواريخ الأساسية في خط زمني.'], updated: '20 آب 2026' },
+    { id: 'nine-science', stage: 'nine', subject: 'العلوم العامة', title: 'التجارب والمفاهيم الأساسية', type: 'محور مراجعة', source: 'إرشادي · مراجعة فهم', points: ['ارسم خطوات التجربة وملاحظاتها.', 'راجع المصطلح مع مثال بسيط.', 'حل أسئلة متنوعة بدل حفظ النص فقط.'], updated: '20 آب 2026' },
+    { id: 'nine-math', stage: 'nine', subject: 'الرياضيات', title: 'الجبر والهندسة والمسائل', type: 'تدريب مركز', source: 'إرشادي · حل مسائل', points: ['راجع القاعدة مع مثال واحد على الأقل.', 'افصل بين معطيات المسألة والمطلوب.', 'تحقق من الناتج بالتعويض عند الإمكان.'], updated: '20 آب 2026' }
+  ];
+  let activePredictionFilter = 'all';
+
+  function renderPredictions() {
+    const grid = $('#predictionGrid'); if (!grid) return; const query = String($('#predictionSearch')?.value || '').trim().toLowerCase();
+    const items = predictionItems.filter(item => (activePredictionFilter === 'all' || item.stage === activePredictionFilter) && (!query || `${item.subject} ${item.title} ${item.points.join(' ')}`.toLowerCase().includes(query)));
+    $$('[data-prediction-filter]').forEach(button => button.classList.toggle('active', button.dataset.predictionFilter === activePredictionFilter));
+    grid.innerHTML = items.length ? items.map(item => `<article class="prediction-card panel"><header><span class="prediction-stage ${escapeHTML(item.stage)}">${item.stage === 'science' ? 'بكالوريا علمي' : item.stage === 'literary' ? 'بكالوريا أدبي' : 'التاسع'}</span><span class="prediction-source"><i class="fa-solid fa-bookmark"></i> ${escapeHTML(item.source)}</span></header><h3>${escapeHTML(item.title)}</h3><p class="prediction-subject"><i class="fa-solid fa-book-open"></i> ${escapeHTML(item.subject)} · ${escapeHTML(item.type)}</p><ul>${item.points.slice(0, 2).map(point => `<li>${escapeHTML(point)}</li>`).join('')}</ul><footer><span><i class="fa-regular fa-calendar"></i> ${escapeHTML(item.updated)}</span><button class="outline-button" type="button" data-prediction-details="${item.id}">تفاصيل المراجعة <i class="fa-solid fa-arrow-left"></i></button></footer></article>`).join('') : '<div class="learning-empty panel"><i class="fa-solid fa-magnifying-glass"></i><h3>لا توجد محاور مطابقة</h3><p>اختر مرحلة أخرى أو ابحث باسم المادة.</p></div>';
+  }
+
+  function openPredictionDetails(id) {
+    const item = predictionItems.find(entry => entry.id === id); if (!item) return;
+    openModal(`<div class="modal-head"><div><span class="eyebrow">${escapeHTML(item.source)}</span><h3>${escapeHTML(item.title)}</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><div class="prediction-modal"><p><i class="fa-solid fa-book-open"></i> ${escapeHTML(item.subject)} · تم التحديث: ${escapeHTML(item.updated)}</p><h4>خطوات مراجعة عملية</h4><ol>${item.points.map(point => `<li>${escapeHTML(point)}</li>`).join('')}</ol><div class="modal-actions"><a class="outline-button" href="time-organizer.html"><i class="fa-solid fa-calendar-plus"></i> أضفها إلى خطتك</a><a class="primary-button" href="tests.html"><i class="fa-solid fa-clipboard-check"></i> ابدأ التدريب</a></div><small class="verification-text"><i class="fa-solid fa-circle-info"></i> تحقق دائمًا من المنهاج والنماذج والقرارات الرسمية الأحدث قبل الاعتماد على أي توقع.</small></div>`);
+  }
+
+  function initPredictions() {
+    if (!$('#predictionGrid')) return; renderPredictions(); $('#predictionSearch')?.addEventListener('input', renderPredictions);
+    $$('#predictionFilters [data-prediction-filter]').forEach(button => button.addEventListener('click', () => { activePredictionFilter = button.dataset.predictionFilter; renderPredictions(); }));
+    $('#predictionGrid')?.addEventListener('click', event => { const details = event.target.closest('[data-prediction-details]'); if (details) openPredictionDetails(details.dataset.predictionDetails); });
+  }
+
+  const builtInLibraryResources = [
+    { id: 'study-map', category: 'ملخص', subject: 'مهارات الدراسة', title: 'خريطة جلسة مراجعة فعّالة', description: 'تسلسل قصير للقراءة والاسترجاع والتدريب.', content: 'ابدأ بتحديد هدف واحد للجلسة. اقرأ الفكرة الأساسية، ثم أغلق المصدر واسترجعها بصوتك أو كتابتك. أخيرًا أجب عن سؤال أو مثال صغير وحدد نقطة واحدة تحتاج مراجعة لاحقة.' },
+    { id: 'physics-units', category: 'قواعد', subject: 'الفيزياء', title: 'قائمة تحقق قبل حل المسألة', description: 'خطوات منظمة لفهم المعطيات والقانون والوحدة.', content: 'حدّد المعطيات والمطلوب، اكتب القانون المناسب، وحّد الوحدات، ثم عوّض بوضوح. بعد ظهور النتيجة افحص وحدتها ومنطقيتها مقارنة بالمعطيات.' },
+    { id: 'arabic-review', category: 'ملخص', subject: 'اللغة العربية', title: 'بطاقة مراجعة النص والقواعد', description: 'تقسيم بسيط للنص والشواهد والقواعد.', content: 'في النص: الفكرة العامة والأفكار الفرعية والمفردات. في القواعد: القاعدة ومثال واحد واستثناء إن وجد. راجعها في بطاقة مختصرة بدل إعادة قراءة الدرس كاملًا.' },
+    { id: 'test-routine', category: 'تدريب', subject: 'الاختبارات', title: 'روتين ما بعد الاختبار', description: 'طريقة مراجعة الأخطاء لتحويلها إلى خطة تعلم.', content: 'صنّف الخطأ: فهم، قانون، قراءة السؤال، أو إدارة وقت. اكتب التصحيح بجانب السبب، ثم أنشئ مثالًا واحدًا مشابهًا لتتأكد أن الفكرة ثبتت.' }
+  ];
+  let personalLibraryResources = readStorage('personal_library_resources', []); personalLibraryResources = Array.isArray(personalLibraryResources) ? personalLibraryResources : [];
+  let activeLibraryFilter = 'all';
+  const savePersonalLibraryResources = () => { try { localStorage.setItem(STORE + 'personal_library_resources', JSON.stringify(personalLibraryResources)); } catch { toast('تعذر حفظ المورد محليًا.'); } };
+  const allLibraryResources = () => [...builtInLibraryResources, ...personalLibraryResources];
+
+  function renderLibrary() {
+    const grid = $('#libraryGrid'); const empty = $('#libraryEmpty'); if (!grid || !empty) return; const query = String($('#librarySearch')?.value || '').trim().toLowerCase();
+    const resources = allLibraryResources().filter(resource => (activeLibraryFilter === 'all' || resource.category === activeLibraryFilter) && (!query || `${resource.title} ${resource.subject} ${resource.description || ''}`.toLowerCase().includes(query)));
+    $$('#libraryFilters [data-library-filter]').forEach(button => button.classList.toggle('active', button.dataset.libraryFilter === activeLibraryFilter)); empty.classList.toggle('hidden', resources.length > 0);
+    grid.innerHTML = resources.map(resource => `<article class="library-card panel ${resource.category === 'شخصي' ? 'personal' : ''}"><header><span class="library-category ${escapeHTML(resource.category)}">${escapeHTML(resource.category)}</span>${resource.personal ? '<span class="library-personal"><i class="fa-solid fa-user"></i> محفوظ لدي</span>' : ''}</header><div class="library-card-icon"><i class="fa-solid ${resource.category === 'تدريب' ? 'fa-clipboard-check' : resource.category === 'قواعد' ? 'fa-list-check' : resource.category === 'شخصي' ? 'fa-bookmark' : 'fa-book-open'}"></i></div><h3>${escapeHTML(resource.title)}</h3><p class="library-subject"><i class="fa-solid fa-tag"></i> ${escapeHTML(resource.subject || 'عام')}</p><p>${escapeHTML(resource.description || resource.notes || '')}</p><footer><button class="outline-button" type="button" data-library-open="${escapeHTML(resource.id)}"><i class="fa-solid fa-book-open"></i> فتح المورد</button>${resource.personal ? `<button class="library-delete" type="button" data-library-delete="${escapeHTML(resource.id)}" title="حذف المورد"><i class="fa-regular fa-trash-can"></i></button>` : ''}</footer></article>`).join('');
+  }
+
+  function openLibraryResource(id) {
+    const resource = allLibraryResources().find(item => item.id === id); if (!resource) return;
+    const external = resource.url ? `<a class="primary-button" href="${escapeHTML(resource.url)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> فتح الرابط</a>` : '';
+    openModal(`<div class="modal-head"><div><span class="eyebrow">${escapeHTML(resource.category)} · ${escapeHTML(resource.subject || 'عام')}</span><h3>${escapeHTML(resource.title)}</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><article class="library-resource-view"><p>${escapeHTML(resource.content || resource.notes || resource.description || '')}</p>${external}<small><i class="fa-solid fa-lock"></i> يبقى المورد الشخصي محفوظًا على جهازك فقط.</small></article>`);
+  }
+
+  function openLibraryResourceEditor() {
+    openModal(`<div class="modal-head"><h3>إضافة مورد شخصي</h3><button class="close-modal" aria-label="إغلاق">×</button></div><form id="libraryResourceForm"><div class="form-grid"><div class="form-group full"><label>عنوان المورد</label><input name="title" maxlength="100" required placeholder="مثال: ملخص الكيمياء العضوية"></div><div class="form-group"><label>المادة أو المجال</label><input name="subject" maxlength="60" placeholder="مثال: الكيمياء"></div><div class="form-group"><label>التصنيف</label><select name="category"><option value="شخصي">شخصي</option><option value="ملخص">ملخص</option><option value="قواعد">قواعد</option><option value="تدريب">تدريب</option></select></div><div class="form-group full"><label>رابط اختياري</label><input name="url" type="url" placeholder="https://example.com"></div><div class="form-group full"><label>ملاحظة أو وصف</label><textarea name="notes" maxlength="900" placeholder="اكتب ما تريد تذكره عن هذا المورد..."></textarea></div></div><div class="form-actions"><button class="outline-button close-modal" type="button">إلغاء</button><button class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ المورد</button></div></form>`);
+  }
+
+  function saveLibraryResource(form) {
+    const data = new FormData(form); const title = String(data.get('title') || '').trim(); const url = String(data.get('url') || '').trim(); const notes = String(data.get('notes') || '').trim();
+    if (!title) return toast('أدخل عنوان المورد.'); if (url && !/^https?:\/\//i.test(url)) return toast('استخدم رابطًا يبدأ بـ https:// أو http://.');
+    personalLibraryResources.unshift({ id: `library-${Date.now()}-${Math.random().toString(16).slice(2)}`, personal: true, title, subject: String(data.get('subject') || 'عام').trim() || 'عام', category: String(data.get('category') || 'شخصي'), url, notes, description: notes || 'مورد شخصي محفوظ محليًا.', content: notes || 'لا توجد ملاحظة إضافية لهذا المورد.' }); savePersonalLibraryResources(); closeModal(); renderLibrary(); toast('تم حفظ المورد في مكتبتك.');
+  }
+
+  function initLibrary() {
+    if (!$('#libraryGrid')) return; renderLibrary(); $('#librarySearch')?.addEventListener('input', renderLibrary); $('#addLibraryResource')?.addEventListener('click', openLibraryResourceEditor);
+    $$('#libraryFilters [data-library-filter]').forEach(button => button.addEventListener('click', () => { activeLibraryFilter = button.dataset.libraryFilter; renderLibrary(); }));
+    $('#libraryGrid')?.addEventListener('click', event => { const open = event.target.closest('[data-library-open]'); const remove = event.target.closest('[data-library-delete]'); if (open) openLibraryResource(open.dataset.libraryOpen); if (remove) { personalLibraryResources = personalLibraryResources.filter(resource => resource.id !== remove.dataset.libraryDelete); savePersonalLibraryResources(); renderLibrary(); toast('تم حذف المورد الشخصي.'); } });
   }
 
   const assistantServices = {
@@ -800,6 +1130,13 @@
     tools: { label: 'فتح أدوات الدراسة', href: 'index.html#tools', icon: 'fa-solid fa-toolbox' },
     gallery: { label: 'فتح تنظيم الصور', href: 'gallery.html', icon: 'fa-regular fa-images' },
     calculator: { label: 'فتح حاسبة المعدل', href: 'grade-calculator.html', icon: 'fa-solid fa-calculator' },
+    schedule: { label: 'فتح الجدول الدراسي', href: 'time-organizer.html', icon: 'fa-solid fa-calendar-check' },
+    tests: { label: 'فتح الاختبارات', href: 'tests.html', icon: 'fa-solid fa-clipboard-check' },
+    library: { label: 'فتح المكتبة', href: 'library.html', icon: 'fa-solid fa-book-bookmark' },
+    curriculum: { label: 'فتح بوابة المناهج', href: 'curriculum.html', icon: 'fa-solid fa-user-graduate' },
+    universities: { label: 'فتح دليل الجامعات', href: 'universities.html', icon: 'fa-solid fa-building-columns' },
+    predictions: { label: 'فتح محاور المراجعة', href: 'predictions.html', icon: 'fa-solid fa-bullseye' },
+    completion: { label: 'فتح برنامج الختم', href: 'completion-program.html', icon: 'fa-solid fa-list-check' },
     home: { label: 'الذهاب إلى الرئيسية', href: 'index.html', icon: 'fa-solid fa-house' },
     notifications: { label: 'فتح الإشعارات', href: 'notifications.html', icon: 'fa-regular fa-bell' },
     privacy: { label: 'سياسة الخصوصية', href: 'privacy.html', icon: 'fa-solid fa-shield-halved' },
@@ -830,7 +1167,28 @@
       return answer('تنظيم الصور الدراسية يحفظ صور الملاحظات واللوحات على جهازك، ويرتبها حسب اليوم. تستطيع رفع عدة صور، ثم الضغط على أي صورة لعرضها بالحجم الكامل أو حذفها عند الحاجة.', [assistantServices.gallery]);
     }
     if (/حاسبه المعدل|حساب المعدل|معدلي|علامات المواد|المعدل/.test(query)) {
-      return answer('حاسبة المعدل تبدأ باختيار المرحلة: تاسع، بكالوريا علمي أو بكالوريا أدبي. بعدها تظهر مواد المرحلة؛ أدخل العلامات المتاحة واضغط «عرض المعدل» للحصول على متوسط تقريبي من المواد المدخلة.', [assistantServices.calculator]);
+      return answer('حاسبة المعدل تمنحك نظامين: منهاج رسمي للمرحلة، أو مواد وأوزان خاصة إذا كنت تريد حسابًا مرجّحًا. أدخل العلامات ثم راجع بطاقة النتيجة وتفصيل المواد المحتسبة.', [assistantServices.calculator]);
+    }
+    if (/جدول|مهمه|مهام|مذاكره|تذكير|خطه يوم|انظم|نظم وقت|خطط/.test(query)) {
+      return answer('ابدأ بالجدول الدراسي: أضف المادة واسم المهمة والملاحظات واليوم والوقت، ثم فعّل التذكير إذا أردت إشعارًا عند الموعد داخل التطبيق. استخدم تبويبات اليوم وغدًا والقادمة والمتأخرة لتبقى خطتك واضحة.', [assistantServices.schedule]);
+    }
+    if (/اختبار|تمرين|سؤال|راجع اجاب/.test(query)) {
+      return answer('اختر نموذجًا من صفحة الاختبارات ثم أجب عن كل الأسئلة. بعد الإنهاء تظهر نتيجتك ومراجعة للإجابات الصحيحة والخاطئة حتى تعرف المحاور التي تحتاج تدريبًا إضافيًا.', [assistantServices.tests]);
+    }
+    if (/جامع|كليه|اختصاص|مفاضل|دراسه جامعي/.test(query)) {
+      return answer('دليل الجامعات يساعدك على تصفية الخيارات حسب المدينة والنوع والمجال، ثم مقارنة ما يصل إلى ثلاث جامعات. اعتبره نقطة بداية فقط وتحقق من شروط القبول والبرامج والمواعيد عبر المصدر الرسمي قبل التقديم.', [assistantServices.universities]);
+    }
+    if (/منهاج|تاسع|علمي|ادبي|ماده|محور/.test(query)) {
+      return answer('بوابة المناهج ترتب مواد التاسع والبكالوريا ضمن محاور مراجعة صغيرة. اختر مرحلتك، افتح خطة المادة، ثم انتقل إلى الجدول أو الاختبارات من داخل البطاقة.', [assistantServices.curriculum, assistantServices.schedule, assistantServices.tests]);
+    }
+    if (/مكتبه|ملخص|مصدر|رابط|كتاب/.test(query)) {
+      return answer('المكتبة تجمع بطاقات مراجعة جاهزة ومواردك الشخصية. يمكنك البحث بالعنوان أو المادة، ثم إضافة مورد خاص مع رابط اختياري وملاحظة محفوظة على جهازك.', [assistantServices.library]);
+    }
+    if (/توقع|مراجعه مركز|محاور مهم/.test(query)) {
+      return answer('محاور المراجعة تقدم أولويات إرشادية وخطوات مراجعة، مع وسم المصدر وتاريخ التحديث. استخدمها لتنظيم وقتك، ولا تجعلها بديلًا عن المنهاج والنماذج أو القرارات الرسمية.', [assistantServices.predictions, assistantServices.schedule]);
+    }
+    if (/ختم|انجاز|صفحات|دروس يومي/.test(query)) {
+      return answer('برنامج الختم يحول أي مادة إلى خطة بعدد صفحات أو دروس وتاريخ نهاية، ثم يحسب المطلوب اليومي ويعرض نسبة الإنجاز والمتبقي. حدّث ما أنجزته باستمرار لتبقى الخطة واقعية.', [assistantServices.completion]);
     }
     if (/خبر|مجتمع|منشور|تعليق|اعجاب|صور/.test(query)) {
       return answer('مجتمع الأخبار مخصص لمشاركة الأخبار التعليمية والإنجازات. اكتب الخبر، وأرفق حتى صورتين، ثم انشره. تستطيع التفاعل بالإعجاب والتعليقات، واستخدام الفلاتر لمشاهدة الأحدث أو الأكثر تفاعلًا أو منشوراتك.', [assistantServices.news]);
@@ -866,7 +1224,7 @@
     const area = $('#chatArea');
     if (!area) return;
     const chat = getChat();
-    area.innerHTML = chat.messages.map(message => `<div class="message-wrap ${message.role === 'assistant' ? 'assistant' : 'student'}"><div class="bubble">${escapeHTML(message.text)}</div>${message.role === 'assistant' && message.links?.length ? `<div class="assistant-links">${chatLinkMarkup(message.links)}</div>` : ''}</div>`).join('') + `<div class="guide-block"><b>دليل ذكي لخدمات نبض:</b> اذكر اسم الخدمة أو الهدف، وسأشرحها وأضع لك زر انتقال مباشر.</div><div class="suggestions"><button class="suggestion" type="button">كيف أعدل ملفي؟</button><button class="suggestion" type="button">كيف أنشر خبرًا؟</button><button class="suggestion" type="button">أين الاختبارات؟</button><button class="suggestion" type="button">كيف أضبط العداد؟</button></div>`;
+    area.innerHTML = chat.messages.map(message => `<div class="message-wrap ${message.role === 'assistant' ? 'assistant' : 'student'}"><div class="bubble">${escapeHTML(message.text)}</div>${message.role === 'assistant' && message.links?.length ? `<div class="assistant-links">${chatLinkMarkup(message.links)}</div>` : ''}</div>`).join('') + `<div class="guide-block"><b>دليل ذكي لخدمات نبض:</b> اذكر هدفك الدراسي أو اسم القسم، وسأشرح الخطوة المناسبة وأضع لك زر انتقال مباشر.</div><div class="suggestions"><button class="suggestion" type="button">كيف أنظم مهامي اليوم؟</button><button class="suggestion" type="button">أين الاختبارات؟</button><button class="suggestion" type="button">كيف أختار جامعة؟</button><button class="suggestion" type="button">كيف أضيف موردًا للمكتبة؟</button></div>`;
     area.scrollTop = area.scrollHeight;
     const history = $('#chatHistoryList');
     if (history) history.innerHTML = chats.slice().sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)).map(item => `<button class="history-item ${item.id === activeChatId ? 'active' : ''}" type="button" data-chat="${item.id}"><i class="fa-regular fa-message"></i><span>${escapeHTML(item.title || 'محادثة جديدة')}<small>${chatTime(item.updatedAt)}</small></span></button>`).join('');
@@ -1139,16 +1497,17 @@
   function openStudyTaskEditor(taskId = '') {
     const task = studyTasks.find(item => item.id === taskId) || {}; const today = localDateKey(); const [hour = '18', savedMinute = '01'] = String(task.reminderTime || '18:01').split(':'); const minute = savedMinute === '00' ? '01' : savedMinute;
     const timeOptions = (total, selected, start = 0) => Array.from({ length: total - start }, (_, index) => { const value = String(index + start).padStart(2, '0'); return `<option value="${value}" ${value === selected ? 'selected' : ''}>${value}</option>`; }).join('');
-    openModal(`<div class="modal-head"><h3>${task.id ? 'تعديل المهمة' : 'إضافة مهمة دراسية'}</h3><button class="close-modal" aria-label="إغلاق">×</button></div><form id="studyTaskForm" data-task-id="${task.id || ''}"><div class="form-grid"><div class="form-group full"><label>اسم المهمة</label><input name="title" required maxlength="120" placeholder="مثل: دراسة مادة العربي" value="${escapeHTML(task.title || '')}" autofocus></div><div class="form-group full"><label>اليوم</label><input name="date" type="date" required min="${today}" value="${escapeHTML(task.date || today)}"></div><div class="form-group"><label>الساعة</label><select name="reminderHour" required>${timeOptions(24, hour)}</select></div><div class="form-group"><label>الدقيقة</label><select name="reminderMinute" required>${timeOptions(60, minute, 1)}</select></div><div class="study-reminder-note full"><i class="fa-solid fa-bell"></i><span>سيصلك تذكير عند حلول الموعد المحدد.</span></div></div><div class="form-actions"><button class="outline-button close-modal" type="button">إلغاء</button><button class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ المهمة</button></div></form>`);
+    const remindersActive = task.reminderEnabled !== false;
+    openModal(`<div class="modal-head"><h3>${task.id ? 'تعديل المهمة' : 'إضافة مهمة دراسية'}</h3><button class="close-modal" aria-label="إغلاق">×</button></div><form id="studyTaskForm" data-task-id="${task.id || ''}"><div class="form-grid"><div class="form-group"><label>المادة</label><input name="subject" required maxlength="60" placeholder="مثل: اللغة العربية" value="${escapeHTML(task.subject || '')}" autofocus></div><div class="form-group"><label>اسم المهمة</label><input name="title" required maxlength="120" placeholder="مثل: مراجعة الدرس الثالث" value="${escapeHTML(task.title || '')}"></div><div class="form-group full"><label>ملاحظات إضافية</label><textarea name="notes" maxlength="500" placeholder="أضف تفاصيل أو هدفًا صغيرًا للمهمة...">${escapeHTML(task.notes || '')}</textarea></div><div class="form-group full"><label>اليوم</label><input name="date" type="date" required min="${today}" value="${escapeHTML(task.date || today)}"></div><div class="form-group"><label>الساعة</label><select name="reminderHour" required>${timeOptions(24, hour)}</select></div><div class="form-group"><label>الدقيقة</label><select name="reminderMinute" required>${timeOptions(60, minute, 1)}</select></div><label class="study-reminder-toggle full"><input name="reminderEnabled" type="checkbox" ${remindersActive ? 'checked' : ''}><span><i class="fa-solid fa-bell"></i><b>تفعيل التذكير</b><small>يصل إشعار أصلي عند الموعد داخل تطبيق نبض عند توفر الإذن.</small></span></label></div><div class="form-actions"><button class="outline-button close-modal" type="button">إلغاء</button><button class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ المهمة</button></div></form>`);
   }
 
   async function saveStudyTask(form) {
     const data = new FormData(form), id = form.dataset.taskId, old = studyTasks.find(item => item.id === id); const hour = String(data.get('reminderHour') || '').padStart(2, '0'); const minute = String(data.get('reminderMinute') || '').padStart(2, '0');
     if (!/^([01]\d|2[0-3])$/.test(hour) || !/^(0[1-9]|[1-5]\d)$/.test(minute)) return toast('اختر ساعة ودقيقة من 01 إلى 59.');
-    const task = { id: id || `task-${Date.now()}-${Math.random().toString(16).slice(2)}`, subject: old?.subject || '', title: String(data.get('title')).trim(), notes: old?.notes || '', date: String(data.get('date')), reminderTime: `${hour}:${minute}`, reminderEnabled: true, completed: old?.completed || false, notificationId: old?.notificationId || nextStudyNotificationId(), createdAt: old?.createdAt || Date.now(), updatedAt: Date.now() };
-    if (!task.title) return toast('أدخل اسم المهمة.'); if (studyAt(task).getTime() <= Date.now()) return toast('يرجى اختيار وقت مستقبلي للتذكير.');
-    if (old) await cancelStudyNotification(old); const scheduled = await scheduleStudyNotification(task); if (isNativeNabd() && capacitorPlugin('LocalNotifications')?.schedule && !scheduled) return;
-    if (old) studyTasks = studyTasks.map(item => item.id === id ? task : item); else studyTasks.unshift(task); saveStudyTasks(); closeModal(); renderStudyTasks(); const nativeReminder = isNativeNabd() && Boolean(capacitorPlugin('LocalNotifications')?.schedule); toast(nativeReminder ? 'تم حفظ المهمة وجدولة التذكير.' : 'تم حفظ المهمة. فعّل جسر التطبيق للإشعار الأصلي.');
+    const task = { id: id || `task-${Date.now()}-${Math.random().toString(16).slice(2)}`, subject: String(data.get('subject') || '').trim(), title: String(data.get('title') || '').trim(), notes: String(data.get('notes') || '').trim(), date: String(data.get('date')), reminderTime: `${hour}:${minute}`, reminderEnabled: data.get('reminderEnabled') === 'on', completed: old?.completed || false, notificationId: old?.notificationId || nextStudyNotificationId(), createdAt: old?.createdAt || Date.now(), updatedAt: Date.now() };
+    if (!task.subject || !task.title) return toast('أدخل المادة واسم المهمة.'); if (task.reminderEnabled && studyAt(task).getTime() <= Date.now()) return toast('يرجى اختيار وقت مستقبلي للتذكير.');
+    if (old) await cancelStudyNotification(old); const scheduled = await scheduleStudyNotification(task); if (task.reminderEnabled && isNativeNabd() && capacitorPlugin('LocalNotifications')?.schedule && !scheduled) return;
+    if (old) studyTasks = studyTasks.map(item => item.id === id ? task : item); else studyTasks.unshift(task); saveStudyTasks(); closeModal(); renderStudyTasks(); const nativeReminder = task.reminderEnabled && isNativeNabd() && Boolean(capacitorPlugin('LocalNotifications')?.schedule); toast(task.reminderEnabled ? (nativeReminder ? 'تم حفظ المهمة وجدولة التذكير.' : 'تم حفظ المهمة. فعّل جسر التطبيق للإشعار الأصلي.') : 'تم حفظ المهمة دون تذكير.');
   }
 
   async function handleStudyAction(button) { const task = studyTasks.find(item => item.id === button.dataset.taskId); if (!task) return; const action = button.dataset.studyAction; if (action === 'edit') return openStudyTaskEditor(task.id); if (action === 'delete') { if (!window.confirm('هل أنت متأكد من حذف هذه المهمة؟')) return; await cancelStudyNotification(task); studyTasks = studyTasks.filter(item => item.id !== task.id); saveStudyTasks(); renderStudyTasks(); return toast('تم حذف المهمة وإلغاء تذكيرها.'); } task.completed = !task.completed; task.updatedAt = Date.now(); if (task.completed) { task.reminderEnabled = false; await cancelStudyNotification(task); } else if (task.reminderEnabled) await scheduleStudyNotification(task); saveStudyTasks(); renderStudyTasks(); toast(task.completed ? 'أحسنت، تم تسجيل المهمة كمكتملة.' : 'أعيدت المهمة إلى قائمة الإنجاز.'); }
@@ -1186,6 +1545,10 @@
       if (event.target.closest('#profileThemeButton')) applyTheme(student.theme === 'dark' ? 'light' : 'dark');
       const galleryOpen = event.target.closest('[data-gallery-image]');
       if (galleryOpen) openGalleryImage(galleryOpen.dataset.galleryImage);
+      const galleryShare = event.target.closest('[data-gallery-share]');
+      if (galleryShare) shareGalleryImage(galleryShare.dataset.galleryShare);
+      const galleryNav = event.target.closest('[data-gallery-nav]');
+      if (galleryNav) navigateGalleryImage(galleryNav.dataset.galleryCurrent, galleryNav.dataset.galleryNav);
       const galleryRemove = event.target.closest('[data-gallery-remove]');
       if (galleryRemove) removeGalleryImage(galleryRemove.dataset.galleryRemove);
       const galleryMove = event.target.closest('[data-gallery-move]');
@@ -1219,6 +1582,8 @@
       if (event.target.id === 'supportForm') { event.preventDefault(); submitSupportRequest(event.target); }
       if (event.target.id === 'adminLoginForm') { event.preventDefault(); submitAdminLogin(event.target); }
       if (event.target.id === 'studyTaskForm') { event.preventDefault(); saveStudyTask(event.target); }
+      if (event.target.id === 'completionPlanForm') { event.preventDefault(); saveCompletionPlan(event.target); }
+      if (event.target.id === 'libraryResourceForm') { event.preventDefault(); saveLibraryResource(event.target); }
       if (event.target.matches('.comment-form')) { event.preventDefault(); addComment(event.target); }
     });
 
@@ -1250,6 +1615,12 @@
     initNews();
     initGallery();
     initCalculator();
+    initTests();
+    initCompletion();
+    initUniversities();
+    initCurriculum();
+    initPredictions();
+    initLibrary();
     initStudySchedule();
     initChat();
   }

@@ -8,11 +8,20 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body data-page="service">
+<body data-page="completion">
   <div class="app">
     <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
-    <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content"><section class="service-hub service-green"><header class="service-hub-hero panel"><div class="service-hub-icon"><i class="fa-solid fa-list-check"></i></div><div><span class="eyebrow">تاسع وبكالوريا</span><h2>برنامج الختم</h2><p>مسار مرن لمتابعة إنهاء المنهاج ومراجعة المواد قبل الامتحان.</p></div></header><section class="service-hub-panel panel"><div class="service-hub-panel-head"><div><span class="eyebrow">ابدأ بخطوات منظمة</span><h3>ماذا ستجد في هذا القسم؟</h3></div><a class="outline-button" href="index.html"><i class="fa-solid fa-arrow-right"></i> الرئيسية</a></div><div class="service-feature-grid"><article><span>01</span><h4>تقسيم المواد</h4><p>رتّب المواد ضمن وحدات سهلة المتابعة.</p></article><article><span>02</span><h4>نقطة تقدم</h4><p>تابع ما أنهيته من كل مادة.</p></article><article><span>03</span><h4>مراجعة نهائية</h4><p>خصص وقتًا للنماذج والأسئلة المهمة.</p></article></div><button class="primary-button service-hub-action" type="button" data-demo="سيتم ربط تفاصيل برنامج الختم ومحتواه قريبًا."><i class="fa-solid fa-list-check"></i> اعرض خطة الختم</button></section></section></main></div>
+    <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content">
+      <section class="completion-page"><header class="completion-hero panel"><div><span class="eyebrow"><i class="fa-solid fa-list-check"></i> خططك الدراسية</span><h2>برنامج الختم</h2><p>حوّل أي مادة أو منهج إلى خطة صغيرة واضحة، واعرف ما أنجزته وما تحتاجه اليوم.</p></div><button class="primary-button" id="createCompletionPlan" type="button"><i class="fa-solid fa-plus"></i> إنشاء خطة</button></header>
+      <section class="completion-overview" id="completionOverview" aria-label="ملخص خطط الختم"></section>
+      <section class="completion-list" id="completionList" aria-live="polite"></section>
+      <section class="completion-empty panel hidden" id="completionEmpty"><i class="fa-solid fa-map"></i><h3>أنشئ أول خطة ختم</h3><p>حدد المادة، عدد الصفحات أو الوحدات، وتاريخ النهاية. سنعرض لك المطلوب يوميًا.</p><button class="primary-button" id="createFirstCompletionPlan" type="button"><i class="fa-solid fa-plus"></i> إنشاء خطة جديدة</button></section>
+      </section>
+    </main></div>
   </div>
-  <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script src="app.js"></script>
+  <nav class="bottom-nav" id="bottomNav"></nav>
+  <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div>
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
 </body>
 </html>
