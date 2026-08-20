@@ -314,7 +314,6 @@
           <a class="side-link ${PAGE === 'home' ? 'active' : ''}" href="index.html"><span class="nav-icon home-nav"><i class="fa-solid fa-house"></i></span><span>الرئيسية</span></a>
           <a class="side-link ${PAGE === 'profile' ? 'active' : ''}" href="profile.html"><span class="nav-icon profile-nav"><i class="fa-regular fa-user"></i></span><span>ملفي الشخصي</span></a>
           <a class="side-link ${PAGE === 'news' ? 'active' : ''}" href="news.html"><span class="nav-icon news-nav"><i class="fa-regular fa-newspaper"></i></span><span>مجتمع الأخبار</span><em>جديد</em></a>
-          <a class="side-link ${PAGE === 'ai' ? 'active' : ''}" href="assistant.html"><span class="nav-icon ai-nav"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span>مساعد نبض</span></a>
         </nav>
         <div class="sidebar-label">المركز الشخصي</div>
         <nav class="side-nav compact">
@@ -348,11 +347,19 @@
     const backdrop = $('#modalBackdrop');
     if (!modal || !backdrop) return;
     modal.innerHTML = content;
+    document.body.classList.add('sheet-open');
     backdrop.classList.add('show');
+    window.setTimeout(() => modal.querySelector('input[autofocus], textarea[autofocus], select[autofocus]')?.focus(), 180);
   }
 
   function closeModal() {
     $('#modalBackdrop')?.classList.remove('show');
+    document.body.classList.remove('sheet-open');
+  }
+
+  function confirmAction(title, message, action, confirmLabel = 'حذف') {
+    window.nabdConfirmAction = action;
+    openModal(`<div class="confirm-sheet"><span class="confirm-sheet-icon"><i class="fa-solid fa-triangle-exclamation"></i></span><h3>${escapeHTML(title)}</h3><p>${escapeHTML(message)}</p><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button type="button" class="danger-button" data-confirm-action>${escapeHTML(confirmLabel)}</button></div></div>`);
   }
 
   function openNamedModal(name) {
@@ -756,11 +763,7 @@
     });
     $('#galleryClear')?.addEventListener('click', () => {
       if (!studyGallery.length) return toast('لا توجد صور لحذفها.');
-      if (!confirm('هل تريد حذف جميع الصور الدراسية المحفوظة؟')) return;
-      studyGallery = [];
-      saveGallery();
-      renderGallery();
-      toast('تم إفراغ الألبوم الدراسي.');
+      confirmAction('حذف الألبوم الدراسي؟', 'سيتم حذف الصور الدراسية المحفوظة على هذا الجهاز فقط.', () => { studyGallery = []; saveGallery(); renderGallery(); toast('تم إفراغ الألبوم الدراسي.'); });
     });
   }
 
@@ -864,7 +867,7 @@
     $$('[data-grade-mode]').forEach(button => button.addEventListener('click', () => setGradeMode(button.dataset.gradeMode)));
     $('#customGradeSubjectForm')?.addEventListener('submit', event => { event.preventDefault(); addCustomGradeSubject(event.currentTarget); });
     $('#customGradeList')?.addEventListener('click', event => { const remove = event.target.closest('[data-custom-grade-remove]'); if (!remove) return; gradeCalculator.customSubjects = customGradeSubjects().filter(subject => subject.id !== remove.dataset.customGradeRemove); saveGradeCalculator(); renderCustomGradeSubjects(); updateGradeSummary(); });
-    $('#customGradeReset')?.addEventListener('click', () => { if (!customGradeSubjects().length || !confirm('هل تريد مسح جميع المواد المخصصة؟')) return; gradeCalculator.customSubjects = []; saveGradeCalculator(); renderCustomGradeSubjects(); updateGradeSummary(); $('#gradeResult')?.classList.add('hidden'); });
+    $('#customGradeReset')?.addEventListener('click', () => { if (!customGradeSubjects().length) return; confirmAction('مسح المواد المخصصة؟', 'سيُحذف جدول المواد المخصصة المحفوظ على هذا الجهاز.', () => { gradeCalculator.customSubjects = []; saveGradeCalculator(); renderCustomGradeSubjects(); updateGradeSummary(); $('#gradeResult')?.classList.add('hidden'); }, 'مسح المواد'); });
     $('#customGradeCalculate')?.addEventListener('click', calculateCustomGrade);
   }
 
@@ -968,7 +971,7 @@
   function handleCompletionAction(button) {
     const plan = completionPlans.find(item => item.id === button.dataset.planId); if (!plan) return; const action = button.dataset.completionAction;
     if (action === 'edit') return openCompletionPlanEditor(plan.id);
-    if (action === 'delete') { if (!confirm('هل تريد حذف خطة الختم؟')) return; completionPlans = completionPlans.filter(item => item.id !== plan.id); saveCompletionPlans(); renderCompletionPlans(); return toast('تم حذف الخطة.'); }
+    if (action === 'delete') return confirmAction('حذف خطة الختم؟', 'لن تتمكن من استرجاع تقدم هذه الخطة بعد حذفها.', () => { completionPlans = completionPlans.filter(item => item.id !== plan.id); saveCompletionPlans(); renderCompletionPlans(); toast('تم حذف الخطة.'); });
     const input = $(`#completionProgress-${plan.id}`); const value = Number(input?.value); if (!Number.isFinite(value) || value < 0 || value > Number(plan.totalUnits)) return toast('أدخل عددًا صالحًا لما أنجزته.'); plan.completedUnits = value; plan.updatedAt = Date.now(); saveCompletionPlans(); renderCompletionPlans(); toast(value >= Number(plan.totalUnits) ? 'اكتملت الخطة، أحسنت!' : 'تم تحديث إنجازك.');
   }
 
@@ -1206,8 +1209,8 @@
     if (/عداد|هدف|موعد|بكالوريا|تاسع/.test(query)) {
       return answer('من الرئيسية ستجد عدادات البكالوريا والتاسع والعداد المخصص. لاستخدام العداد الشخصي اختر «مخصص»، ثم اضغط «ضبط» واكتب اسم هدفك وموعده. سيبقى محفوظًا في متصفحك.', [assistantServices.home]);
     }
-    if (/اختبار|حاسب|معدل|بومودورو|دروس|مكتبه|جامع|توقع|تنظيم/.test(query)) {
-      return answer('تضم الرئيسية أدوات الدراسة مثل حاسبة المعدل والاختبارات وبومودورو وتنظيم الوقت والمكتبة والدروس والتوقعات. اختر الأداة المناسبة من بطاقات الخدمات، وسأرشدك إلى المكان الصحيح.', [assistantServices.tools, assistantServices.calculator, assistantServices.gallery]);
+    if (/اختبار|حاسب|معدل|مكتبه|جامع|توقع|تنظيم/.test(query)) {
+      return answer('تضم الرئيسية أدوات الدراسة مثل الجدول الدراسي وحاسبة المعدل والاختبارات وتنظيم الصور والمكتبة والتوقعات. اختر الأداة المناسبة من بطاقات الخدمات، وسأرشدك إلى المكان الصحيح.', [assistantServices.tools, assistantServices.schedule, assistantServices.calculator]);
     }
     if (/اشعار|تنبيه/.test(query)) return answer('يمكنك إدارة تنبيهات الأخبار والأنشطة من صفحة الإشعارات أو من إعدادات الملف الشخصي.', [assistantServices.notifications, assistantServices.profile]);
     if (/خصوص|امان|حفظ|بيانات/.test(query)) return answer('هذه النسخة الثابتة تحفظ ملفك والمنشورات والمحادثات على جهازك داخل المتصفح. يمكنك مراجعة سياسة الخصوصية لمعرفة التفاصيل.', [assistantServices.privacy]);
@@ -1508,19 +1511,19 @@
     const task = studyTasks.find(item => item.id === taskId) || {}; const today = localDateKey(); const [hour = '18', savedMinute = '01'] = String(task.reminderTime || '18:01').split(':'); const minute = savedMinute === '00' ? '01' : savedMinute;
     const timeOptions = (total, selected, start = 0) => Array.from({ length: total - start }, (_, index) => { const value = String(index + start).padStart(2, '0'); return `<option value="${value}" ${value === selected ? 'selected' : ''}>${value}</option>`; }).join('');
     const remindersActive = task.reminderEnabled !== false;
-    openModal(`<div class="modal-head"><h3>${task.id ? 'تعديل المهمة' : 'إضافة مهمة دراسية'}</h3><button class="close-modal" aria-label="إغلاق">×</button></div><form id="studyTaskForm" data-task-id="${task.id || ''}"><div class="form-grid"><div class="form-group"><label>المادة</label><input name="subject" required maxlength="60" placeholder="مثل: اللغة العربية" value="${escapeHTML(task.subject || '')}" autofocus></div><div class="form-group"><label>اسم المهمة</label><input name="title" required maxlength="120" placeholder="مثل: مراجعة الدرس الثالث" value="${escapeHTML(task.title || '')}"></div><div class="form-group full"><label>ملاحظات إضافية</label><textarea name="notes" maxlength="500" placeholder="أضف تفاصيل أو هدفًا صغيرًا للمهمة...">${escapeHTML(task.notes || '')}</textarea></div><div class="form-group full"><label>اليوم</label><input name="date" type="date" required min="${today}" value="${escapeHTML(task.date || today)}"></div><div class="form-group"><label>الساعة</label><select name="reminderHour" required>${timeOptions(24, hour)}</select></div><div class="form-group"><label>الدقيقة</label><select name="reminderMinute" required>${timeOptions(60, minute, 1)}</select></div><label class="study-reminder-toggle full"><input name="reminderEnabled" type="checkbox" ${remindersActive ? 'checked' : ''}><span><i class="fa-solid fa-bell"></i><b>تفعيل التذكير</b><small>يصل إشعار أصلي عند الموعد داخل تطبيق نبض عند توفر الإذن.</small></span></label></div><div class="form-actions"><button class="outline-button close-modal" type="button">إلغاء</button><button class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ المهمة</button></div></form>`);
+    openModal(`<div class="modal-head"><h3>${task.id ? 'تعديل المهمة' : 'مهمة دراسية جديدة'}</h3><button class="close-modal" aria-label="إغلاق">×</button></div><form id="studyTaskForm" data-task-id="${task.id || ''}"><p class="sheet-hint">اكتب ما ستدرسه ثم اختر الموعد؛ سيصلك تذكير عند تفعيله داخل التطبيق.</p><div class="form-grid"><div class="form-group full"><label>اسم المهمة</label><input name="title" required maxlength="120" placeholder="مثال: دراسة مادة العربي" value="${escapeHTML(task.title || '')}" autofocus></div><div class="form-group full"><label>اليوم</label><input name="date" type="date" required min="${today}" value="${escapeHTML(task.date || today)}"></div><div class="form-group"><label>الساعة</label><select name="reminderHour" required>${timeOptions(24, hour)}</select></div><div class="form-group"><label>الدقيقة</label><select name="reminderMinute" required>${timeOptions(60, minute, 1)}</select></div><label class="study-reminder-toggle full"><input name="reminderEnabled" type="checkbox" ${remindersActive ? 'checked' : ''}><span><i class="fa-solid fa-bell"></i><b>تفعيل التذكير</b><small>إشعار عند الموعد داخل تطبيق نبض بعد منح الإذن.</small></span></label></div><div class="form-actions"><button class="outline-button close-modal" type="button">إلغاء</button><button class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ المهمة</button></div></form>`);
   }
 
   async function saveStudyTask(form) {
     const data = new FormData(form), id = form.dataset.taskId, old = studyTasks.find(item => item.id === id); const hour = String(data.get('reminderHour') || '').padStart(2, '0'); const minute = String(data.get('reminderMinute') || '').padStart(2, '0');
     if (!/^([01]\d|2[0-3])$/.test(hour) || !/^(0[1-9]|[1-5]\d)$/.test(minute)) return toast('اختر ساعة ودقيقة من 01 إلى 59.');
-    const task = { id: id || `task-${Date.now()}-${Math.random().toString(16).slice(2)}`, subject: String(data.get('subject') || '').trim(), title: String(data.get('title') || '').trim(), notes: String(data.get('notes') || '').trim(), date: String(data.get('date')), reminderTime: `${hour}:${minute}`, reminderEnabled: data.get('reminderEnabled') === 'on', completed: old?.completed || false, notificationId: old?.notificationId || nextStudyNotificationId(), createdAt: old?.createdAt || Date.now(), updatedAt: Date.now() };
-    if (!task.subject || !task.title) return toast('أدخل المادة واسم المهمة.'); if (task.reminderEnabled && studyAt(task).getTime() <= Date.now()) return toast('يرجى اختيار وقت مستقبلي للتذكير.');
+    const task = { id: id || `task-${Date.now()}-${Math.random().toString(16).slice(2)}`, subject: old?.subject || '', title: String(data.get('title') || '').trim(), notes: old?.notes || '', date: String(data.get('date')), reminderTime: `${hour}:${minute}`, reminderEnabled: data.get('reminderEnabled') === 'on', completed: old?.completed || false, notificationId: old?.notificationId || nextStudyNotificationId(), createdAt: old?.createdAt || Date.now(), updatedAt: Date.now() };
+    if (!task.title) return toast('أدخل اسم المهمة.'); if (task.reminderEnabled && studyAt(task).getTime() <= Date.now()) return toast('يرجى اختيار وقت مستقبلي للتذكير.');
     if (old) await cancelStudyNotification(old); const scheduled = await scheduleStudyNotification(task); if (task.reminderEnabled && isNativeNabd() && capacitorPlugin('LocalNotifications')?.schedule && !scheduled) return;
     if (old) studyTasks = studyTasks.map(item => item.id === id ? task : item); else studyTasks.unshift(task); saveStudyTasks(); closeModal(); renderStudyTasks(); const nativeReminder = task.reminderEnabled && isNativeNabd() && Boolean(capacitorPlugin('LocalNotifications')?.schedule); toast(task.reminderEnabled ? (nativeReminder ? 'تم حفظ المهمة وجدولة التذكير.' : 'تم حفظ المهمة. فعّل جسر التطبيق للإشعار الأصلي.') : 'تم حفظ المهمة دون تذكير.');
   }
 
-  async function handleStudyAction(button) { const task = studyTasks.find(item => item.id === button.dataset.taskId); if (!task) return; const action = button.dataset.studyAction; if (action === 'edit') return openStudyTaskEditor(task.id); if (action === 'delete') { if (!window.confirm('هل أنت متأكد من حذف هذه المهمة؟')) return; await cancelStudyNotification(task); studyTasks = studyTasks.filter(item => item.id !== task.id); saveStudyTasks(); renderStudyTasks(); return toast('تم حذف المهمة وإلغاء تذكيرها.'); } task.completed = !task.completed; task.updatedAt = Date.now(); if (task.completed) { task.reminderEnabled = false; await cancelStudyNotification(task); } else if (task.reminderEnabled) await scheduleStudyNotification(task); saveStudyTasks(); renderStudyTasks(); toast(task.completed ? 'أحسنت، تم تسجيل المهمة كمكتملة.' : 'أعيدت المهمة إلى قائمة الإنجاز.'); }
+  async function handleStudyAction(button) { const task = studyTasks.find(item => item.id === button.dataset.taskId); if (!task) return; const action = button.dataset.studyAction; if (action === 'edit') return openStudyTaskEditor(task.id); if (action === 'delete') return confirmAction('حذف المهمة؟', 'سيتم حذف المهمة وإلغاء التذكير المرتبط بها من هذا الجهاز.', async () => { await cancelStudyNotification(task); studyTasks = studyTasks.filter(item => item.id !== task.id); saveStudyTasks(); renderStudyTasks(); toast('تم حذف المهمة وإلغاء تذكيرها.'); }); task.completed = !task.completed; task.updatedAt = Date.now(); if (task.completed) { task.reminderEnabled = false; await cancelStudyNotification(task); } else if (task.reminderEnabled) await scheduleStudyNotification(task); saveStudyTasks(); renderStudyTasks(); toast(task.completed ? 'أحسنت، تم تسجيل المهمة كمكتملة.' : 'أعيدت المهمة إلى قائمة الإنجاز.'); }
 
   async function initStudySchedule() { if (!$('#studyTasks')) return; await loadStudyTasks(); const note = $('#studyNativeNote'); if (note) note.innerHTML = isNativeNabd() && capacitorPlugin('LocalNotifications') ? '<i class="fa-solid fa-mobile-screen-button"></i><span>التذكيرات الأصلية متاحة داخل التطبيق.</span>' : '<i class="fa-solid fa-globe"></i><span>يعمل الجدول في المتصفح؛ الإشعار الأصلي يحتاج جسر التطبيق.</span>'; renderStudyTasks(); }
 
@@ -1542,6 +1545,8 @@
       if (event.target.closest('.close-modal') || event.target.id === 'modalBackdrop') closeModal();
       const modalButton = event.target.closest('[data-modal]');
       if (modalButton) openNamedModal(modalButton.dataset.modal);
+      const confirmButton = event.target.closest('[data-confirm-action]');
+      if (confirmButton) { const action = window.nabdConfirmAction; window.nabdConfirmAction = null; closeModal(); if (typeof action === 'function') action(); return; }
       const adminButton = event.target.closest('[data-admin-action]');
       if (adminButton) handleAdminAction(adminButton);
       if (event.target.closest('#openEditProfile, #editProfileSmall, #completeProfile, #profileDataUpdate')) openNamedModal('edit');
@@ -1608,11 +1613,28 @@
     });
     $('#themeSwitch')?.addEventListener('change', event => applyTheme(event.target.checked ? 'dark' : 'light'));
     $('#notificationsSwitch')?.addEventListener('change', event => { student.notifications = event.target.checked; saveState(); toast(event.target.checked ? 'تم تفعيل الإشعارات.' : 'تم إيقاف الإشعارات.'); });
+    document.addEventListener('focusin', event => {
+      if (!window.matchMedia('(max-width: 980px)').matches || !event.target.matches('input, textarea, select')) return;
+      window.setTimeout(() => event.target.scrollIntoView({ block: 'center', behavior: 'smooth' }), 170);
+    });
+  }
+
+  function initMobileViewport() {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const updateKeyboardOffset = () => {
+      const offset = Math.max(0, Math.round(window.innerHeight - viewport.height - viewport.offsetTop));
+      document.documentElement.style.setProperty('--keyboard-offset', `${offset}px`);
+    };
+    viewport.addEventListener('resize', updateKeyboardOffset);
+    viewport.addEventListener('scroll', updateKeyboardOffset);
+    updateKeyboardOffset();
   }
 
   function init() {
     if (typeof android !== 'undefined' && android.webReady) android.webReady();
     nativeReady();
+    initMobileViewport();
     renderBrand();
     renderTopActions();
     applyTheme(student.theme, false);
