@@ -33,6 +33,9 @@
   let postInteractions = storedInteractions && typeof storedInteractions === 'object' && !Array.isArray(storedInteractions) ? storedInteractions : {};
   let studyGallery = Array.isArray(storedGallery) ? storedGallery.slice(0, 12) : [];
   let gradeCalculator = storedGrade && typeof storedGrade === 'object' && !Array.isArray(storedGrade) ? storedGrade : {};
+  let studyTasks = readStorage('study_tasks', []);
+  studyTasks = Array.isArray(studyTasks) ? studyTasks : [];
+  let activeStudyFilter = 'today';
   let adminStudents = readStorage('admin_students', []);
   let verificationRequests = readStorage('verification_requests', []);
   let supportTickets = readStorage('support_tickets', []);
@@ -1084,6 +1087,85 @@
     renderAdminDashboard();
   }
 
+  const capacitorPlugin = name => window.Capacitor?.Plugins?.[name] || null;
+  const isNativeNabd = () => Boolean(window.Capacitor?.isNativePlatform?.()) || Boolean(window.NabdAndroid);
+  const nativeReady = () => { try { window.NabdAndroid?.webReady?.(); } catch (error) { console.warn('تعذر إرسال إشارة الجاهزية للتطبيق', error); } };
+
+  function saveStudyTasks() {
+    try { localStorage.setItem(STORE + 'study_tasks', JSON.stringify(studyTasks)); } catch { toast('تعذر حفظ المهام محليًا.'); }
+    const preferences = capacitorPlugin('Preferences');
+    if (isNativeNabd() && preferences?.set) preferences.set({ key: 'nabd_study_tasks', value: JSON.stringify(studyTasks) }).catch(() => {});
+  }
+
+  async function loadStudyTasks() {
+    const preferences = capacitorPlugin('Preferences');
+    if (isNativeNabd() && preferences?.get) {
+      try { const result = await preferences.get({ key: 'nabd_study_tasks' }); const parsed = result?.value ? JSON.parse(result.value) : null; if (Array.isArray(parsed)) studyTasks = parsed; } catch { /* يبقى التخزين المحلي بديلًا آمنًا */ }
+    }
+  }
+
+  const localDateKey = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  const studyAt = task => new Date(`${task.date}T${task.reminderTime || '23:59'}:00`);
+  const studyStatus = task => task.completed ? 'completed' : studyAt(task).getTime() < Date.now() ? 'overdue' : 'active';
+  const studyDateText = value => { try { return new Intl.DateTimeFormat('ar-SY', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(`${value}T12:00:00`)); } catch { return value; } };
+  const studyTimeText = value => { try { return new Intl.DateTimeFormat('ar-SY', { hour: 'numeric', minute: '2-digit' }).format(new Date(`2000-01-01T${value}:00`)); } catch { return value; } };
+
+  async function cancelStudyNotification(task) {
+    if (!task?.notificationId) return true;
+    const native = capacitorPlugin('LocalNotifications');
+    if (!isNativeNabd() || !native?.cancel) return true;
+    try { await native.cancel({ notifications: [{ id: Number(task.notificationId) }] }); return true; } catch { toast('تعذر إلغاء التذكير الأصلي القديم.'); return false; }
+  }
+
+  async function scheduleStudyNotification(task) {
+    if (!task.reminderEnabled) return true;
+    const scheduledAt = studyAt(task);
+    if (scheduledAt.getTime() <= Date.now()) { toast('يرجى اختيار وقت مستقبلي للتذكير.'); return false; }
+    const native = capacitorPlugin('LocalNotifications');
+    if (!isNativeNabd() || !native?.schedule) { toast('حُفظت المهمة. ستُجدول التذكيرات الحقيقية داخل تطبيق نبض عند توفر إضافة الإشعارات الأصلية.'); return true; }
+    try {
+      const permissions = await native.checkPermissions?.();
+      const display = permissions?.display;
+      if (display !== 'granted') { const requested = await native.requestPermissions?.(); if (requested?.display !== 'granted') { toast('فعّل صلاحية الإشعارات للحصول على تذكيرات الدراسة.'); return false; } }
+      await native.schedule({ notifications: [{ id: Number(task.notificationId), title: '📚 تذكير دراسي', body: `حان وقت ${task.title} في مادة ${task.subject}.`, schedule: { at: scheduledAt }, extra: { taskId: task.id } }] });
+      return true;
+    } catch (error) { console.warn('فشل جدولة التذكير الأصلي', error); toast('تعذر جدولة التذكير الآن، لكن المهمة حُفظت.'); return false; }
+  }
+
+  function nextStudyNotificationId() { let id = Math.floor(Date.now() % 2000000000); const used = new Set(studyTasks.map(task => Number(task.notificationId))); while (used.has(id)) id += 1; return id; }
+  function studyFilterTasks() {
+    const now = new Date(); now.setHours(0, 0, 0, 0); const today = localDateKey(now); const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1); const tomorrowKey = localDateKey(tomorrow);
+    return studyTasks.filter(task => { const status = studyStatus(task); if (activeStudyFilter === 'completed') return status === 'completed'; if (activeStudyFilter === 'overdue') return status === 'overdue'; if (activeStudyFilter === 'today') return !task.completed && task.date === today; if (activeStudyFilter === 'tomorrow') return !task.completed && task.date === tomorrowKey; return !task.completed && task.date > tomorrowKey; }).sort((a, b) => studyAt(a) - studyAt(b));
+  }
+
+  function renderStudyTasks() {
+    const holder = $('#studyTasks'), empty = $('#studyEmpty'); if (!holder || !empty) return;
+    const todayKey = new Date().toISOString().slice(0, 10); const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); const tomorrowKey = tomorrow.toISOString().slice(0, 10);
+    const counts = { today: studyTasks.filter(t => !t.completed && t.date === todayKey).length, tomorrow: studyTasks.filter(t => !t.completed && t.date === tomorrowKey).length, upcoming: studyTasks.filter(t => !t.completed && t.date > tomorrowKey).length, overdue: studyTasks.filter(t => studyStatus(t) === 'overdue').length, completed: studyTasks.filter(t => t.completed).length };
+    Object.entries(counts).forEach(([key, count]) => { const el = $(`#study${key[0].toUpperCase()}${key.slice(1)}Count`); if (el) el.textContent = count; });
+    const summary = $('#studySummary');
+    if (summary) summary.innerHTML = `<div class="study-summary-card"><i class="fa-solid fa-list-check"></i><div><b>${studyTasks.filter(task => !task.completed).length}</b><span>مهام قيد الإنجاز</span></div></div><div class="study-summary-card"><i class="fa-solid fa-clock"></i><div><b>${counts.overdue}</b><span>مهام متأخرة</span></div></div><div class="study-summary-card"><i class="fa-solid fa-circle-check"></i><div><b>${counts.completed}</b><span>مهام مكتملة</span></div></div>`;
+    $$('#studyTaskTabs button').forEach(button => button.classList.toggle('active', button.dataset.studyFilter === activeStudyFilter));
+    const visible = studyFilterTasks(); holder.innerHTML = visible.map(task => { const status = studyStatus(task); const statusText = status === 'completed' ? 'مكتملة' : status === 'overdue' ? 'متأخرة' : 'قيد الإنجاز'; return `<article class="study-task-card ${status}"><div class="study-task-icon"><i class="fa-solid ${status === 'completed' ? 'fa-circle-check' : status === 'overdue' ? 'fa-clock' : 'fa-book-open'}"></i></div><div class="study-task-main"><div class="study-task-title"><span>${escapeHTML(task.subject)}</span><h3>${escapeHTML(task.title)}</h3></div>${task.notes ? `<p>${escapeHTML(task.notes)}</p>` : ''}<div class="study-task-meta"><span><i class="fa-regular fa-calendar"></i>${studyDateText(task.date)}</span><span><i class="fa-regular fa-clock"></i>${studyTimeText(task.reminderTime)}</span>${task.reminderEnabled ? '<span><i class="fa-solid fa-bell"></i>تذكير</span>' : ''}</div></div><div class="study-task-actions"><span class="study-status ${status}">${statusText}</span><button data-study-action="edit" data-task-id="${task.id}" title="تعديل المهمة"><i class="fa-solid fa-pen"></i></button><button data-study-action="delete" data-task-id="${task.id}" title="حذف المهمة"><i class="fa-regular fa-trash-can"></i></button><button class="study-complete" data-study-action="complete" data-task-id="${task.id}" title="${task.completed ? 'إعادة المهمة' : 'تم الإنجاز'}"><i class="fa-solid ${task.completed ? 'fa-rotate-left' : 'fa-check'}"></i></button></div></article>`; }).join('');
+    empty.classList.toggle('hidden', visible.length > 0);
+  }
+
+  function openStudyTaskEditor(taskId = '') {
+    const task = studyTasks.find(item => item.id === taskId) || {}; const today = localDateKey();
+    openModal(`<div class="modal-head"><h3>${task.id ? 'تعديل المهمة' : 'إضافة مهمة دراسية'}</h3><button class="close-modal" aria-label="إغلاق">×</button></div><form id="studyTaskForm" data-task-id="${task.id || ''}"><div class="form-grid"><div class="form-group"><label>المادة</label><input name="subject" required maxlength="60" placeholder="مثل: الرياضيات" value="${escapeHTML(task.subject || '')}"></div><div class="form-group"><label>اسم المهمة</label><input name="title" required maxlength="120" placeholder="مثل: مراجعة الفصل الثالث" value="${escapeHTML(task.title || '')}"></div><div class="form-group"><label>التاريخ</label><input name="date" type="date" required min="${today}" value="${escapeHTML(task.date || today)}"></div><div class="form-group"><label>وقت التذكير</label><input name="reminderTime" type="time" required value="${escapeHTML(task.reminderTime || '18:00')}"></div><div class="form-group full"><label>ملاحظات <small>اختياري</small></label><textarea name="notes" maxlength="400" placeholder="تفاصيل أو هدف قصير للمهمة">${escapeHTML(task.notes || '')}</textarea></div><label class="study-reminder-toggle full"><input name="reminderEnabled" type="checkbox" ${task.reminderEnabled !== false ? 'checked' : ''}><span><i class="fa-solid fa-bell"></i><b>تفعيل التذكير</b><small>يُجدول كتذكير أصلي عند توفره داخل التطبيق.</small></span></label></div><div class="form-actions"><button class="outline-button close-modal" type="button">إلغاء</button><button class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ المهمة</button></div></form>`);
+  }
+
+  async function saveStudyTask(form) {
+    const data = new FormData(form), id = form.dataset.taskId, old = studyTasks.find(item => item.id === id); const task = { id: id || `task-${Date.now()}-${Math.random().toString(16).slice(2)}`, subject: String(data.get('subject')).trim(), title: String(data.get('title')).trim(), notes: String(data.get('notes') || '').trim(), date: String(data.get('date')), reminderTime: String(data.get('reminderTime')), reminderEnabled: data.get('reminderEnabled') === 'on', completed: old?.completed || false, notificationId: old?.notificationId || nextStudyNotificationId(), createdAt: old?.createdAt || Date.now(), updatedAt: Date.now() };
+    if (!task.subject || !task.title) return toast('أكمل المادة واسم المهمة.'); if (task.reminderEnabled && studyAt(task).getTime() <= Date.now()) return toast('يرجى اختيار وقت مستقبلي للتذكير.');
+    if (old) await cancelStudyNotification(old); const scheduled = await scheduleStudyNotification(task); if (task.reminderEnabled && isNativeNabd() && capacitorPlugin('LocalNotifications')?.schedule && !scheduled) return;
+    if (old) studyTasks = studyTasks.map(item => item.id === id ? task : item); else studyTasks.unshift(task); saveStudyTasks(); closeModal(); renderStudyTasks(); const nativeReminder = isNativeNabd() && Boolean(capacitorPlugin('LocalNotifications')?.schedule); toast(task.reminderEnabled ? (nativeReminder ? 'تم حفظ المهمة وجدولة التذكير.' : 'تم حفظ المهمة. فعّل جسر التطبيق للإشعار الأصلي.') : 'تم حفظ المهمة.');
+  }
+
+  async function handleStudyAction(button) { const task = studyTasks.find(item => item.id === button.dataset.taskId); if (!task) return; const action = button.dataset.studyAction; if (action === 'edit') return openStudyTaskEditor(task.id); if (action === 'delete') { if (!window.confirm('هل أنت متأكد من حذف هذه المهمة؟')) return; await cancelStudyNotification(task); studyTasks = studyTasks.filter(item => item.id !== task.id); saveStudyTasks(); renderStudyTasks(); return toast('تم حذف المهمة وإلغاء تذكيرها.'); } task.completed = !task.completed; task.updatedAt = Date.now(); if (task.completed) { task.reminderEnabled = false; await cancelStudyNotification(task); } else if (task.reminderEnabled) await scheduleStudyNotification(task); saveStudyTasks(); renderStudyTasks(); toast(task.completed ? 'أحسنت، تم تسجيل المهمة كمكتملة.' : 'أعيدت المهمة إلى قائمة الإنجاز.'); }
+
+  async function initStudySchedule() { if (!$('#studyTasks')) return; await loadStudyTasks(); const note = $('#studyNativeNote'); if (note) note.innerHTML = isNativeNabd() && capacitorPlugin('LocalNotifications') ? '<i class="fa-solid fa-mobile-screen-button"></i><span>التذكيرات الأصلية متاحة داخل التطبيق.</span>' : '<i class="fa-solid fa-globe"></i><span>يعمل الجدول في المتصفح؛ الإشعار الأصلي يحتاج جسر التطبيق.</span>'; renderStudyTasks(); }
+
   function initAdminDashboard() {
     if (!$('#adminLoginScreen')) return;
     const allowed = isAdminAuthenticated();
@@ -1117,6 +1199,11 @@
       if (galleryRemove) removeGalleryImage(galleryRemove.dataset.galleryRemove);
       const galleryMove = event.target.closest('[data-gallery-move]');
       if (galleryMove) moveGalleryImage(galleryMove.dataset.galleryMove, galleryMove.dataset.direction);
+      const studyAction = event.target.closest('[data-study-action]');
+      if (studyAction) handleStudyAction(studyAction);
+      if (event.target.closest('#addStudyTask, #addFirstStudyTask')) openStudyTaskEditor();
+      const studyFilter = event.target.closest('[data-study-filter]');
+      if (studyFilter) { activeStudyFilter = studyFilter.dataset.studyFilter; renderStudyTasks(); }
       const demo = event.target.closest('[data-demo]');
       if (demo) toast(demo.dataset.demo);
 
@@ -1140,6 +1227,7 @@
       if (event.target.id === 'verificationForm') { event.preventDefault(); submitVerificationRequest(); }
       if (event.target.id === 'supportForm') { event.preventDefault(); submitSupportRequest(event.target); }
       if (event.target.id === 'adminLoginForm') { event.preventDefault(); submitAdminLogin(event.target); }
+      if (event.target.id === 'studyTaskForm') { event.preventDefault(); saveStudyTask(event.target); }
       if (event.target.matches('.comment-form')) { event.preventDefault(); addComment(event.target); }
     });
 
@@ -1158,6 +1246,7 @@
 
   function init() {
     if (typeof android !== 'undefined' && android.webReady) android.webReady();
+    nativeReady();
     renderBrand();
     renderTopActions();
     applyTheme(student.theme, false);
@@ -1171,6 +1260,7 @@
     initNews();
     initGallery();
     initCalculator();
+    initStudySchedule();
     initChat();
   }
 

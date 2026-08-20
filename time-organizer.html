@@ -1,18 +1,16 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#080d19">
-  <title>نبض التفوق | تنظيم الوقت</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080d19">
+  <title>نبض التفوق | الجدول الدراسي</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"><link rel="stylesheet" href="styles.css">
 </head>
-<body data-page="service">
-  <div class="app">
-    <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
-    <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content"><section class="service-hub service-gold"><header class="service-hub-hero panel"><div class="service-hub-icon"><i class="fa-solid fa-calendar-check"></i></div><div><span class="eyebrow">خطة يومك</span><h2>تنظيم الوقت</h2><p>حوّل واجباتك ومراجعاتك إلى قائمة صغيرة ومنظمة تساعدك على البدء الآن.</p></div></header><section class="service-hub-panel panel"><div class="service-hub-panel-head"><div><span class="eyebrow">ابدأ بخطوات منظمة</span><h3>ماذا ستجد في هذا القسم؟</h3></div><a class="outline-button" href="index.html"><i class="fa-solid fa-arrow-right"></i> الرئيسية</a></div><div class="service-feature-grid"><article><span>01</span><h4>خطة يومية</h4><p>ضع مهامك الأساسية بترتيب واضح.</p></article><article><span>02</span><h4>أولوية ذكية</h4><p>ابدأ بالأكثر أهمية ثم انتقل للباقي.</p></article><article><span>03</span><h4>توازن أفضل</h4><p>وزّع وقتك بين الدراسة والراحة.</p></article></div><button class="primary-button service-hub-action" type="button" data-demo="سيتم ربط تفاصيل تنظيم الوقت ومحتواه قريبًا."><i class="fa-solid fa-calendar-check"></i> أنشئ مهمة جديدة</button></section></section></main></div>
-  </div>
-  <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script src="app.js"></script>
-</body>
-</html>
+<body data-page="study-schedule">
+  <div class="app"><header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
+    <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content"><section class="study-schedule-page">
+      <header class="study-schedule-hero panel"><div class="study-hero-orb"></div><div><span class="eyebrow"><i class="fa-solid fa-calendar-days"></i> خطتك الذكية</span><h2>الجدول الدراسي</h2><p>نظّم مهامك الدراسية واحصل على تذكير في الوقت المناسب.</p><div class="study-native-note" id="studyNativeNote"><i class="fa-solid fa-mobile-screen-button"></i><span>يتم حفظ مهامك على جهازك.</span></div></div><button class="study-add-button" id="addStudyTask" type="button"><i class="fa-solid fa-plus"></i><span>إضافة مهمة</span></button></header>
+      <section class="study-summary" id="studySummary" aria-label="ملخص المهام"></section>
+      <section class="study-board panel"><div class="study-tabs" id="studyTaskTabs" role="tablist"><button class="active" data-study-filter="today">اليوم <b id="studyTodayCount">0</b></button><button data-study-filter="tomorrow">غدًا <b id="studyTomorrowCount">0</b></button><button data-study-filter="upcoming">القادمة <b id="studyUpcomingCount">0</b></button><button data-study-filter="overdue">متأخرة <b id="studyOverdueCount">0</b></button><button data-study-filter="completed">المكتملة <b id="studyCompletedCount">0</b></button></div><div class="study-tasks" id="studyTasks"></div><div class="study-empty hidden" id="studyEmpty"><span><i class="fa-solid fa-calendar-plus"></i></span><h3>لا توجد مهام دراسية حاليًا</h3><p>ابدأ بإضافة مهمتك الأولى لتنظيم دراستك.</p><button class="primary-button" id="addFirstStudyTask" type="button"><i class="fa-solid fa-plus"></i> إضافة مهمة</button></div></section>
+    </section></main></div>
+  </div><nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script src="app.js"></script>
+</body></html>
