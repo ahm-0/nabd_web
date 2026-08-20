@@ -187,3 +187,6 @@ html[data-theme="light"] .news-hero{border-color:rgba(22,109,202,.26);box-shadow
 
 /* تحسين الأداء: تأجيل رسم الأقسام البعيدة وتقليل الحركات المستمرة على الهاتف */
 .reference-section,.reference-feature-list{content-visibility:auto;contain-intrinsic-size:auto 420px}@media(max-width:700px){.reference-card:before,.reference-card:after{animation-duration:8s}.reference-card-icon{animation-duration:5.2s}.explore-tools-grid .reference-card:nth-child(n+4):before,.explore-tools-grid .reference-card:nth-child(n+4):after,.explore-tools-grid .reference-card:nth-child(n+4) .reference-card-icon{animation:none}.reference-feature{contain:paint}}
+
+/* فرض حجم الأيقونات المرجعي على الهاتف */
+@media(max-width:700px){.reference-card .reference-card-icon{width:46px!important;height:46px!important;margin-bottom:10px!important;border-radius:15px!important;font-size:19px!important}.explore-tools-grid .reference-card .reference-card-icon{width:44px!important;height:44px!important;margin-bottom:9px!important;border-radius:14px!important;font-size:18px!important}}@media(max-width:420px){.reference-card .reference-card-icon{width:43px!important;height:43px!important;font-size:18px!important}.explore-tools-grid .reference-card .reference-card-icon{width:41px!important;height:41px!important;font-size:17px!important}}
