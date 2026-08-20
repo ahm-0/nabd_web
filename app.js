@@ -495,14 +495,14 @@
     toggle.setAttribute('aria-label', collapsed ? 'إظهار عداد الامتحانات' : 'إخفاء عداد الامتحانات');
     toggle.title = collapsed ? 'إظهار عداد الامتحانات' : 'إخفاء عداد الامتحانات';
     toggle.innerHTML = `<i class="fa-solid ${collapsed ? 'fa-chevron-down' : 'fa-chevron-up'}"></i>`;
-    if (persist) { try { localStorage.setItem(STORE + 'exam_countdown_collapsed', JSON.stringify(Boolean(collapsed))); } catch { /* يظل السلوك مرئيًا عند تعذر حفظ التفضيل */ } }
+    if (persist) { try { localStorage.setItem(STORE + 'exam_countdown_collapsed_v2', JSON.stringify(Boolean(collapsed))); } catch { /* يظل السلوك مرئيًا عند تعذر حفظ التفضيل */ } }
   }
 
   function initHome() {
     if (!$('#homeExamTitle')) return;
     $$('.exam-tab').forEach(tab => tab.addEventListener('click', () => setExam(tab.dataset.exam)));
     $('#customCountdownButton')?.addEventListener('click', () => openNamedModal('customCountdown'));
-    const storedCollapsed = readStorage('exam_countdown_collapsed', false);
+    const storedCollapsed = readStorage('exam_countdown_collapsed_v2', true);
     setExamCountdownCollapsed(Boolean(storedCollapsed), false);
     $('#examCountdownToggle')?.addEventListener('click', () => setExamCountdownCollapsed(!$('#examCountdownWrap')?.classList.contains('is-collapsed')));
     setExam('bac');
