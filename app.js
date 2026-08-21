@@ -257,7 +257,9 @@
 
   function renderTopActions() {
     const actions = $('.top-actions');
-    if (!actions || $('#sharePlatform')) return;
+    if (!actions) return;
+    if (!$('#sidebarScrim')) document.body.insertAdjacentHTML('beforeend', '<button class="sidebar-scrim" id="sidebarScrim" type="button" aria-label="إغلاق القائمة الرئيسية" tabindex="-1"></button>');
+    if ($('#sharePlatform')) return;
     actions.insertAdjacentHTML('afterbegin', '<button class="icon-button sidebar-toggle" id="sidebarToggle" type="button" title="القائمة الرئيسية" aria-label="فتح القائمة الرئيسية" aria-expanded="false"><i class="fa-solid fa-bars-staggered"></i></button><button class="icon-button share-platform" id="sharePlatform" type="button" title="مشاركة المنصة" aria-label="مشاركة المنصة"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>');
   }
 
@@ -1562,6 +1564,7 @@
       const nativeChat = event.target.closest('[data-native-chat-url]');
       if (nativeChat) { event.preventDefault(); openNativeChatViewer(nativeChat.dataset.nativeChatUrl, nativeChat.dataset.nativeChatTitle); }
       if (event.target.closest('#sidebarToggle')) toggleSidebar();
+      if (event.target.closest('#sidebarScrim')) toggleSidebar(false);
       if (document.body.classList.contains('sidebar-open') && event.target.closest('.side-link, .sidebar-edit-cta')) toggleSidebar(false);
       if (document.body.classList.contains('sidebar-open') && !event.target.closest('#desktopSidebar, #sidebarToggle')) toggleSidebar(false);
       if (event.target.closest('#profileThemeButton')) applyTheme(student.theme === 'dark' ? 'light' : 'dark');
