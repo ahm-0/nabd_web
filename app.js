@@ -1890,6 +1890,22 @@
     });
   }
 
+  function enableScreenCapture() {
+    document.documentElement.dataset.screenCapture = 'allowed';
+    try {
+      const bridge = window.NabdAndroid;
+      if (bridge) {
+        if (typeof bridge.setScreenCaptureAllowed === 'function') bridge.setScreenCaptureAllowed(true);
+        else if (typeof bridge.allowScreenshots === 'function') bridge.allowScreenshots();
+        else if (typeof bridge.setSecureScreen === 'function') bridge.setSecureScreen(false);
+      }
+      const screenCapturePlugin = window.Capacitor?.Plugins?.ScreenCapture;
+      if (screenCapturePlugin && typeof screenCapturePlugin.allowScreenshots === 'function') screenCapturePlugin.allowScreenshots();
+    } catch (error) {
+      console.warn('تعذر تفعيل التقاط الشاشة عبر الجسر الأصلي', error);
+    }
+  }
+
   function initMobileViewport() {
     const viewport = window.visualViewport;
     if (!viewport) return;
@@ -1907,6 +1923,7 @@
       if (typeof android !== 'undefined' && android.webReady) android.webReady();
       nativeReady();
     }, 2000);
+    enableScreenCapture();
     initMobileViewport();
     renderBrand();
     renderTopActions();
