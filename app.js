@@ -55,6 +55,9 @@
   let activeExam = 'bac';
   let activeFeedFilter = 'all';
   const openComments = new Set();
+  const likePulsePosts = new Set();
+  let communityPromo = readStorage('community_promo', { visible: true });
+  communityPromo = communityPromo && typeof communityPromo === 'object' ? { visible: communityPromo.visible !== false } : { visible: true };
 
   const escapeHTML = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
@@ -77,6 +80,11 @@
       toast('تعذر حفظ البيانات؛ جرّب تقليل عدد أو حجم الصور المرفقة.');
       return false;
     }
+  }
+
+  function saveCommunityPromo() {
+    try { localStorage.setItem(STORE + 'community_promo', JSON.stringify(communityPromo)); return true; }
+    catch { toast('تعذر حفظ إعداد مساحة المجتمع محليًا.'); return false; }
   }
 
   function saveGallery() {
@@ -547,8 +555,9 @@
     const images = (post.images || []).length
       ? `<div class="post-images ${(post.images || []).length > 1 ? 'multiple' : ''}">${post.images.map(src => `<img loading="lazy" src="${src}" alt="صورة مرفقة بالمنشور">`).join('')}</div><div class="post-media-indicator">${post.images.length > 1 ? `<i class="fa-solid fa-images"></i> اسحب لمشاهدة الصور ${post.images.length}` : ''}</div>`
       : '';
-    const comments = post.comments.map(comment => { const commentVerified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified); return `<div class="comment"><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(commentVerified)}</b><br>${escapeHTML(comment.text)}</div>`; }).join('');
-    return `<article class="post" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong class="post-author-name"><span>${escapeHTML(post.name)}</span>${verifiedBadgeMarkup(verified)}</strong><span>${escapeHTML(post.meta || `${student.stage} · ${student.city}`)} · الآن</span></div><button class="post-menu" type="button" aria-label="المزيد"><i class="fa-solid fa-ellipsis"></i></button></div><p class="post-content">${escapeHTML(post.text)}</p>${images}<div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
+    const comments = post.comments.map(comment => { const commentVerified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified); const commentAvatar = comment.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((comment.name || 'ط')[0])}</span>`; return `<div class="comment">${commentAvatar}<div><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(commentVerified)}</b><p>${escapeHTML(comment.text)}</p></div></div>`; }).join('');
+    const menu = rawPost.mine ? `<button class="post-menu" type="button" data-action="post-menu" aria-label="خيارات المنشور" title="تعديل أو حذف"><i class="fa-solid fa-ellipsis"></i></button>` : '';
+    return `<article class="post ${likePulsePosts.has(post.id) ? 'like-pulse' : ''}" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong class="post-author-name"><span>${escapeHTML(post.name)}</span>${verifiedBadgeMarkup(verified)}</strong><span>${escapeHTML(post.meta || `${student.stage} · ${student.city}`)} · الآن</span></div>${menu}</div><p class="post-content">${escapeHTML(post.text)}</p>${images}<div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
   }
 
   function renderFeed() {
@@ -564,6 +573,7 @@
     const feedTitle = $('#feedTitle');
     const feedEyebrow = $('#feedEyebrow');
     const communityPostCount = $('#communityPostCount');
+    $('.news-hero')?.classList.toggle('hidden', !communityPromo.visible);
     if (feedTitle) feedTitle.textContent = title;
     if (feedEyebrow) feedEyebrow.textContent = eyebrow;
     if (communityPostCount) communityPostCount.textContent = entries.length;
@@ -613,6 +623,7 @@
     } else {
       postInteractions[postId] = next;
     }
+    if (next.liked) { likePulsePosts.add(postId); window.setTimeout(() => { likePulsePosts.delete(postId); renderFeed(); }, 360); }
     saveState();
     renderFeed();
   }
@@ -626,6 +637,29 @@
     } catch (error) {
       if (error.name !== 'AbortError') toast('تعذر تنفيذ المشاركة حاليًا.');
     }
+  }
+
+  function openPostMenu(postId) {
+    const post = posts.find(item => item.id === postId);
+    if (!post?.mine) return toast('يمكن لصاحب المنشور فقط تعديل أو حذف منشوره.');
+    openModal(`<div class="modal-head"><div><span class="eyebrow">خيارات المنشور</span><h3>إدارة منشورك</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><div class="post-management-menu"><button type="button" data-news-manage="edit" data-post-id="${escapeHTML(post.id)}"><i class="fa-solid fa-pen"></i><span><b>تعديل المنشور</b><small>تحديث النص مع الاحتفاظ بالصور</small></span></button><button type="button" class="danger" data-news-manage="delete" data-post-id="${escapeHTML(post.id)}"><i class="fa-regular fa-trash-can"></i><span><b>حذف المنشور</b><small>إزالته من هذا الجهاز نهائيًا</small></span></button></div>`);
+  }
+
+  function openPostEditor(postId) {
+    const post = posts.find(item => item.id === postId); if (!post?.mine) return;
+    openModal(`<div class="modal-head"><div><span class="eyebrow">تعديل المنشور</span><h3>حدّث ما تريد مشاركته</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><form id="postEditForm" data-post-id="${escapeHTML(post.id)}"><div class="form-group full"><label>نص المنشور</label><textarea name="text" maxlength="1200" required>${escapeHTML(post.text || '')}</textarea></div><p class="sheet-hint">تبقى الصور المرفقة كما هي عند تعديل النص.</p><div class="form-actions"><button class="outline-button close-modal" type="button">إلغاء</button><button class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ التعديل</button></div></form>`);
+  }
+
+  function savePostEdit(form) {
+    const post = posts.find(item => item.id === form.dataset.postId); const text = String(new FormData(form).get('text') || '').trim();
+    if (!post?.mine || !text) return toast('اكتب نص المنشور قبل الحفظ.');
+    post.text = text; post.updatedAt = Date.now();
+    saveState(); closeModal(); renderFeed(); toast('تم تعديل المنشور.');
+  }
+
+  function deleteOwnPost(postId) {
+    const post = posts.find(item => item.id === postId); if (!post?.mine) return;
+    confirmAction('حذف المنشور؟', 'سيتم حذف هذا المنشور والصور المرفقة به من هذا الجهاز.', () => { posts = posts.filter(item => item.id !== postId); delete postInteractions[postId]; openComments.delete(postId); saveState(); renderFeed(); toast('تم حذف المنشور.'); }, 'حذف المنشور');
   }
 
   function addComment(form) {
@@ -1563,6 +1597,9 @@
     $('#adminVerificationCount').textContent = String(pending.length);
     $('#adminSupportCount').textContent = String(open.length);
     $('#adminPostCount').textContent = String(posts.length);
+    const promoToggle = $('#adminCommunityPromoToggle'); const promoStatus = $('#adminCommunityPromoStatus');
+    if (promoToggle) promoToggle.checked = communityPromo.visible;
+    if (promoStatus) { promoStatus.textContent = communityPromo.visible ? 'ظاهرة' : 'مخفية'; promoStatus.className = `admin-status ${communityPromo.visible ? 'open' : 'pending'}`; }
     const activities = $('#adminActivityList');
     if (activities) activities.innerHTML = adminActivity.length ? adminActivity.slice(0, 7).map(item => `<div class="admin-activity"><i class="${item.type === 'verification' ? 'fa-solid fa-certificate' : item.type === 'support' ? 'fa-solid fa-headset' : item.type === 'content' ? 'fa-regular fa-newspaper' : 'fa-solid fa-user-pen'}"></i><div><b>${escapeHTML(item.title)}</b><span>${escapeHTML(item.detail || 'تحديث داخل المنصة')} · ${displayAdminDate(item.createdAt)}</span></div></div>`).join('') : '<div class="admin-empty">لا توجد أحداث إشرافية بعد. ستظهر هنا تحديثات ملفات الطلاب والطلبات والرسائل.</div>';
     renderAdminStudents();
@@ -1650,7 +1687,7 @@
     }
     if (action === 'clear-activity') { adminActivity = []; saveAdminState(); toast('تم تنظيف سجل النشاط.'); }
     if (action === 'export') {
-      const report = { generatedAt: new Date().toISOString(), students: adminStudents, verificationRequests, supportTickets, posts };
+      const report = { generatedAt: new Date().toISOString(), students: adminStudents, verificationRequests, supportTickets, posts, communityPromo };
       const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'nabd-supervision-export.json'; anchor.click(); URL.revokeObjectURL(url);
@@ -1755,6 +1792,7 @@
     adminControlsBound = true;
     $$('.admin-tab').forEach(tab => tab.addEventListener('click', () => { $$('.admin-tab').forEach(item => item.classList.toggle('active', item === tab)); $$('.admin-pane').forEach(pane => pane.classList.toggle('active', pane.dataset.adminPane === tab.dataset.adminTab)); }));
     $('#adminStudentSearch')?.addEventListener('input', event => renderAdminStudents(event.target.value));
+    $('#adminCommunityPromoToggle')?.addEventListener('change', event => { communityPromo.visible = event.target.checked; if (!saveCommunityPromo()) return; adminLog('content', communityPromo.visible ? 'إظهار مساحة طلاب نبض' : 'إخفاء مساحة طلاب نبض', 'إعداد مجتمع الأخبار'); renderAdminDashboard(); toast(communityPromo.visible ? 'ستظهر مساحة طلاب نبض في الأخبار.' : 'تم إخفاء مساحة طلاب نبض من الأخبار.'); });
   }
 
   function bindEvents() {
@@ -1796,12 +1834,16 @@
       const demo = event.target.closest('[data-demo]');
       if (demo) toast(demo.dataset.demo);
 
+      const newsManage = event.target.closest('[data-news-manage]');
+      if (newsManage) { const id = newsManage.dataset.postId; if (newsManage.dataset.newsManage === 'edit') openPostEditor(id); if (newsManage.dataset.newsManage === 'delete') { closeModal(); deleteOwnPost(id); } return; }
+
       const tool = event.target.closest('[data-action]');
       if (tool) {
         const postId = tool.closest('[data-post]')?.dataset.post;
         if (tool.dataset.action === 'like') toggleLike(postId);
         if (tool.dataset.action === 'comments') { openComments.has(postId) ? openComments.delete(postId) : openComments.add(postId); renderFeed(); }
         if (tool.dataset.action === 'share') sharePost(postId);
+        if (tool.dataset.action === 'post-menu') openPostMenu(postId);
       }
 
       const suggestion = event.target.closest('.suggestion, .assistant-chip');
@@ -1820,6 +1862,7 @@
       if (event.target.id === 'completionPlanForm') { event.preventDefault(); saveCompletionPlan(event.target); }
       if (event.target.id === 'libraryResourceForm') { event.preventDefault(); saveLibraryResource(event.target); }
       if (event.target.matches('.comment-form')) { event.preventDefault(); addComment(event.target); }
+      if (event.target.id === 'postEditForm') { event.preventDefault(); savePostEdit(event.target); }
     });
 
     $('#avatarInput')?.addEventListener('change', event => {
