@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080d19">
+  <title>نبض التفوق | عداد الامتحانات</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="countdown">
+  <div class="app">
+    <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
+    <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content countdown-page">
+      <header class="settings-page-head countdown-page-head"><a class="settings-back" href="index.html" aria-label="العودة إلى الرئيسية"><i class="fa-solid fa-arrow-right"></i></a><div><span>تابع هدفك</span><h2>عداد الامتحانات</h2><p>اختر المرحلة وتابع الوقت المتبقي بخطوات ثابتة.</p></div></header>
+      <section class="exam-countdown panel" id="examCountdown">
+        <div class="exam-tabs" role="tablist"><button class="exam-tab active" data-exam="bac">بكالوريا</button><button class="exam-tab" data-exam="nine">تاسع</button><button class="exam-tab" data-exam="custom">مخصص</button></div>
+        <div class="exam-head"><h3 id="homeExamTitle"><i class="fa-solid fa-graduation-cap"></i> امتحانات البكالوريا</h3><div class="exam-head-tools"><span class="exam-badge" id="homeExamBadge">الثانوية العامة</span><button class="countdown-control hidden" id="customCountdownButton"><i class="fa-solid fa-sliders"></i> ضبط</button></div></div>
+        <div class="countdown-digits"><div class="time-unit"><b class="time-value" id="countDays">000</b><span class="time-label">يوم</span></div><div class="time-unit"><b class="time-value" id="countHours">00</b><span class="time-label">ساعة</span></div><div class="time-unit"><b class="time-value" id="countMinutes">00</b><span class="time-label">دقيقة</span></div><div class="time-unit"><b class="time-value" id="countSeconds">00</b><span class="time-label">ثانية</span></div></div>
+        <p class="exam-note" id="homeExamNote"><i class="fa-solid fa-circle-check"></i> رتّب خطتك اليومية لتصل إلى موعد الامتحان بثقة.</p>
+      </section>
+      <section class="countdown-page-tip panel"><i class="fa-solid fa-lightbulb"></i><div><b>اجعل العداد دافعًا هادئًا</b><p>اختر هدفك، ثم أضف مهام المراجعة إلى الجدول الدراسي ليصبح الوقت المتبقي خطة عملية.</p></div><a href="time-organizer.html" class="outline-button"><i class="fa-solid fa-calendar-plus"></i> افتح الجدول</a></section>
+    </main></div>
+  </div>
+  <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script src="app.js"></script>
+</body>
+</html>

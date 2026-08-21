@@ -548,13 +548,13 @@
   }
 
   function initHome() {
+    updateHomeMetrics();
     if (!$('#homeExamTitle')) return;
     $$('.exam-tab').forEach(tab => tab.addEventListener('click', () => setExam(tab.dataset.exam)));
     $('#customCountdownButton')?.addEventListener('click', () => openNamedModal('customCountdown'));
     const storedCollapsed = readStorage('exam_countdown_collapsed_v2', true);
     setExamCountdownCollapsed(Boolean(storedCollapsed), false);
     $('#examCountdownToggle')?.addEventListener('click', () => setExamCountdownCollapsed(!$('#examCountdownWrap')?.classList.contains('is-collapsed')));
-    updateHomeMetrics();
     setExam('bac');
     let timer = window.setInterval(() => { if (!document.hidden) updateCountdown(); }, 1000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) updateCountdown(); });
@@ -1084,7 +1084,10 @@
   }
 
   function initCurriculum() {
-    if (!$('#curriculumGrid')) return; renderCurriculum(); $('#curriculumSearch')?.addEventListener('input', renderCurriculum);
+    if (!$('#curriculumGrid')) return;
+    const requestedStage = new URLSearchParams(location.search).get('stage') || location.hash.replace('#', '');
+    if (requestedStage && curriculumCatalog[requestedStage]) activeCurriculumStage = requestedStage;
+    renderCurriculum(); $('#curriculumSearch')?.addEventListener('input', renderCurriculum);
     $$('#curriculumStageTabs [data-curriculum-stage]').forEach(button => button.addEventListener('click', () => { activeCurriculumStage = button.dataset.curriculumStage; renderCurriculum(); }));
     $('#curriculumGrid')?.addEventListener('click', event => { const details = event.target.closest('[data-curriculum-details]'); if (details) openCurriculumDetails(details.dataset.curriculumDetails); });
   }
