@@ -1111,8 +1111,49 @@
   const curriculumResourceMeta = {
     books: { kicker: 'مراجع الدراسة', icon: 'fa-book' }, summaries: { kicker: 'مراجعة مركزة', icon: 'fa-note-sticky' }, exams: { kicker: 'تدريب واختبار', icon: 'fa-file-circle-check' }, success: { kicker: 'العلامات والحدود', icon: 'fa-chart-simple' }, channels: { kicker: 'مصادر مجانية', icon: 'fa-bullhorn' }
   };
+  const curriculumSubjects = {
+    science: [
+      { title: 'عربي', scope: 'الأدب والنحو والقراءة', summary: 'قواعد وشواهد وأفكار النصوص', exam: 'نصوص وقواعد وتعبير', icon: 'fa-language', max: 400, pass: 160 },
+      { title: 'رياضيات', scope: 'التفاضل والتكامل والجبر', summary: 'قوانين وأمثلة ومسائل متدرجة', exam: 'مسائل ونماذج تدريبية', icon: 'fa-square-root-variable', max: 600, pass: 240 },
+      { title: 'علوم', scope: 'الوراثة والأجهزة الحيوية', summary: 'رسوم ومصطلحات وعمليات', exam: 'فهم وتطبيق وأسئلة شاملة', icon: 'fa-dna', max: 300, pass: 120 },
+      { title: 'فيزياء', scope: 'الميكانيك والكهرباء والحديثة', summary: 'قوانين ووحدات ومخططات', exam: 'مسائل وقوانين ونماذج', icon: 'fa-atom', max: 400, pass: 160 },
+      { title: 'كيمياء', scope: 'العضوية واللاعضوية والحسابات', summary: 'معادلات وتفاعلات ومقارنات', exam: 'أسئلة تفاعلات وحسابات', icon: 'fa-flask', max: 200, pass: 80 },
+      { title: 'إسلامية', scope: 'التربية الإسلامية ومحاورها', summary: 'مفاهيم وتعريفات وأدلة', exam: 'أسئلة حفظ وفهم وتطبيق', icon: 'fa-mosque', max: 200, pass: 80 },
+      { title: 'إنكليزي', scope: 'قواعد وقراءة ومفردات', summary: 'قواعد وكلمات أساسية', exam: 'قراءة وقواعد وتعبير', icon: 'fa-book-open', max: 300, pass: 120 },
+      { title: 'فرنسي', scope: 'قواعد وقراءة ومفردات', summary: 'قواعد وكلمات أساسية', exam: 'قراءة وقواعد وتعبير', icon: 'fa-language', max: 300, pass: 120 }
+    ],
+    literary: [
+      { title: 'عربي', scope: 'الأدب والنحو والقراءة', summary: 'قواعد وشواهد وأفكار النصوص', exam: 'نصوص وقواعد وتعبير', icon: 'fa-language', max: 600, pass: 300 },
+      { title: 'تاريخ', scope: 'الأحداث والشخصيات والعصور', summary: 'خطوط زمنية وأفكار أساسية', exam: 'أسئلة أحداث وتعليل ومقارنة', icon: 'fa-landmark', max: 200, pass: 80 },
+      { title: 'جغرافيا', scope: 'الخرائط والسكان والاقتصاد', summary: 'مصطلحات وخرائط مفاهيم', exam: 'خرائط ومفاهيم وتطبيقات', icon: 'fa-map-location-dot', max: 200, pass: 80 },
+      { title: 'فلسفة', scope: 'المنطق والمدارس والمفاهيم', summary: 'تعريفات ومقارنات وأمثلة', exam: 'تحليل ومقارنة وشرح', icon: 'fa-brain', max: 200, pass: 80 },
+      { title: 'إسلامية', scope: 'التربية الإسلامية ومحاورها', summary: 'مفاهيم وتعريفات وأدلة', exam: 'أسئلة حفظ وفهم وتطبيق', icon: 'fa-mosque', max: 200, pass: 80 },
+      { title: 'إنكليزي', scope: 'قواعد وقراءة ومفردات', summary: 'قواعد وكلمات أساسية', exam: 'قراءة وقواعد وتعبير', icon: 'fa-book-open', max: 400, pass: 160 },
+      { title: 'فرنسي', scope: 'قواعد وقراءة ومفردات', summary: 'قواعد وكلمات أساسية', exam: 'قراءة وقواعد وتعبير', icon: 'fa-language', max: 400, pass: 160 }
+    ],
+    nine: [
+      { title: 'عربي', scope: 'نصوص وقواعد وتعبير', summary: 'قواعد وشواهد وأفكار النصوص', exam: 'نصوص وقواعد وتعبير', icon: 'fa-language', max: 600, pass: 300 },
+      { title: 'علوم عامة', scope: 'فيزياء وكيمياء وعلوم حياة', summary: 'رسوم وتجارب ومصطلحات', exam: 'فهم وتطبيق وأسئلة شاملة', icon: 'fa-flask', max: 400, pass: 120 },
+      { title: 'رياضيات', scope: 'جبر وهندسة ومسائل', summary: 'قوانين وأمثلة ومسائل متدرجة', exam: 'تمارين جبر وهندسة', icon: 'fa-square-root-variable', max: 600, pass: 240 },
+      { title: 'إسلامية', scope: 'التربية الإسلامية ومحاورها', summary: 'مفاهيم وتعريفات وأدلة', exam: 'أسئلة حفظ وفهم وتطبيق', icon: 'fa-mosque', max: 200, pass: 80 },
+      { title: 'تاريخ', scope: 'أحداث وشخصيات ومفاهيم', summary: 'خطوط زمنية وأفكار أساسية', exam: 'ضمن مادة الاجتماعيات', icon: 'fa-landmark', success: 'ضمن الاجتماعيات: 600 علامة · حد الكسر 240' },
+      { title: 'جغرافيا', scope: 'خرائط وسكان واقتصاد', summary: 'مصطلحات وخرائط مفاهيم', exam: 'ضمن مادة الاجتماعيات', icon: 'fa-map-location-dot', success: 'ضمن الاجتماعيات: 600 علامة · حد الكسر 240' },
+      { title: 'إنكليزي', scope: 'قواعد وقراءة ومفردات', summary: 'قواعد وكلمات أساسية', exam: 'قراءة وقواعد وتعبير', icon: 'fa-book-open', max: 400, pass: 160 },
+      { title: 'فرنسي', scope: 'قواعد وقراءة ومفردات', summary: 'قواعد وكلمات أساسية', exam: 'قراءة وقواعد وتعبير', icon: 'fa-language', max: 400, pass: 160 }
+    ]
+  };
   let activeCurriculumStage = 'nine';
   let activeCurriculumResource = 'books';
+
+  function curriculumCards(stageKey, resourceKey) {
+    const resource = curriculumHub[stageKey]?.resources?.[resourceKey];
+    if (!resource) return [];
+    if (!['books', 'summaries', 'exams', 'success'].includes(resourceKey)) return resource.cards;
+    return (curriculumSubjects[stageKey] || []).map(subject => {
+      const note = resourceKey === 'books' ? `كتاب المنهاج · ${subject.scope}` : resourceKey === 'summaries' ? `ملخص ${subject.title} · ${subject.summary}` : resourceKey === 'exams' ? `أسئلة دورات ونماذج · ${subject.exam}` : subject.success || `${subject.max} علامة · حد الكسر ${subject.pass}`;
+      return { title: subject.title, note, icon: subject.icon };
+    });
+  }
 
   function normalizeCurriculumItem(item) {
     return Array.isArray(item) ? { title: item[0], note: item[1], icon: item[2] } : item;
@@ -1127,12 +1168,13 @@
     if ($('#curriculumResourceKicker')) $('#curriculumResourceKicker').innerHTML = `<i class="fa-solid ${escapeHTML(meta.icon)}"></i> ${escapeHTML(meta.kicker)}`;
     if ($('#curriculumResourceTitle')) $('#curriculumResourceTitle').textContent = resource.title;
     if ($('#curriculumResourceDescription')) $('#curriculumResourceDescription').textContent = resource.description;
-    if ($('#curriculumResourceCount')) $('#curriculumResourceCount').textContent = resource.cards.length;
-    grid.innerHTML = resource.cards.map((source, index) => { const item = normalizeCurriculumItem(source); const content = `<span class="curriculum-resource-icon"><i class="fa-solid ${escapeHTML(item.icon)}"></i></span><div><b>${escapeHTML(item.title)}</b><small>${escapeHTML(item.note)}</small></div><i class="fa-solid fa-arrow-left"></i>`; return item.href ? `<a class="curriculum-resource-card ${escapeHTML(stage.accent)}" href="${escapeHTML(item.href)}">${content}</a>` : `<button class="curriculum-resource-card ${escapeHTML(stage.accent)}" type="button" data-curriculum-item="${index}">${content}</button>`; }).join('');
+    const cards = curriculumCards(activeCurriculumStage, activeCurriculumResource);
+    if ($('#curriculumResourceCount')) $('#curriculumResourceCount').textContent = cards.length;
+    grid.innerHTML = cards.map((source, index) => { const item = normalizeCurriculumItem(source); const content = `<span class="curriculum-resource-icon"><i class="fa-solid ${escapeHTML(item.icon)}"></i></span><div><b>${escapeHTML(item.title)}</b><small>${escapeHTML(item.note)}</small></div><i class="fa-solid fa-arrow-left"></i>`; return item.href ? `<a class="curriculum-resource-card ${escapeHTML(stage.accent)}" href="${escapeHTML(item.href)}">${content}</a>` : `<button class="curriculum-resource-card ${escapeHTML(stage.accent)}" type="button" data-curriculum-item="${index}">${content}</button>`; }).join('');
   }
 
   function openCurriculumResource(index) {
-    const stage = curriculumHub[activeCurriculumStage]; const resource = stage?.resources?.[activeCurriculumResource]; const item = normalizeCurriculumItem(resource?.cards?.[Number(index)]); if (!stage || !resource || !item) return;
+    const stage = curriculumHub[activeCurriculumStage]; const resource = stage?.resources?.[activeCurriculumResource]; const item = normalizeCurriculumItem(curriculumCards(activeCurriculumStage, activeCurriculumResource)[Number(index)]); if (!stage || !resource || !item) return;
     openModal(`<div class="modal-head"><div><span class="eyebrow">${escapeHTML(stage.label)} · ${escapeHTML(resource.title)}</span><h3>${escapeHTML(item.title)}</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><div class="curriculum-resource-modal"><div class="curriculum-resource-modal-icon ${escapeHTML(stage.accent)}"><i class="fa-solid ${escapeHTML(item.icon)}"></i></div><p>${escapeHTML(item.note)}</p><div class="curriculum-resource-modal-note"><i class="fa-solid fa-circle-info"></i><span>هذه البوابة تنظّم مسارات المراجعة داخل التطبيق. استخدم قائمة القنوات أو المكتبة للوصول إلى الموارد المتاحة.</span></div><div class="modal-actions"><a class="outline-button" href="time-organizer.html"><i class="fa-solid fa-calendar-plus"></i> أضفها لجدولي</a><a class="primary-button" href="tests.html"><i class="fa-solid fa-clipboard-check"></i> افتح الاختبارات</a></div></div>`);
   }
 
