@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#080d19">
-  <title>نبض التفوق | دليل الجامعات</title>
+  <title>نبض التفوق | قسم الجامعات</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -12,17 +12,19 @@
   <div class="app">
     <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
     <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content">
-      <section class="university-page"><header class="university-hero panel"><div><span class="eyebrow"><i class="fa-solid fa-building-columns"></i> اختيارك الأكاديمي</span><h2>دليل الجامعات والاختصاصات</h2><p>استكشف مسارات دراسية إرشادية، ثم تحقق دائمًا من شروط القبول والاعتراف والمقاعد عبر الجهة الرسمية قبل اتخاذ قرارك.</p></div><a class="outline-button" href="https://mohe.gov.sy/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> موقع الوزارة للتحقق</a></header>
-      <section class="university-filters panel"><label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="universitySearch" type="search" placeholder="ابحث عن جامعة أو اختصاص"></label><label><span>المدينة</span><select id="universityCity"><option value="all">كل المدن</option><option value="دمشق">دمشق</option><option value="حلب">حلب</option><option value="اللاذقية">اللاذقية</option><option value="حمص">حمص</option><option value="دير الزور">دير الزور</option></select></label><label><span>نوع المؤسسة</span><select id="universityType"><option value="all">الكل</option><option value="حكومية">حكومية</option><option value="خاصة">خاصة</option></select></label><label><span>المجال</span><select id="universityField"><option value="all">كل المجالات</option><option value="صحي">صحي</option><option value="هندسي">هندسي</option><option value="علمي">علمي</option><option value="إنساني">إنساني</option></select></label></section>
-      <section class="university-compare-bar hidden" id="universityCompareBar"><div><i class="fa-solid fa-code-compare"></i><span id="universityCompareCount">0</span> جامعات مختارة للمقارنة</div><button class="primary-button" id="openUniversityCompare" type="button">عرض المقارنة</button><button class="text-button" id="clearUniversityCompare" type="button">إلغاء الاختيار</button></section>
-      <section class="university-grid" id="universityGrid" aria-live="polite"></section>
-      <aside class="source-note panel"><i class="fa-solid fa-circle-info"></i><div><b>تنبيه مهم حول القبول</b><p>المعلومات هنا إرشادية لتنظيم البحث فقط. تتغير المفاضلات والرسوم والتخصصات وشروط التسجيل؛ راجع موقع <a href="https://mohe.gov.sy/" target="_blank" rel="noopener noreferrer">وزارة التعليم العالي والبحث العلمي</a> أو الجامعة المعنية قبل أي تقديم.</p></div></aside>
+      <section class="university-services">
+        <header class="university-services-head"><div><span class="eyebrow">خطوتك الجامعية التالية</span><h2>قسم الجامعات</h2><p>اختر الخدمة التي تحتاجها لتنظيم بحثك عن التخصص والجامعة.</p></div><span class="university-services-mark"><i class="fa-solid fa-building-columns"></i></span></header>
+        <nav class="university-service-list" aria-label="خدمات الجامعات">
+          <a class="university-service-card major-guide" href="university-majors.html"><span class="university-service-icon"><i class="fa-solid fa-book-open"></i></span><span class="university-service-copy"><b>دليل التخصصات الجامعية</b><small>شرح مفصل للتخصصات ومجالات العمل المتاحة</small></span><i class="fa-solid fa-chevron-left"></i></a>
+          <a class="university-service-card university-guide" href="university-directory.html"><span class="university-service-icon"><i class="fa-solid fa-building-columns"></i></span><span class="university-service-copy"><b>الجامعات والكليات</b><small>الموقع وسنة التأسيس والبرامج ومزايا الاستكشاف</small></span><i class="fa-solid fa-chevron-left"></i></a>
+          <a class="university-service-card admission-guide" href="university-info.html?topic=admission"><span class="university-service-icon"><i class="fa-solid fa-file-lines"></i></span><span class="university-service-copy"><b>المفاضلة الجامعية</b><small>نقاط تحضير ومتابعة للإعلانات الرسمية السنوية</small></span><i class="fa-solid fa-chevron-left"></i></a>
+          <a class="university-service-card transfer-guide" href="university-info.html?topic=transfer"><span class="university-service-icon"><i class="fa-solid fa-right-left"></i></span><span class="university-service-copy"><b>النقل والتحويل بين الجامعات</b><small>دليل إرشادي لمراجعة الشروط والتحويل الداخلي والخارجي</small></span><i class="fa-solid fa-chevron-left"></i></a>
+          <a class="university-service-card register-guide" href="university-info.html?topic=registration"><span class="university-service-icon"><i class="fa-solid fa-user-plus"></i></span><span class="university-service-copy"><b>طريقة التسجيل على المفاضلات</b><small>خطوات إرشادية لتجهيز طلبك ومتابعة المواعيد</small></span><i class="fa-solid fa-chevron-left"></i></a>
+        </nav>
+        <footer class="university-services-foot"><i class="fa-solid fa-circle-info"></i><p>المعلومات للتنظيم والإرشاد؛ اعتمد دائمًا على الإعلانات والمواقع الرسمية الحديثة عند اتخاذ قرار أو تقديم طلب.</p></footer>
       </section>
     </main></div>
   </div>
-  <nav class="bottom-nav" id="bottomNav"></nav>
-  <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div>
-  <div class="toast" id="toast"></div>
-  <script src="app.js"></script>
+  <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script src="app.js"></script>
 </body>
 </html>

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080d19"><title>نبض التفوق | الجامعات والكليات</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"><link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="university-directory"><div class="app">
+  <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="universities.html" title="العودة لقسم الجامعات"><i class="fa-solid fa-arrow-right"></i></a></div></header>
+  <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content"><section class="university-directory-page">
+    <header class="directory-hero"><span class="directory-hero-mark"><i class="fa-solid fa-building-columns"></i></span><div><span class="eyebrow">قارن بوعي</span><h2>الجامعات والكليات</h2><p>استكشف المدينة وسنة التأسيس والمجالات ومزايا كل خيار.</p></div></header>
+    <section class="directory-tools"><label class="major-search"><i class="fa-solid fa-magnifying-glass"></i><input id="universitySearch" type="search" placeholder="ابحث عن جامعة أو مدينة أو مجال"></label><div class="directory-filters"><select id="universityCity"><option value="all">كل المدن</option><option value="دمشق">دمشق</option><option value="حلب">حلب</option><option value="اللاذقية">اللاذقية</option><option value="حمص">حمص</option><option value="دير الزور">دير الزور</option><option value="حماة">حماة</option><option value="طرطوس">طرطوس</option></select><select id="universityType"><option value="all">حكومية وخاصة</option><option value="حكومية">حكومية</option><option value="خاصة">خاصة</option></select><select id="universityField"><option value="all">كل المجالات</option><option value="صحي">صحي</option><option value="هندسي">هندسي</option><option value="علمي">علمي</option><option value="إنساني">إنساني</option><option value="تقاني">تقاني</option></select></div></section>
+    <section class="university-compare-bar hidden" id="universityCompareBar"><div><span class="compare-bar-icon"><i class="fa-solid fa-code-compare"></i></span><span><b id="universityCompareCount">0</b> جامعات مختارة للمقارنة</span></div><div><button class="outline-button" id="clearUniversityCompare" type="button">إلغاء</button><button class="primary-button" id="openUniversityCompare" type="button">عرض المقارنة</button></div></section>
+    <section class="university-directory-head"><div><span>معلومات إرشادية</span><h3>استكشف الجامعات المتاحة</h3></div><a class="text-button" href="https://mohe.gov.sy/" target="_blank" rel="noopener noreferrer">تحقق من المصدر الرسمي <i class="fa-solid fa-arrow-up-right-from-square"></i></a></section>
+    <section class="university-grid" id="universityGrid" aria-live="polite"></section>
+    <aside class="university-data-note"><i class="fa-solid fa-circle-info"></i><p>لا تمثل المقارنة ترتيبًا أو ضمان قبول أو أفضلية مهنية. راجع البرامج والمفاضلة والرسوم والمواعيد عبر الجهة الرسمية قبل أي قرار.</p></aside>
+  </section></main></div></div>
+  <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script src="app.js"></script>
+</body></html>
