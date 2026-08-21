@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#080d19">
-  <title>نبض التفوق | بوابة المناهج</title>
+  <title>نبض التفوق | بوابة البكالوريا والتاسع</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -12,10 +12,32 @@
   <div class="app">
     <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
     <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content">
-      <section class="curriculum-page"><header class="curriculum-hero panel"><div><span class="eyebrow"><i class="fa-solid fa-user-graduate"></i> موادك في مكان واحد</span><h2>بوابة تاسع وبكالوريا</h2><p>اختر مرحلتك ومادتك، ثم ابدأ من مراجعة منظمة تضم محاور دراسة وأسئلة تدريب وأفكار تلخيص.</p></div><div class="curriculum-hero-tabs" id="curriculumStageTabs"><button type="button" class="active" data-curriculum-stage="nine">التاسع</button><button type="button" data-curriculum-stage="science">بكالوريا علمي</button><button type="button" data-curriculum-stage="literary">بكالوريا أدبي</button></div></header>
-      <section class="curriculum-toolbar panel"><label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="curriculumSearch" type="search" placeholder="ابحث عن مادة أو محور"></label><div class="curriculum-summary"><span><b id="curriculumSubjectCount">0</b> مواد متاحة</span><span><i class="fa-solid fa-book-open"></i> محتوى إرشادي منظم</span></div></section>
-      <section class="curriculum-grid" id="curriculumGrid" aria-live="polite"></section>
-      <section class="curriculum-guide panel"><div><i class="fa-solid fa-lightbulb"></i><div><b>كيف تستفيد من البوابة؟</b><p>اختر مادة، حدد المحور الذي ستراجعه، ثم أضفه إلى جدولك الدراسي أو ابدأ باختبار قصير لتثبيت الفكرة.</p></div></div><a class="outline-button" href="time-organizer.html"><i class="fa-solid fa-calendar-plus"></i> افتح الجدول الدراسي</a></section>
+      <section class="curriculum-hub">
+        <header class="curriculum-hub-hero">
+          <span class="curriculum-hub-mark"><i class="fa-solid fa-book-open-reader"></i></span>
+          <div><span>مكتبتك الدراسية</span><h2>بوابة البكالوريا والتاسع</h2><p>اختر مرحلتك ثم نوع المورد الذي تحتاجه للمراجعة.</p></div>
+        </header>
+
+        <section class="curriculum-stage-switch" id="curriculumStageTabs" aria-label="اختيار المرحلة">
+          <button type="button" data-curriculum-stage="science"><i class="fa-solid fa-flask"></i><span><b>بكالوريا علمي</b><small>كتب وملخصات ونماذج</small></span></button>
+          <button type="button" data-curriculum-stage="literary"><i class="fa-solid fa-feather-pointed"></i><span><b>بكالوريا أدبي</b><small>كتب وملخصات ونماذج</small></span></button>
+          <button type="button" class="active" data-curriculum-stage="nine"><i class="fa-solid fa-school"></i><span><b>التاسع</b><small>موارد مراجعة منظمة</small></span></button>
+        </section>
+
+        <section class="curriculum-stage-summary" id="curriculumStageSummary" aria-live="polite"></section>
+
+        <section class="curriculum-resource-tabs" id="curriculumResourceTabs" aria-label="اختيار نوع المورد">
+          <button type="button" class="active" data-curriculum-resource="books"><i class="fa-solid fa-book"></i><span>كتب المنهاج</span></button>
+          <button type="button" data-curriculum-resource="summaries"><i class="fa-solid fa-note-sticky"></i><span>ملخصات</span></button>
+          <button type="button" data-curriculum-resource="exams"><i class="fa-solid fa-file-circle-check"></i><span>أسئلة دورات ونماذج</span></button>
+          <button type="button" data-curriculum-resource="success"><i class="fa-solid fa-chart-simple"></i><span>حدود النجاح</span></button>
+          <button type="button" data-curriculum-resource="channels"><i class="fa-solid fa-bullhorn"></i><span>القنوات التعليمية</span></button>
+        </section>
+
+        <section class="curriculum-resource-head"><div><span id="curriculumResourceKicker">موردك الحالي</span><h3 id="curriculumResourceTitle">كتب المنهاج</h3><p id="curriculumResourceDescription">نسخ مرجعية منظمة للمواد الأساسية.</p></div><span class="curriculum-resource-count"><b id="curriculumResourceCount">0</b> موارد</span></section>
+        <section class="curriculum-resource-grid" id="curriculumGrid" aria-live="polite"></section>
+
+        <section class="curriculum-hub-footer"><i class="fa-solid fa-circle-info"></i><p>تُعرض هذه البوابة كتنظيم للموارد داخل التطبيق. استخدم القنوات التعليمية للمصادر الرسمية المتاحة، وتحقق من أي ملف أو إعلان من الجهة الناشرة.</p></section>
       </section>
     </main></div>
   </div>

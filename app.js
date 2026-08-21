@@ -1046,50 +1046,104 @@
     $('#openUniversityCompare')?.addEventListener('click', openUniversityCompare); $('#clearUniversityCompare')?.addEventListener('click', () => { comparedUniversities = []; saveUniversityCompare(); renderUniversityDirectory(); });
   }
 
-  const curriculumCatalog = {
-    nine: [
-      { subject: 'اللغة العربية', icon: 'fa-language', tone: 'rose', units: ['النصوص والفهم', 'القواعد الأساسية', 'التعبير والقراءة'], study: 'اقرأ النص ثم استخرج الفكرة والقواعد قبل حل أسئلة التدريب.' },
-      { subject: 'الرياضيات', icon: 'fa-square-root-variable', tone: 'indigo', units: ['الجبر والمعادلات', 'الهندسة', 'المسائل والتطبيقات'], study: 'ابدأ بالقانون، ثم مثال محلول، ثم مسألة مستقلة.' },
-      { subject: 'العلوم العامة', icon: 'fa-flask', tone: 'cyan', units: ['الفيزياء الأساسية', 'الكيمياء', 'علوم الحياة'], study: 'استخدم خرائط ذهنية للعمليات والمصطلحات والرسوم.' },
-      { subject: 'الاجتماعيات', icon: 'fa-earth-americas', tone: 'amber', units: ['التاريخ', 'الجغرافيا', 'التربية الوطنية'], study: 'لخّص التواريخ والخرائط في بطاقات قصيرة للمراجعة.' },
-      { subject: 'اللغة الإنكليزية', icon: 'fa-book-open', tone: 'violet', units: ['القواعد', 'المفردات', 'القراءة'], study: 'ثبّت المفردات ضمن جمل ثم أجب عن أسئلة فهم قصيرة.' }
-    ],
-    science: [
-      { subject: 'الرياضيات', icon: 'fa-square-root-variable', tone: 'indigo', units: ['التفاضل والتكامل', 'الجبر', 'الاحتمالات'], study: 'خصص جلسة للقانون وجلسة مستقلة للمسائل المتدرجة.' },
-      { subject: 'الفيزياء', icon: 'fa-atom', tone: 'cyan', units: ['الميكانيك', 'الكهرباء', 'الحديثة'], study: 'اربط كل قانون بالوحدة والمخطط ثم تدرب على النماذج.' },
-      { subject: 'الكيمياء', icon: 'fa-flask', tone: 'rose', units: ['العضوية', 'اللاعضوية', 'الحسابات'], study: 'قسم التفاعلات إلى جداول ومقارنات لتسهيل الاسترجاع.' },
-      { subject: 'العلوم', icon: 'fa-dna', tone: 'green', units: ['الوراثة', 'الأجهزة الحيوية', 'التوازن'], study: 'ارسم العمليات الحيوية ثم راجع الكلمات المفتاحية.' },
-      { subject: 'اللغة العربية', icon: 'fa-language', tone: 'amber', units: ['الأدب', 'النحو', 'القراءة'], study: 'اجمع الشواهد والقواعد في ورقة مراجعة واحدة.' }
-    ],
-    literary: [
-      { subject: 'اللغة العربية', icon: 'fa-language', tone: 'rose', units: ['الأدب', 'النحو', 'القراءة'], study: 'اجمع الشواهد والقواعد في ورقة مراجعة واحدة.' },
-      { subject: 'التاريخ', icon: 'fa-landmark', tone: 'amber', units: ['العصور الحديثة', 'الأحداث والشخصيات', 'الخرائط الزمنية'], study: 'رتّب الأحداث زمنيًا واربط كل حدث بأسبابه ونتائجه.' },
-      { subject: 'الجغرافيا', icon: 'fa-map-location-dot', tone: 'cyan', units: ['السكان', 'الاقتصاد', 'الخرائط'], study: 'راجع الخرائط والمصطلحات في بطاقات صغيرة.' },
-      { subject: 'الفلسفة', icon: 'fa-brain', tone: 'violet', units: ['المنطق', 'المدارس الفلسفية', 'المفاهيم'], study: 'قارن بين المفاهيم المتشابهة واكتب أمثلة من عندك.' },
-      { subject: 'اللغة الإنكليزية', icon: 'fa-book-open', tone: 'indigo', units: ['القواعد', 'المفردات', 'القراءة'], study: 'ثبت القاعدة بأمثلة قصيرة ثم راجع النصوص.' }
-    ]
+  const curriculumHub = {
+    science: {
+      label: 'بكالوريا علمي', subtitle: 'كتب وملخصات ونماذج تدريب وحدود النجاح للفرع العلمي.', icon: 'fa-flask', accent: 'science',
+      resources: {
+        books: { title: 'كتب المنهاج', description: 'بطاقات المواد الأساسية للمنهاج العلمي.', cards: [
+          ['الرياضيات', 'التفاضل والتكامل والجبر', 'fa-square-root-variable'], ['الفيزياء', 'الميكانيك والكهرباء والحديثة', 'fa-atom'], ['الكيمياء', 'العضوية واللاعضوية والحسابات', 'fa-flask'], ['العلوم', 'الوراثة والأجهزة الحيوية', 'fa-dna'], ['العربية واللغات', 'عربي وإنكليزي وفرنسي وإسلامية', 'fa-language']
+        ] },
+        summaries: { title: 'ملخصات', description: 'محاور تلخيص سريعة لتنظيم المراجعة قبل الاختبار.', cards: [
+          ['ملخص قوانين الرياضيات', 'قواعد أساسية ومسائل متدرجة', 'fa-function'], ['ملخص الفيزياء', 'قوانين ووحدات ومخططات', 'fa-bolt'], ['ملخص الكيمياء', 'معادلات ومقارنات وتفاعلات', 'fa-vial'], ['ملخص العلوم', 'مصطلحات ورسوم وعمليات حيوية', 'fa-leaf']
+        ] },
+        exams: { title: 'أسئلة دورات ونماذج', description: 'نماذج تدريبية مرتبة بحسب المادة ونمط السؤال.', cards: [
+          ['دورات الرياضيات', 'تدريب على المسائل المركبة', 'fa-file-circle-check'], ['نماذج الفيزياء', 'قوانين وتطبيقات ومسائل', 'fa-clipboard-question'], ['نماذج الكيمياء والعلوم', 'أسئلة فهم وتطبيق', 'fa-file-pen'], ['نماذج اللغات', 'قراءة وقواعد وتعبير', 'fa-spell-check']
+        ] },
+        success: { title: 'حدود النجاح', description: 'العلامة التامة وحد الكسر لكل مادة في البكالوريا العلمي.', cards: [
+          ['الرياضيات', '600 علامة · حد الكسر 240', 'fa-square-root-variable'], ['العربي والفيزياء', '400 لكل مادة · حد الكسر 160', 'fa-book-open'], ['الإنكليزي والفرنسي والعلوم', '300 لكل مادة · حد الكسر 120', 'fa-chart-simple'], ['الإسلامية والكيمياء', '200 لكل مادة · حد الكسر 80', 'fa-scale-balanced'], ['مجموع المرحلة', '2700 علامة · مجموع حدود الكسر 1080', 'fa-calculator']
+        ] },
+        channels: { title: 'القنوات التعليمية المجانية', description: 'انتقل إلى قائمة القنوات التعليمية المتاحة للمواد.', cards: [
+          { title: 'قنوات البكالوريا العلمي', note: 'روابط المواد والمراجعات المجانية', icon: 'fa-bullhorn', href: 'free-channels.html' }, { title: 'المكتبة المجانية', note: 'مصادر وملخصات داخل التطبيق', icon: 'fa-book-bookmark', href: 'library.html' }
+        ] }
+      }
+    },
+    literary: {
+      label: 'بكالوريا أدبي', subtitle: 'كتب وملخصات ونماذج تدريب وحدود النجاح للفرع الأدبي.', icon: 'fa-feather-pointed', accent: 'literary',
+      resources: {
+        books: { title: 'كتب المنهاج', description: 'بطاقات المواد الأساسية للمنهاج الأدبي.', cards: [
+          ['اللغة العربية', 'الأدب والنحو والقراءة', 'fa-language'], ['التاريخ والجغرافيا', 'أحداث وخرائط ومصطلحات', 'fa-landmark'], ['الفلسفة', 'مفاهيم ومدارس ومنطق', 'fa-brain'], ['اللغات والإسلامية', 'إنكليزي وفرنسي وإسلامية', 'fa-book-open']
+        ] },
+        summaries: { title: 'ملخصات', description: 'تلخيصات منظمة لربط المفاهيم والتواريخ والنصوص.', cards: [
+          ['ملخصات الأدب والنحو', 'شواهد وقواعد وأفكار نصوص', 'fa-pen-nib'], ['ملخصات التاريخ', 'خطوط زمنية وأحداث وشخصيات', 'fa-timeline'], ['ملخصات الجغرافيا', 'خرائط ومفاهيم اقتصادية', 'fa-map-location-dot'], ['ملخصات الفلسفة', 'تعريفات ومقارنات وأمثلة', 'fa-lightbulb']
+        ] },
+        exams: { title: 'أسئلة دورات ونماذج', description: 'نماذج مراجعة للتدريب على صياغة الإجابة وترتيبها.', cards: [
+          ['نماذج العربية', 'النصوص والقواعد والتعبير', 'fa-file-lines'], ['دورات التاريخ والجغرافيا', 'أسئلة الأحداث والخرائط', 'fa-earth-americas'], ['نماذج الفلسفة', 'مفاهيم ومقارنات وتحليل', 'fa-comments'], ['نماذج اللغات', 'قواعد وقراءة وتعبير', 'fa-language']
+        ] },
+        success: { title: 'حدود النجاح', description: 'العلامة التامة وحد الكسر لكل مادة في البكالوريا الأدبي.', cards: [
+          ['اللغة العربية', '600 علامة · حد الكسر 300', 'fa-language'], ['الإنكليزي والفرنسي', '400 لكل مادة · حد الكسر 160', 'fa-book-open'], ['الإسلامية والتاريخ والجغرافيا والفلسفة', '200 لكل مادة · حد الكسر 80', 'fa-scale-balanced'], ['مجموع المرحلة', '2200 علامة · مجموع حدود الكسر 940', 'fa-calculator']
+        ] },
+        channels: { title: 'القنوات التعليمية المجانية', description: 'انتقل إلى قائمة القنوات التعليمية المتاحة للمواد.', cards: [
+          { title: 'قنوات البكالوريا الأدبي', note: 'روابط المواد والمراجعات المجانية', icon: 'fa-bullhorn', href: 'free-channels.html' }, { title: 'المكتبة المجانية', note: 'مصادر وملخصات داخل التطبيق', icon: 'fa-book-bookmark', href: 'library.html' }
+        ] }
+      }
+    },
+    nine: {
+      label: 'التاسع', subtitle: 'كتب وملخصات ونماذج تدريب وحدود النجاح لمرحلة التاسع.', icon: 'fa-school', accent: 'nine',
+      resources: {
+        books: { title: 'كتب المنهاج', description: 'بطاقات المواد الأساسية لمنهاج التاسع.', cards: [
+          ['اللغة العربية', 'نصوص وقواعد وتعبير', 'fa-language'], ['الرياضيات', 'جبر وهندسة ومسائل', 'fa-square-root-variable'], ['العلوم العامة', 'فيزياء وكيمياء وعلوم حياة', 'fa-flask'], ['الاجتماعيات', 'تاريخ وجغرافيا وتربية وطنية', 'fa-earth-americas'], ['اللغات والإسلامية', 'إنكليزي وفرنسي وإسلامية', 'fa-book-open']
+        ] },
+        summaries: { title: 'ملخصات', description: 'خطط تلخيص صغيرة لتثبيت المفاهيم والرسوم والقواعد.', cards: [
+          ['ملخص الرياضيات', 'قوانين وأمثلة متدرجة', 'fa-ruler-combined'], ['ملخص العلوم', 'عمليات وتجارب ومصطلحات', 'fa-microscope'], ['ملخص الاجتماعيات', 'خرائط وتواريخ وأفكار', 'fa-map'], ['ملخص اللغات', 'قواعد ومفردات وقراءة', 'fa-spell-check']
+        ] },
+        exams: { title: 'أسئلة دورات ونماذج', description: 'مجموعة تدريبية لمراجعة نوع السؤال قبل الاختبار.', cards: [
+          ['نماذج الرياضيات', 'تمارين جبر وهندسة', 'fa-file-circle-check'], ['نماذج العلوم', 'أسئلة فهم ورسوم وتجارب', 'fa-clipboard-question'], ['نماذج الاجتماعيات', 'أحداث وخرائط ومصطلحات', 'fa-file-pen'], ['نماذج اللغات', 'قراءة وقواعد وتعبير', 'fa-language']
+        ] },
+        success: { title: 'حدود النجاح', description: 'العلامة التامة وحد الكسر لكل مادة في مرحلة التاسع.', cards: [
+          ['العربي والاجتماعيات والرياضيات', '600 لكل مادة · حدود الكسر 300 و240 و240', 'fa-calculator'], ['العلوم العامة', '400 علامة · حد الكسر 120', 'fa-flask'], ['الإنكليزي والفرنسي', '400 لكل مادة · حد الكسر 160', 'fa-language'], ['الإسلامية', '200 علامة · حد الكسر 80', 'fa-scale-balanced'], ['مجموع المرحلة', '3200 علامة · مجموع حدود الكسر 1300', 'fa-chart-simple']
+        ] },
+        channels: { title: 'القنوات التعليمية المجانية', description: 'انتقل إلى قائمة القنوات التعليمية المتاحة للمواد.', cards: [
+          { title: 'قنوات التاسع', note: 'روابط المواد والمراجعات المجانية', icon: 'fa-bullhorn', href: 'free-channels.html' }, { title: 'المكتبة المجانية', note: 'مصادر وملخصات داخل التطبيق', icon: 'fa-book-bookmark', href: 'library.html' }
+        ] }
+      }
+    }
+  };
+  const curriculumResourceMeta = {
+    books: { kicker: 'مراجع الدراسة', icon: 'fa-book' }, summaries: { kicker: 'مراجعة مركزة', icon: 'fa-note-sticky' }, exams: { kicker: 'تدريب واختبار', icon: 'fa-file-circle-check' }, success: { kicker: 'العلامات والحدود', icon: 'fa-chart-simple' }, channels: { kicker: 'مصادر مجانية', icon: 'fa-bullhorn' }
   };
   let activeCurriculumStage = 'nine';
+  let activeCurriculumResource = 'books';
 
-  function renderCurriculum() {
-    const grid = $('#curriculumGrid'); if (!grid) return; const query = String($('#curriculumSearch')?.value || '').trim().toLowerCase(); const subjects = curriculumCatalog[activeCurriculumStage] || [];
-    const filtered = subjects.filter(item => !query || `${item.subject} ${item.units.join(' ')}`.toLowerCase().includes(query)); if ($('#curriculumSubjectCount')) $('#curriculumSubjectCount').textContent = filtered.length;
-    $$('#curriculumStageTabs [data-curriculum-stage]').forEach(button => button.classList.toggle('active', button.dataset.curriculumStage === activeCurriculumStage));
-    grid.innerHTML = filtered.length ? filtered.map((item, index) => `<article class="curriculum-card ${escapeHTML(item.tone)}"><span class="curriculum-card-index">${String(index + 1).padStart(2, '0')}</span><div class="curriculum-icon"><i class="fa-solid ${escapeHTML(item.icon)}"></i></div><h3>${escapeHTML(item.subject)}</h3><p>${escapeHTML(item.study)}</p><div class="curriculum-units">${item.units.map(unit => `<span>${escapeHTML(unit)}</span>`).join('')}</div><button class="outline-button" type="button" data-curriculum-details="${escapeHTML(item.subject)}"><i class="fa-solid fa-arrow-left"></i> خطة مراجعة</button></article>`).join('') : '<div class="learning-empty panel"><i class="fa-solid fa-magnifying-glass"></i><h3>لا توجد مادة مطابقة</h3><p>جرّب البحث بمصطلح آخر أو اختر مرحلة مختلفة.</p></div>';
+  function normalizeCurriculumItem(item) {
+    return Array.isArray(item) ? { title: item[0], note: item[1], icon: item[2] } : item;
   }
 
-  function openCurriculumDetails(subject) {
-    const item = (curriculumCatalog[activeCurriculumStage] || []).find(entry => entry.subject === subject); if (!item) return;
-    openModal(`<div class="modal-head"><div><span class="eyebrow">خطة مراجعة إرشادية</span><h3>${escapeHTML(item.subject)}</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><div class="curriculum-modal"><div class="curriculum-modal-icon ${escapeHTML(item.tone)}"><i class="fa-solid ${escapeHTML(item.icon)}"></i></div><p>${escapeHTML(item.study)}</p><h4>محاور ابدأ بها</h4><ol>${item.units.map(unit => `<li>${escapeHTML(unit)}</li>`).join('')}</ol><div class="modal-actions"><a class="outline-button" href="time-organizer.html"><i class="fa-solid fa-calendar-plus"></i> أضفها لجدولك</a><a class="primary-button" href="tests.html"><i class="fa-solid fa-clipboard-check"></i> اختبر نفسك</a></div></div>`);
+  function renderCurriculum() {
+    const grid = $('#curriculumGrid'); const stage = curriculumHub[activeCurriculumStage]; if (!grid || !stage) return;
+    const resource = stage.resources[activeCurriculumResource]; const meta = curriculumResourceMeta[activeCurriculumResource] || curriculumResourceMeta.books;
+    $$('#curriculumStageTabs [data-curriculum-stage]').forEach(button => button.classList.toggle('active', button.dataset.curriculumStage === activeCurriculumStage));
+    $$('#curriculumResourceTabs [data-curriculum-resource]').forEach(button => button.classList.toggle('active', button.dataset.curriculumResource === activeCurriculumResource));
+    const summary = $('#curriculumStageSummary'); if (summary) summary.innerHTML = `<span class="curriculum-stage-summary-icon ${escapeHTML(stage.accent)}"><i class="fa-solid ${escapeHTML(stage.icon)}"></i></span><div><b>${escapeHTML(stage.label)}</b><small>${escapeHTML(stage.subtitle)}</small></div>`;
+    if ($('#curriculumResourceKicker')) $('#curriculumResourceKicker').innerHTML = `<i class="fa-solid ${escapeHTML(meta.icon)}"></i> ${escapeHTML(meta.kicker)}`;
+    if ($('#curriculumResourceTitle')) $('#curriculumResourceTitle').textContent = resource.title;
+    if ($('#curriculumResourceDescription')) $('#curriculumResourceDescription').textContent = resource.description;
+    if ($('#curriculumResourceCount')) $('#curriculumResourceCount').textContent = resource.cards.length;
+    grid.innerHTML = resource.cards.map((source, index) => { const item = normalizeCurriculumItem(source); const content = `<span class="curriculum-resource-icon"><i class="fa-solid ${escapeHTML(item.icon)}"></i></span><div><b>${escapeHTML(item.title)}</b><small>${escapeHTML(item.note)}</small></div><i class="fa-solid fa-arrow-left"></i>`; return item.href ? `<a class="curriculum-resource-card ${escapeHTML(stage.accent)}" href="${escapeHTML(item.href)}">${content}</a>` : `<button class="curriculum-resource-card ${escapeHTML(stage.accent)}" type="button" data-curriculum-item="${index}">${content}</button>`; }).join('');
+  }
+
+  function openCurriculumResource(index) {
+    const stage = curriculumHub[activeCurriculumStage]; const resource = stage?.resources?.[activeCurriculumResource]; const item = normalizeCurriculumItem(resource?.cards?.[Number(index)]); if (!stage || !resource || !item) return;
+    openModal(`<div class="modal-head"><div><span class="eyebrow">${escapeHTML(stage.label)} · ${escapeHTML(resource.title)}</span><h3>${escapeHTML(item.title)}</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><div class="curriculum-resource-modal"><div class="curriculum-resource-modal-icon ${escapeHTML(stage.accent)}"><i class="fa-solid ${escapeHTML(item.icon)}"></i></div><p>${escapeHTML(item.note)}</p><div class="curriculum-resource-modal-note"><i class="fa-solid fa-circle-info"></i><span>هذه البوابة تنظّم مسارات المراجعة داخل التطبيق. استخدم قائمة القنوات أو المكتبة للوصول إلى الموارد المتاحة.</span></div><div class="modal-actions"><a class="outline-button" href="time-organizer.html"><i class="fa-solid fa-calendar-plus"></i> أضفها لجدولي</a><a class="primary-button" href="tests.html"><i class="fa-solid fa-clipboard-check"></i> افتح الاختبارات</a></div></div>`);
   }
 
   function initCurriculum() {
     if (!$('#curriculumGrid')) return;
     const requestedStage = new URLSearchParams(location.search).get('stage') || location.hash.replace('#', '');
-    if (requestedStage && curriculumCatalog[requestedStage]) activeCurriculumStage = requestedStage;
-    renderCurriculum(); $('#curriculumSearch')?.addEventListener('input', renderCurriculum);
-    $$('#curriculumStageTabs [data-curriculum-stage]').forEach(button => button.addEventListener('click', () => { activeCurriculumStage = button.dataset.curriculumStage; renderCurriculum(); }));
-    $('#curriculumGrid')?.addEventListener('click', event => { const details = event.target.closest('[data-curriculum-details]'); if (details) openCurriculumDetails(details.dataset.curriculumDetails); });
+    if (requestedStage && curriculumHub[requestedStage]) activeCurriculumStage = requestedStage;
+    renderCurriculum();
+    $$('#curriculumStageTabs [data-curriculum-stage]').forEach(button => button.addEventListener('click', () => { activeCurriculumStage = button.dataset.curriculumStage; activeCurriculumResource = 'books'; renderCurriculum(); }));
+    $$('#curriculumResourceTabs [data-curriculum-resource]').forEach(button => button.addEventListener('click', () => { activeCurriculumResource = button.dataset.curriculumResource; renderCurriculum(); }));
+    $('#curriculumGrid')?.addEventListener('click', event => { const item = event.target.closest('[data-curriculum-item]'); if (item) openCurriculumResource(item.dataset.curriculumItem); });
   }
 
   const predictionItems = [
