@@ -22,7 +22,14 @@
           <div><span>التحكم الشخصي</span><h2>الإعدادات</h2><p>اضبط تجربة نبض التفوق بالطريقة المناسبة لك.</p></div>
         </header>
 
-        <section class="settings-section">
+        <nav class="settings-shortcut-grid" aria-label="اختصارات الإعدادات">
+          <a class="settings-shortcut-card appearance" href="#appearance"><span><i class="fa-solid fa-palette"></i></span><b>المظهر</b><small>النمط والحركة</small></a>
+          <a class="settings-shortcut-card notifications" href="#notifications"><span><i class="fa-regular fa-bell"></i></span><b>التنبيهات</b><small>التذكير والإشعار</small></a>
+          <a class="settings-shortcut-card privacy" href="#privacy"><span><i class="fa-solid fa-shield-halved"></i></span><b>الخصوصية</b><small>بيانات الحساب</small></a>
+          <a class="settings-shortcut-card help" href="#support"><span><i class="fa-regular fa-circle-question"></i></span><b>المساعدة</b><small>الدليل والدعم</small></a>
+        </nav>
+
+        <section class="settings-section" id="appearance">
           <h3 class="settings-section-title"><i class="fa-solid fa-palette"></i> المظهر والحركة</h3>
           <article class="settings-group settings-appearance">
             <div class="settings-row-title"><span class="settings-row-icon blue"><i class="fa-solid fa-sun"></i></span><div><b>نمط الواجهة</b><small id="settingsThemeStatus">اختر المظهر المناسب للقراءة</small></div></div>
@@ -34,7 +41,7 @@
           </article>
         </section>
 
-        <section class="settings-section">
+        <section class="settings-section" id="notifications">
           <h3 class="settings-section-title"><i class="fa-regular fa-bell"></i> الإشعارات</h3>
           <article class="settings-group">
             <label class="settings-toggle-row"><span><b>تنبيهات التطبيق</b><small>تنبيهات الأخبار والأنشطة وتذكيرات الدراسة</small></span><input id="notificationsSwitch" class="switch" type="checkbox"></label>
@@ -43,7 +50,7 @@
           </article>
         </section>
 
-        <section class="settings-section">
+        <section class="settings-section" id="privacy">
           <h3 class="settings-section-title"><i class="fa-solid fa-shield-halved"></i> الخصوصية والأمان</h3>
           <article class="settings-group settings-link-list">
             <a class="settings-detail-row" href="privacy.html"><span class="settings-row-icon violet"><i class="fa-solid fa-lock"></i></span><span><b>الخصوصية والأمان</b><small>طريقة حفظ بياناتك ومعلوماتك داخل المتصفح</small></span><i class="fa-solid fa-angle-left"></i></a>
@@ -52,7 +59,7 @@
           </article>
         </section>
 
-        <section class="settings-section">
+        <section class="settings-section" id="support">
           <h3 class="settings-section-title"><i class="fa-regular fa-circle-question"></i> المساعدة والتطبيق</h3>
           <article class="settings-group settings-link-list">
             <button class="settings-detail-row" type="button" data-modal="appGuide"><span class="settings-row-icon blue"><i class="fa-regular fa-circle-play"></i></span><span><b>دليل استخدام التطبيق</b><small>شرح مختصر لأهم الخدمات والأقسام</small></span><i class="fa-solid fa-angle-left"></i></button>
