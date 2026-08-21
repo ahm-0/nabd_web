@@ -17,40 +17,57 @@
   <div class="app">
     <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
     <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content">
-      <div class="home-reference-layout mobile-home-dashboard">
-        <section class="reference-section home-essential-section" id="tools">
-          <header class="reference-section-head"><div><span>مسارك الدراسي</span><h3>اختر ما يناسبك</h3></div><small>ابدأ من هدفك</small></header>
-          <div class="home-compact-grid home-primary-grid">
-            <a class="reference-card home-compact-card" href="exam-countdown.html"><span class="reference-card-icon"><i class="fa-solid fa-hourglass-half"></i></span><b>عداد الامتحان</b><em>تابع الوقت المتبقي</em></a>
-            <a class="reference-card home-compact-card" href="curriculum.html#science"><span class="reference-card-icon"><i class="fa-solid fa-graduation-cap"></i></span><b>البكالوريا</b><em>مواد ومراجعات</em></a>
-            <a class="reference-card home-compact-card" href="curriculum.html#nine"><span class="reference-card-icon"><i class="fa-solid fa-school"></i></span><b>التاسع</b><em>دروس منظمة</em></a>
-            <a class="reference-card home-compact-card" href="universities.html"><span class="reference-card-icon"><i class="fa-solid fa-building-columns"></i></span><b>الجامعات</b><em>بحث ومقارنة</em></a>
-            <a class="reference-card home-compact-card" href="library.html"><span class="reference-card-icon"><i class="fa-solid fa-book-bookmark"></i></span><b>المكتبة</b><em id="serviceStatusLibrary">كتب وملخصات</em></a>
+      <div class="home-studio">
+        <header class="home-studio-head">
+          <div><span class="home-studio-eyebrow"><i class="fa-solid fa-compass"></i> لوحة الدراسة</span><h2>مساحتك نحو التفوق</h2><p>ابدأ من المحطة المناسبة، ونظّم يومك بخطوات بسيطة.</p></div>
+          <a class="home-profile-pill" href="profile.html" aria-label="فتح ملفي الشخصي"><i class="fa-solid fa-user"></i><span>ملفي</span></a>
+        </header>
+
+        <a class="home-focus-card" href="exam-countdown.html">
+          <span class="home-focus-symbol"><i class="fa-solid fa-hourglass-half"></i></span>
+          <span class="home-focus-content"><small>المحطة القادمة</small><b>عداد الامتحانات</b><em>تابع الوقت المتبقي واضبط هدفك الخاص.</em></span>
+          <span class="home-focus-arrow"><i class="fa-solid fa-arrow-left"></i></span>
+          <i class="home-focus-orbit orbit-a"></i><i class="home-focus-orbit orbit-b"></i>
+        </a>
+
+        <section class="home-studio-section home-journey-section">
+          <header class="home-studio-section-head"><div><span>اختر وجهتك</span><h3>مسارات الدراسة</h3></div><i class="fa-solid fa-route"></i></header>
+          <div class="home-journey-grid">
+            <a class="journey-card journey-science" href="curriculum.html#science"><span class="journey-card-icon"><i class="fa-solid fa-graduation-cap"></i></span><span><b>البكالوريا</b><small>مواد ومراجعات</small></span><i class="fa-solid fa-chevron-left"></i></a>
+            <a class="journey-card journey-nine" href="curriculum.html#nine"><span class="journey-card-icon"><i class="fa-solid fa-school"></i></span><span><b>التاسع</b><small>دروس منظمة</small></span><i class="fa-solid fa-chevron-left"></i></a>
+            <a class="journey-card journey-university" href="universities.html"><span class="journey-card-icon"><i class="fa-solid fa-building-columns"></i></span><span><b>الجامعات</b><small>بحث ومقارنة</small></span><i class="fa-solid fa-chevron-left"></i></a>
+            <a class="journey-card journey-library" href="library.html"><span class="journey-card-icon"><i class="fa-solid fa-book-bookmark"></i></span><span><b>المكتبة</b><small id="serviceStatusLibrary">كتب وملخصات</small></span><i class="fa-solid fa-chevron-left"></i></a>
           </div>
         </section>
 
-        <section class="reference-section">
-          <header class="reference-section-head"><div><span>دراستي اليومية</span><h3>كل خططك في مكان واحد</h3></div><small>تنظيم ومتابعة</small></header>
-          <div class="home-compact-grid home-plan-grid">
-            <a class="reference-card home-compact-card" href="time-organizer.html"><span class="reference-card-icon"><i class="fa-solid fa-calendar-days"></i></span><b>الجدول الدراسي</b><em id="serviceStatusSchedule">أضف أول مهمة</em></a>
-            <a class="reference-card home-compact-card" href="gallery.html"><span class="reference-card-icon"><i class="fa-regular fa-images"></i></span><b>تنظيم الصور</b><em id="serviceStatusGallery">أضف أول صورة</em></a>
-            <a class="reference-card home-compact-card" href="completion-program.html"><span class="reference-card-icon"><i class="fa-solid fa-list-check"></i></span><b>برنامج الختم</b><em id="serviceStatusCompletion">أنشئ خطة</em></a>
-            <a class="reference-card home-compact-card" href="grade-calculator.html"><span class="reference-card-icon"><i class="fa-solid fa-calculator"></i></span><b>حاسبة المعدل</b><em id="serviceStatusGrade">احسب معدلك</em></a>
-            <a class="reference-card home-compact-card" href="tests.html"><span class="reference-card-icon"><i class="fa-solid fa-clipboard-check"></i></span><b>الاختبارات</b><em id="serviceStatusTests">نماذج ونتائج</em></a>
+        <section class="home-studio-section">
+          <header class="home-studio-section-head"><div><span>اليوم الدراسي</span><h3>نظّم وراقب تقدمك</h3></div><a href="time-organizer.html">كل خططك <i class="fa-solid fa-arrow-left"></i></a></header>
+          <div class="home-tool-grid">
+            <a class="home-tool-card tool-schedule" href="time-organizer.html"><span class="home-tool-icon"><i class="fa-solid fa-calendar-days"></i></span><b>الجدول الدراسي</b><small id="serviceStatusSchedule">أضف أول مهمة</small></a>
+            <a class="home-tool-card tool-grade" href="grade-calculator.html"><span class="home-tool-icon"><i class="fa-solid fa-calculator"></i></span><b>حاسبة المعدل</b><small id="serviceStatusGrade">احسب معدلك</small></a>
+            <a class="home-tool-card tool-tests" href="tests.html"><span class="home-tool-icon"><i class="fa-solid fa-clipboard-check"></i></span><b>الاختبارات</b><small id="serviceStatusTests">نماذج ونتائج</small></a>
           </div>
         </section>
 
-        <section class="reference-section">
-          <header class="reference-section-head"><div><span>خدمات إضافية</span><h3>استكشاف وتنظيم ومتابعة</h3></div><small>نبض التفوق</small></header>
-          <div class="home-compact-grid home-explore-grid">
-            <a class="reference-card home-compact-card" href="news.html"><span class="reference-card-icon"><i class="fa-regular fa-newspaper"></i></span><b>مجتمع الأخبار</b><em>شارك وتابع</em></a>
-            <a class="reference-card home-compact-card" href="predictions.html"><span class="reference-card-icon"><i class="fa-solid fa-bullseye"></i></span><b>محاور المراجعة</b><em>خطط وأفكار</em></a>
+        <section class="home-studio-section home-collection-section">
+          <header class="home-studio-section-head"><div><span>مساحة إنجازك</span><h3>وثّق ما تتعلمه</h3></div><i class="fa-solid fa-layer-group"></i></header>
+          <div class="home-collection-grid">
+            <a class="home-collection-card collection-gallery" href="gallery.html"><span><i class="fa-regular fa-images"></i></span><div><b>تنظيم الصور</b><small id="serviceStatusGallery">أضف أول صورة</small></div><i class="fa-solid fa-arrow-left"></i></a>
+            <a class="home-collection-card collection-completion" href="completion-program.html"><span><i class="fa-solid fa-list-check"></i></span><div><b>برنامج الختم</b><small id="serviceStatusCompletion">أنشئ خطة</small></div><i class="fa-solid fa-arrow-left"></i></a>
           </div>
         </section>
 
-        <section class="reference-feature-list" aria-label="خدمات مميزة">
-          <a class="reference-feature elite-feature" href="elite.html"><span class="reference-feature-icon"><i class="fa-solid fa-crown"></i></span><span class="reference-feature-copy"><b>الأقسام المميزة والنخبة</b><em>دورات النخبة، النماذج الذهبية، وسلالم التصحيح الرسمية</em></span><small>حصري</small></a>
-          <a class="reference-feature free-feature" href="free-channels.html"><span class="reference-feature-icon"><i class="fa-solid fa-bullhorn"></i></span><span class="reference-feature-copy"><b>القنوات التعليمية المجانية</b><em>روابط قنوات الواتساب والتليغرام الرسمية لكل المواد</em></span><small>مجاني</small></a>
+        <section class="home-studio-section">
+          <header class="home-studio-section-head"><div><span>استكشف</span><h3>مجتمع ومراجعة</h3></div><i class="fa-regular fa-compass"></i></header>
+          <div class="home-discover-grid">
+            <a class="home-discover-card" href="news.html"><span class="home-discover-icon"><i class="fa-regular fa-newspaper"></i></span><div><b>مجتمع الأخبار</b><small>شارك وتابع المستجدات</small></div><i class="fa-solid fa-arrow-left"></i></a>
+            <a class="home-discover-card" href="predictions.html"><span class="home-discover-icon"><i class="fa-solid fa-bullseye"></i></span><div><b>محاور المراجعة</b><small>أفكار وخطط إرشادية</small></div><i class="fa-solid fa-arrow-left"></i></a>
+          </div>
+        </section>
+
+        <section class="home-access-row" aria-label="موارد إضافية">
+          <a class="home-access-card access-elite" href="elite.html"><span><i class="fa-solid fa-crown"></i></span><div><b>النخبة</b><small>محتوى مميز</small></div><i class="fa-solid fa-arrow-left"></i></a>
+          <a class="home-access-card access-free" href="free-channels.html"><span><i class="fa-solid fa-bullhorn"></i></span><div><b>القنوات</b><small>موارد مجانية</small></div><i class="fa-solid fa-arrow-left"></i></a>
         </section>
       </div>
     </main></div>
