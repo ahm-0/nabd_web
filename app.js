@@ -306,23 +306,30 @@
         ? 'أكمل بياناتك لتخصيص تجربتك'
         : `${escapeHTML(student.stage)} · ${escapeHTML(student.city)}`;
       sidebar.innerHTML = `
-        <div class="sidebar-brand"><img src="assets/nabd-logo.jpg" alt="شعار نبض التفوق" decoding="async"><div><b>نبض التفوق</b><span>منصتك نحو التميز</span></div><i class="fa-solid fa-sparkles"></i></div>
-        <div class="sidebar-student"><div class="sidebar-avatar-wrap">${avatarMarkup('sidebar-avatar')}<span class="online-ring"></span></div><div><strong>${escapeHTML(fullName())}${verifiedBadgeMarkup(student.verificationStatus === 'approved')}</strong><span>${studentSubtitle}</span></div><a class="quick-edit" href="profile.html" title="تعديل الملف"><i class="fa-solid fa-pen"></i></a></div>
-        <div class="sidebar-overview"><div><span>مسار التفوق</span><b>${profileIncomplete() ? 'أكمل ملفك أولًا' : 'ملفك جاهز للانطلاق'}</b></div><div class="sidebar-meter"><i style="width:${profileIncomplete() ? '38' : '82'}%"></i></div><small>${profileIncomplete() ? '38' : '82'}% من إعداد الحساب</small></div>
-        <div class="sidebar-label">التنقل الرئيسي</div>
-        <nav class="side-nav">
+        <div class="sidebar-brand"><img src="assets/nabd-logo.jpg" alt="شعار نبض التفوق" decoding="async"><div><b>نبض التفوق</b><span>مساحتك الدراسية اليومية</span></div></div>
+        <a class="sidebar-student sidebar-profile-panel" href="profile.html"><div class="sidebar-avatar-wrap">${avatarMarkup('sidebar-avatar')}<span class="online-ring"></span></div><div><strong>${escapeHTML(fullName())}${verifiedBadgeMarkup(student.verificationStatus === 'approved')}</strong><span>${studentSubtitle}</span></div><i class="fa-solid fa-chevron-left"></i></a>
+        <div class="sidebar-overview"><div><span>جاهزية الملف</span><b>${profileIncomplete() ? 'أكمل بياناتك' : 'جاهز للانطلاق'}</b></div><div class="sidebar-meter"><i style="width:${profileIncomplete() ? '38' : '82'}%"></i></div><small>${profileIncomplete() ? 'أكمل بيانات الملف لتخصيص تجربتك' : 'تم إعداد ملفك الدراسي'}</small></div>
+        <div class="sidebar-label">التنقل</div>
+        <nav class="side-nav sidebar-main-nav">
           <a class="side-link ${PAGE === 'home' ? 'active' : ''}" href="index.html"><span class="nav-icon home-nav"><i class="fa-solid fa-house"></i></span><span>الرئيسية</span></a>
           <a class="side-link ${PAGE === 'profile' ? 'active' : ''}" href="profile.html"><span class="nav-icon profile-nav"><i class="fa-regular fa-user"></i></span><span>ملفي الشخصي</span></a>
           <a class="side-link ${PAGE === 'news' ? 'active' : ''}" href="news.html"><span class="nav-icon news-nav"><i class="fa-regular fa-newspaper"></i></span><span>مجتمع الأخبار</span><em>جديد</em></a>
         </nav>
-        <div class="sidebar-label">المركز الشخصي</div>
-        <nav class="side-nav compact">
+        <div class="sidebar-label">اختصارات دراسية</div>
+        <nav class="side-nav sidebar-study-nav">
+          <a class="side-link ${PAGE === 'study-schedule' ? 'active' : ''}" href="time-organizer.html"><span class="nav-icon schedule-nav"><i class="fa-solid fa-calendar-days"></i></span><span>الجدول الدراسي</span></a>
+          <a class="side-link ${PAGE === 'grade-calculator' ? 'active' : ''}" href="grade-calculator.html"><span class="nav-icon calculator-nav"><i class="fa-solid fa-calculator"></i></span><span>حاسبة المعدل</span></a>
+          <a class="side-link ${PAGE === 'tests' ? 'active' : ''}" href="tests.html"><span class="nav-icon tests-nav"><i class="fa-solid fa-clipboard-check"></i></span><span>الاختبارات</span></a>
+          <a class="side-link ${PAGE === 'library' ? 'active' : ''}" href="library.html"><span class="nav-icon library-nav"><i class="fa-solid fa-book-bookmark"></i></span><span>المكتبة</span></a>
+        </nav>
+        <div class="sidebar-label">التطبيق</div>
+        <nav class="side-nav compact sidebar-app-nav">
           <a class="side-link ${PAGE === 'notifications' ? 'active' : ''}" href="notifications.html"><span class="nav-icon notify-nav"><i class="fa-regular fa-bell"></i></span><span>الإشعارات</span></a>
           <a class="side-link ${PAGE === 'about' ? 'active' : ''}" href="about.html"><span class="nav-icon about-nav"><i class="fa-solid fa-circle-info"></i></span><span>عن المنصة</span></a>
           <a class="side-link ${PAGE === 'supervision' ? 'active' : ''}" href="admin-dashboard.html"><span class="nav-icon shield-nav"><i class="fa-solid fa-shield-halved"></i></span><span>بوابة الإشراف</span></a>
           <a class="side-link ${PAGE === 'privacy' ? 'active' : ''}" href="privacy.html"><span class="nav-icon lock-nav"><i class="fa-solid fa-lock"></i></span><span>الخصوصية والأمان</span></a>
         </nav>
-        <a class="sidebar-edit-cta" href="profile.html"><i class="fa-solid fa-sliders"></i><span>${profileIncomplete() ? 'أكمل بياناتي' : 'تعديل بياناتي'}</span><i class="fa-solid fa-arrow-left"></i></a>`;
+        <a class="sidebar-edit-cta" href="profile.html"><i class="fa-solid fa-pen-to-square"></i><span>${profileIncomplete() ? 'إكمال الملف الشخصي' : 'تعديل بياناتي'}</span><i class="fa-solid fa-arrow-left"></i></a>`;
     }
 
     const bottomNav = $('#bottomNav');
@@ -372,7 +379,7 @@
           <div class="form-group"><label>تاريخ الميلاد</label><input name="birth" type="date" value="${escapeHTML(student.birth)}"></div>
           <div class="form-group"><label>المنطقة</label><input name="city" maxlength="40" value="${escapeHTML(student.city)}"></div>
           <div class="form-group"><label>الجنس</label><select name="gender"><option value="" ${!student.gender ? 'selected' : ''}>أفضل عدم التحديد</option><option value="ذكر" ${student.gender === 'ذكر' ? 'selected' : ''}>ذكر</option><option value="أنثى" ${student.gender === 'أنثى' ? 'selected' : ''}>أنثى</option></select></div>
-          <div class="form-group"><label>المرحلة</label><select name="stage"><option ${student.stage === 'بكالوريا علمي' ? 'selected' : ''}>بكالوريا علمي</option><option ${student.stage === 'بكالوريا أدبي' ? 'selected' : ''}>بكالوريا أدبي</option><option ${student.stage === 'التاسع الأساسي' ? 'selected' : ''}>التاسع الأساسي</option></select></div>
+          <div class="form-group"><label>المرحلة</label><select name="stage"><option ${student.stage === 'بكالوريا علمي' ? 'selected' : ''}>بكالوريا علمي</option><option ${student.stage === 'بكالوريا أدبي' ? 'selected' : ''}>بكالوريا أدبي</option><option ${student.stage === 'التاسع الأساسي' ? 'selected' : ''}>التاسع الأساسي</option><option ${student.stage === 'جامعة' ? 'selected' : ''}>جامعة</option><option ${student.stage === 'معهد' ? 'selected' : ''}>معهد</option></select></div>
           <div class="form-group full"><label>السيرة الذاتية</label><textarea name="bio" maxlength="240">${escapeHTML(student.bio)}</textarea></div>
         </div><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">حفظ التغييرات</button></div></form>`,
       customCountdown: `<div class="modal-head"><h3>ضبط العداد المخصص</h3><button class="close-modal" aria-label="إغلاق">×</button></div>
