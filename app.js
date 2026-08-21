@@ -573,7 +573,7 @@
     const feedTitle = $('#feedTitle');
     const feedEyebrow = $('#feedEyebrow');
     const communityPostCount = $('#communityPostCount');
-    $('.news-hero')?.classList.toggle('hidden', !communityPromo.visible);
+    $('#communityPromoSlot')?.classList.toggle('hidden', !communityPromo.visible);
     if (feedTitle) feedTitle.textContent = title;
     if (feedEyebrow) feedEyebrow.textContent = eyebrow;
     if (communityPostCount) communityPostCount.textContent = entries.length;
@@ -680,8 +680,16 @@
     renderFeed();
   }
 
+  function elevateNewsComposer() {
+    const dock = $('#newsComposerDock');
+    if (!dock || dock.dataset.viewportLayer === 'true') return;
+    document.body.append(dock);
+    dock.dataset.viewportLayer = 'true';
+  }
+
   function initNews() {
     if (!$('#feed')) return;
+    elevateNewsComposer();
     renderFeed();
     $('#publishPost')?.addEventListener('click', publishPost);
     $('#clearImages')?.addEventListener('click', () => { uploadImages = []; renderPreview(); });
@@ -1792,7 +1800,7 @@
     adminControlsBound = true;
     $$('.admin-tab').forEach(tab => tab.addEventListener('click', () => { $$('.admin-tab').forEach(item => item.classList.toggle('active', item === tab)); $$('.admin-pane').forEach(pane => pane.classList.toggle('active', pane.dataset.adminPane === tab.dataset.adminTab)); }));
     $('#adminStudentSearch')?.addEventListener('input', event => renderAdminStudents(event.target.value));
-    $('#adminCommunityPromoToggle')?.addEventListener('change', event => { communityPromo.visible = event.target.checked; if (!saveCommunityPromo()) return; adminLog('content', communityPromo.visible ? 'إظهار مساحة طلاب نبض' : 'إخفاء مساحة طلاب نبض', 'إعداد مجتمع الأخبار'); renderAdminDashboard(); toast(communityPromo.visible ? 'ستظهر مساحة طلاب نبض في الأخبار.' : 'تم إخفاء مساحة طلاب نبض من الأخبار.'); });
+    $('#adminCommunityPromoToggle')?.addEventListener('change', event => { communityPromo.visible = event.target.checked; if (!saveCommunityPromo()) return; adminLog('content', communityPromo.visible ? 'إظهار الإعلان: مساحة طلاب نبض' : 'إخفاء الإعلان: مساحة طلاب نبض', 'إعداد مجتمع الأخبار'); renderAdminDashboard(); toast(communityPromo.visible ? 'سيظهر إعلان مساحة طلاب نبض في الأخبار.' : 'تم إخفاء إعلان مساحة طلاب نبض من الأخبار.'); });
   }
 
   function bindEvents() {
