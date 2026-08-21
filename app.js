@@ -979,7 +979,7 @@
     const coverage = $('#universityCoverage'); if (!coverage) return;
     const provincesInData = new Set(universityDirectory.map(item => item.province));
     const institutions = universityDirectory.length; const universities = universityDirectory.filter(item => item.entity === 'جامعة').length; const institutes = universityDirectory.filter(item => item.entity === 'معهد').length;
-    coverage.innerHTML = `<div class="coverage-main"><span class="coverage-icon"><i class="fa-solid fa-map-location-dot"></i></span><div><b>دليل المؤسسات حسب المحافظات</b><small>يشمل اختيار المحافظات الأربع عشرة الواردة في الكود المرفق؛ تظهر المؤسسة فقط حين تكون مذكورة في البيانات.</small></div></div><div class="coverage-stats"><span><b>${institutions}</b><small>مؤسسة</small></span><span><b>${universityProvinces.length}</b><small>محافظات بالدليل</small></span><span><b>${universities}</b><small>جامعات</small></span><span><b>${institutes}</b><small>معاهد وأكاديميات</small></span></div><div class="coverage-provinces">${universityProvinces.map(province => `<button type="button" class="${provincesInData.has(province) ? '' : 'no-data'}" data-coverage-province="${escapeHTML(province)}" title="${provincesInData.has(province) ? 'عرض المؤسسات المذكورة' : 'لا توجد مؤسسة مذكورة في الكود لهذا الخيار'}"><i class="fa-solid fa-location-dot"></i>${escapeHTML(province)}${provincesInData.has(province) ? '' : '<small>لا بيانات</small>'}</button>`).join('')}</div>`;
+    coverage.innerHTML = `<div class="coverage-main"><span class="coverage-icon"><i class="fa-solid fa-map-location-dot"></i></span><div><b>دليل المؤسسات حسب المحافظات</b><small>اختر المحافظة من الخانة التالية؛ تظهر المؤسسة فقط حين تكون مذكورة في البيانات الواردة بالكود المرفق.</small></div></div><div class="coverage-stats"><span><b>${institutions}</b><small>مؤسسة</small></span><span><b>${universityProvinces.length}</b><small>محافظات بالدليل</small></span><span><b>${universities}</b><small>جامعات</small></span><span><b>${institutes}</b><small>معاهد وأكاديميات</small></span></div>`;
   }
 
   const expandedUniversityCards = new Set();
@@ -1008,7 +1008,7 @@
   }
 
   function toggleUniversityCompare(id, checked) {
-    if (checked && !comparedUniversities.includes(id)) { if (comparedUniversities.length >= 3) { renderUniversityDirectory(); return toast('يمكن مقارنة ثلاث مؤسسات كحد أقصى.'); } comparedUniversities.push(id); }
+    if (checked && !comparedUniversities.includes(id)) { if (comparedUniversities.length >= 2) { renderUniversityDirectory(); return toast('يمكن مقارنة فرعين فقط في المرة الواحدة.'); } comparedUniversities.push(id); }
     if (!checked) comparedUniversities = comparedUniversities.filter(item => item !== id); saveUniversityCompare(); renderUniversityDirectory();
   }
 
@@ -1026,6 +1026,7 @@
 
   function initUniversities() {
     if (!$('#universityGrid')) return; populateUniversityProvinces(); renderUniversityCoverage(); renderUniversityDirectory();
+    if (new URLSearchParams(location.search).get('compare') === '1') { requestAnimationFrame(() => { $('#universityGrid')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); toast('اختر فرعين من البطاقات ثم اضغط عرض المقارنة.'); }); }
     let searchFrame = 0;
     $('#universitySearch')?.addEventListener('input', () => { cancelAnimationFrame(searchFrame); searchFrame = requestAnimationFrame(resetUniversityVisibleLimit); });
     $('#clearUniversitySearch')?.addEventListener('click', () => { const input = $('#universitySearch'); if (!input) return; input.value = ''; input.focus(); resetUniversityVisibleLimit(); });
@@ -1086,15 +1087,48 @@
     $('#majorCatalog')?.addEventListener('click', event => { const button = event.target.closest('[data-major-details]'); if (button) openMajorDetails(button.dataset.majorDetails); });
   }
 
+  const universityWhatsAppChannel = 'https://whatsapp.com/channel/0029Vb84gXUISTkDgZDFVd2L';
   const universityInfoData = {
-    admission: { icon: 'fa-file-lines', tone: 'amber', kicker: 'تحضير للمفاضلة', title: 'المفاضلة الجامعية', description: 'مساحة لتنظيم المعلومات التي تحتاجها قبل ظهور الإعلانات أو عند متابعتها.', steps: ['حدّد الجهة والسنة التي ستتبع إعلانها الرسمي.', 'احتفظ بنسخة من المعدل والوثائق المطلوبة لديك.', 'سجّل رغباتك مع ترتيب أولوياتك الشخصية والأكاديمية.', 'راجع المواعيد والشروط والحدود المنشورة من الجهة الرسمية فقط.'], checks: ['الإعلان الرسمي الأحدث', 'مواعيد التقديم والنتائج', 'الوثائق وطريقة التقديم', 'شروط كل رغبة على حدة'] },
-    transfer: { icon: 'fa-right-left', tone: 'red', kicker: 'تنظيم التحويل', title: 'النقل والتحويل بين الجامعات', description: 'دليل تحضير عام لمراجعة التحويل الداخلي أو الخارجي مع الجهة المختصة.', steps: ['حدّد نوع التحويل الذي تبحث عنه والجهة المسؤولة عنه.', 'قارن خطتك الدراسية والمواد المنجزة مع الخيار الجديد.', 'جهّز السجل والوثائق التي تطلبها الجهة رسميًا.', 'تحقق من المواعيد والقيود والرسوم قبل تقديم أي طلب.'], checks: ['نوع التحويل', 'موافقة الجهة المختصة', 'المواد المعادلة', 'المواعيد المحددة رسميًا'] },
-    registration: { icon: 'fa-user-plus', tone: 'violet', kicker: 'التسجيل الإلكتروني', title: 'طريقة التسجيل على المفاضلات', description: 'خطوات إرشادية لتجهيز معلوماتك ومتابعة مسار التسجيل الرسمي.', steps: ['تابع الإعلان الرسمي لتعرف المنصة أو مركز التسجيل المعتمد.', 'راجع بياناتك الشخصية والدراسية قبل إدخالها.', 'أدخل الرغبات بعد قراءتها ومراجعة ترتيبها.', 'احتفظ برقم الطلب أو إشعار التسجيل وتابع النتيجة من المصدر الرسمي.'], checks: ['البيانات الشخصية', 'بيانات الشهادة والمعدل', 'ترتيب الرغبات', 'إشعار التسجيل والنتيجة'] }
+    admission: {
+      mode: 'announcement', icon: 'fa-file-lines', tone: 'amber', kicker: 'المفاضلة الجامعية', title: 'المفاضلة الجامعية 2026',
+      announcementTitle: 'دورة 2026 لم تصدر بعد', announcement: 'سيتم الإعلان عنها عبر منصة نبض التفوق. سارع للانضمام إلى القناة لمتابعة المستجدات فور نشرها.',
+      support: 'لا تعتمد أي موعد أو شرط قبل صدوره من الجهة الرسمية المختصة.'
+    },
+    registration: {
+      mode: 'announcement', icon: 'fa-user-plus', tone: 'violet', kicker: 'التسجيل على المفاضلات', title: 'طريقة التسجيل على المفاضلات',
+      announcementTitle: 'الخدمة سيتم الإعلان عنها قريبًا', announcement: 'سيتم الإعلان عنها عبر قناة نبض التفوق. سارع للانضمام لتصلك خطوات التسجيل عند توفرها.',
+      support: 'سيتضمن الدليل خطوات مرتبة ومبسطة عند إعلان آلية التسجيل الرسمية.'
+    },
+    transfer: {
+      mode: 'transfer', icon: 'fa-right-left', tone: 'red', kicker: 'دليل النقل والتحويل', title: 'النقل والتحويل بين الجامعات',
+      description: 'ملخص منظم مستخرج من النص المرفق لمساعدتك على فهم المسار والوثائق والنقاط التي يجب مراجعتها قبل تقديم أي طلب.',
+      sections: [
+        { number: '01', title: 'إجراءات التحويل', subtitle: 'المسار الإداري الوارد في النص', points: ['يُقدّم طلب التحويل إلى ديوان الكلية أو المعهد المقصود.', 'تُرفق الوثائق المطلوبة، ثم يدرس مجلس الكلية أو المعهد الطلب.', 'يُرفع الطلب إلى مجلس الجامعة لإصدار القرار، ويُبلّغ الطالب بعد الموافقة لتثبيت التسجيل الجديد.'] },
+        { number: '02', title: 'الوثائق والتنظيم', subtitle: 'تجهيزات قبل تقديم الطلب', points: ['طلب رسمي، وصورة عن الشهادة الثانوية، وكشف بالمقررات التي دُرست.', 'براءة ذمة مالية من الجامعة الأصلية، وموافقة الجامعة المستقبلة عند طلبها.', 'لا يُحفظ قيدان جامعيان في الوقت نفسه؛ يُشطب القيد القديم عند قبول التحويل وفق النص المرفق.'] },
+        { number: '03', title: 'نقاط يجب التحقق منها', subtitle: 'شروط واردة في النص المرفق', points: ['في النقل الحكومي، يُذكر تطابق الاختصاص وتشابه الخطة الدراسية واجتياز السنة الأولى بنجاح.', 'قد تُنظر مبررات أكاديمية أو إنسانية، وقد تتطلب الحالات الخاصة موافقات إضافية.', 'يمكن لمجلس الكلية تحديد المقررات المعادلة عند اختلاف بعض المواد بين الخطتين.'] }
+      ],
+      rules: [
+        { title: 'الاختصاص والخطة الدراسية', text: 'يركز النص المرفق على تطابق الاختصاص أو قربه، وعلى تشابه المقررات والخطة الدراسية مع الجهة المراد الانتقال إليها.' },
+        { title: 'المعدل والمقعد والشروط الخاصة', text: 'يشير النص إلى ضرورة استيفاء معدل الجهة المستقبلة عندما يكون مطلوبًا، وإلى مراعاة الشواغر والموافقات في بعض الحالات.' },
+        { title: 'الجهة صاحبة القرار', text: 'يذكر النص أن القرار يمر عبر مجالس الكلية والجامعة، وقد يحتاج موافقة الوزارة أو جهات أخرى بحسب حالة النقل.' }
+      ],
+      support: 'هذا الملخص مستخرج من الملف المرفق لغرض التنظيم فقط، وقد تختلف الضوابط والمواعيد والوثائق حسب القرار الرسمي والسنة والجهة.'
+    }
   };
 
+  function universityInfoHero(item) {
+    return `<header class="university-info-hero ${escapeHTML(item.tone)}"><span><i class="fa-solid ${escapeHTML(item.icon)}"></i></span><div><small>${escapeHTML(item.kicker)}</small><h2>${escapeHTML(item.title)}</h2>${item.description ? `<p>${escapeHTML(item.description)}</p>` : ''}</div></header>`;
+  }
+
   function initUniversityInfo() {
-    const view = $('#universityInfoView'); if (!view) return; const topic = new URLSearchParams(location.search).get('topic'); const item = universityInfoData[topic] || universityInfoData.admission;
-    view.innerHTML = `<header class="university-info-hero ${escapeHTML(item.tone)}"><span><i class="fa-solid ${escapeHTML(item.icon)}"></i></span><div><small>${escapeHTML(item.kicker)}</small><h2>${escapeHTML(item.title)}</h2><p>${escapeHTML(item.description)}</p></div></header><section class="university-info-card"><header><span>01</span><div><b>خطوات تنظيمية</b><small>اتبعها بهدوء وراجع المصدر الرسمي</small></div></header><ol>${item.steps.map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ol></section><section class="university-info-card"><header><span>02</span><div><b>قائمة مراجعة</b><small>تأكد منها قبل الانتقال للخطوة التالية</small></div></header><div class="university-info-checks">${item.checks.map(check => `<span><i class="fa-solid fa-check"></i>${escapeHTML(check)}</span>`).join('')}</div></section><a class="primary-button university-info-source" href="https://mohe.gov.sy/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> افتح المصدر الرسمي للتحقق</a><aside class="university-data-note"><i class="fa-solid fa-circle-info"></i><p>هذه الصفحة لا تقدم مواعيد أو شروطًا ثابتة؛ تختلف الإجراءات من سنة لأخرى ومن جهة لأخرى.</p></aside>`;
+    const view = $('#universityInfoView'); if (!view) return;
+    const topic = new URLSearchParams(location.search).get('topic'); const item = universityInfoData[topic] || universityInfoData.admission;
+    document.title = `نبض التفوق | ${item.title}`;
+    if (item.mode === 'announcement') {
+      view.innerHTML = `${universityInfoHero(item)}<section class="university-announcement-card panel"><span class="university-announcement-icon"><i class="fa-solid fa-bullhorn"></i></span><div><span class="eyebrow">تنبيه للطلاب</span><h3>${escapeHTML(item.announcementTitle)}</h3><p>${escapeHTML(item.announcement)}</p></div><a class="primary-button university-whatsapp-button" href="${universityWhatsAppChannel}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> انضم إلى قناة واتساب</a></section><aside class="university-data-note"><i class="fa-solid fa-circle-info"></i><p>${escapeHTML(item.support)}</p></aside>`;
+      return;
+    }
+    view.innerHTML = `${universityInfoHero(item)}<section class="university-transfer-intro panel"><span><i class="fa-solid fa-clipboard-check"></i></span><p>${escapeHTML(item.description)}</p></section><section class="university-info-stack">${item.sections.map(section => `<article class="university-info-card"><header><span>${escapeHTML(section.number)}</span><div><b>${escapeHTML(section.title)}</b><small>${escapeHTML(section.subtitle)}</small></div></header><ol>${section.points.map(point => `<li>${escapeHTML(point)}</li>`).join('')}</ol></article>`).join('')}</section><section class="university-transfer-rules panel"><header><span><i class="fa-solid fa-scale-balanced"></i></span><div><span class="eyebrow">مراجعة سريعة</span><h3>أحكام ونقاط مهمة</h3></div></header>${item.rules.map((rule, index) => `<details class="university-transfer-rule" ${index === 0 ? 'open' : ''}><summary><span>${escapeHTML(rule.title)}</span><i class="fa-solid fa-chevron-down"></i></summary><p>${escapeHTML(rule.text)}</p></details>`).join('')}</section><aside class="university-data-note"><i class="fa-solid fa-circle-info"></i><p>${escapeHTML(item.support)}</p></aside>`;
   }
 
   const curriculumHub = {
