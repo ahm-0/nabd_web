@@ -333,7 +333,6 @@
         <div class="sidebar-label">التنقل</div>
         <nav class="side-nav sidebar-main-nav">
           <a class="side-link ${PAGE === 'home' ? 'active' : ''}" href="index.html"><span class="nav-icon home-nav"><i class="fa-solid fa-house"></i></span><span>الرئيسية</span></a>
-          <a class="side-link ${PAGE === 'profile' ? 'active' : ''}" href="profile.html"><span class="nav-icon profile-nav"><i class="fa-regular fa-user"></i></span><span>ملفي الشخصي</span></a>
           <a class="side-link ${PAGE === 'news' ? 'active' : ''}" href="news.html"><span class="nav-icon news-nav"><i class="fa-regular fa-newspaper"></i></span><span>مجتمع الأخبار</span><em>جديد</em></a>
         </nav>
         <div class="sidebar-label">اختصارات دراسية</div>
@@ -341,7 +340,7 @@
           <a class="side-link ${PAGE === 'study-schedule' ? 'active' : ''}" href="time-organizer.html"><span class="nav-icon schedule-nav"><i class="fa-solid fa-calendar-days"></i></span><span>الجدول الدراسي</span></a>
           <a class="side-link ${PAGE === 'grade-calculator' ? 'active' : ''}" href="grade-calculator.html"><span class="nav-icon calculator-nav"><i class="fa-solid fa-calculator"></i></span><span>حاسبة المعدل</span></a>
           <a class="side-link ${PAGE === 'tests' ? 'active' : ''}" href="tests.html"><span class="nav-icon tests-nav"><i class="fa-solid fa-clipboard-check"></i></span><span>الاختبارات</span></a>
-          <a class="side-link ${PAGE === 'library' ? 'active' : ''}" href="library.html"><span class="nav-icon library-nav"><i class="fa-solid fa-book-bookmark"></i></span><span>المكتبة</span></a>
+          <a class="side-link ${PAGE === 'educational-sites' ? 'active' : ''}" href="educational-sites.html"><span class="nav-icon sites-nav"><i class="fa-solid fa-globe"></i></span><span>المواقع التعليمية</span></a>
         </nav>
         <div class="sidebar-label">التطبيق</div>
         <nav class="side-nav compact sidebar-app-nav">
@@ -350,7 +349,7 @@
           <a class="side-link ${PAGE === 'supervision' ? 'active' : ''}" href="admin-dashboard.html"><span class="nav-icon shield-nav"><i class="fa-solid fa-shield-halved"></i></span><span>بوابة الإشراف</span></a>
           <a class="side-link ${PAGE === 'privacy' ? 'active' : ''}" href="privacy.html"><span class="nav-icon lock-nav"><i class="fa-solid fa-lock"></i></span><span>الخصوصية والأمان</span></a>
         </nav>
-        <a class="sidebar-edit-cta" href="profile.html"><i class="fa-solid fa-pen-to-square"></i><span>${profileIncomplete() ? 'إكمال الملف الشخصي' : 'تعديل بياناتي'}</span><i class="fa-solid fa-arrow-left"></i></a>`;
+        <a class="sidebar-edit-cta" href="settings.html"><i class="fa-solid fa-gear"></i><span>إعدادات التطبيق</span><i class="fa-solid fa-arrow-left"></i></a>`;
     }
 
     const bottomNav = $('#bottomNav');
