@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080d19">
+  <title>نبض التفوق | الإعدادات</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="settings">
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a>
+      <div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div>
+    </header>
+    <div class="layout">
+      <aside class="sidebar panel" id="desktopSidebar"></aside>
+      <main class="main-content settings-page">
+        <header class="settings-page-head">
+          <a class="settings-back" href="profile.html" aria-label="العودة إلى الملف الشخصي"><i class="fa-solid fa-arrow-right"></i></a>
+          <div><span>التحكم الشخصي</span><h2>الإعدادات</h2><p>اضبط تجربة نبض التفوق بالطريقة المناسبة لك.</p></div>
+        </header>
+
+        <section class="settings-section">
+          <h3 class="settings-section-title"><i class="fa-solid fa-palette"></i> المظهر والحركة</h3>
+          <article class="settings-group settings-appearance">
+            <div class="settings-row-title"><span class="settings-row-icon blue"><i class="fa-solid fa-sun"></i></span><div><b>نمط الواجهة</b><small id="settingsThemeStatus">اختر المظهر المناسب للقراءة</small></div></div>
+            <div class="theme-choice-grid" role="group" aria-label="اختيار نمط الواجهة">
+              <button class="theme-choice" type="button" data-theme-choice="light"><i class="fa-solid fa-sun"></i><span>فاتح</span></button>
+              <button class="theme-choice" type="button" data-theme-choice="dark"><i class="fa-solid fa-moon"></i><span>داكن</span></button>
+            </div>
+            <label class="settings-toggle-row"><span><b>الحركات والتأثيرات</b><small>حركات بسيطة للأيقونات والانتقالات</small></span><input id="motionSwitch" class="switch" type="checkbox"></label>
+          </article>
+        </section>
+
+        <section class="settings-section">
+          <h3 class="settings-section-title"><i class="fa-regular fa-bell"></i> الإشعارات</h3>
+          <article class="settings-group">
+            <label class="settings-toggle-row"><span><b>تنبيهات التطبيق</b><small>تنبيهات الأخبار والأنشطة وتذكيرات الدراسة</small></span><input id="notificationsSwitch" class="switch" type="checkbox"></label>
+            <a class="settings-detail-row" href="notifications.html"><span class="settings-row-icon orange"><i class="fa-regular fa-clock"></i></span><span><b>إشعاراتي</b><small>عرض التنبيهات المحفوظة داخل التطبيق</small></span><i class="fa-solid fa-angle-left"></i></a>
+            <a class="settings-notice" href="time-organizer.html"><i class="fa-solid fa-mobile-screen-button"></i><span><b>تذكيرات الدراسة الأصلية</b><small>فعّل التذكير لكل مهمة من الجدول الدراسي بعد منح الإذن.</small></span><i class="fa-solid fa-angle-left"></i></a>
+          </article>
+        </section>
+
+        <section class="settings-section">
+          <h3 class="settings-section-title"><i class="fa-solid fa-shield-halved"></i> الخصوصية والأمان</h3>
+          <article class="settings-group settings-link-list">
+            <a class="settings-detail-row" href="privacy.html"><span class="settings-row-icon violet"><i class="fa-solid fa-lock"></i></span><span><b>الخصوصية والأمان</b><small>طريقة حفظ بياناتك ومعلوماتك داخل المتصفح</small></span><i class="fa-solid fa-angle-left"></i></a>
+            <button class="settings-detail-row" type="button" id="profileDataUpdate"><span class="settings-row-icon teal"><i class="fa-solid fa-user-pen"></i></span><span><b>تحديث معلومات الطالب</b><small>تعديل الاسم والمرحلة والبيانات الشخصية</small></span><i class="fa-solid fa-angle-left"></i></button>
+            <button class="settings-detail-row" type="button" id="verificationRequest"><span class="settings-row-icon blue"><i class="fa-solid fa-certificate"></i></span><span><b>طلب شارة التوثيق</b><small>أرسل طلب مراجعة الحساب بعد إكمال ملفك</small></span><i class="fa-solid fa-angle-left"></i></button>
+          </article>
+        </section>
+
+        <section class="settings-section">
+          <h3 class="settings-section-title"><i class="fa-regular fa-circle-question"></i> المساعدة والتطبيق</h3>
+          <article class="settings-group settings-link-list">
+            <button class="settings-detail-row" type="button" data-modal="appGuide"><span class="settings-row-icon blue"><i class="fa-regular fa-circle-play"></i></span><span><b>دليل استخدام التطبيق</b><small>شرح مختصر لأهم الخدمات والأقسام</small></span><i class="fa-solid fa-angle-left"></i></button>
+            <button class="settings-detail-row" type="button" data-modal="contact"><span class="settings-row-icon orange"><i class="fa-regular fa-comment-dots"></i></span><span><b>تواصل معنا</b><small>أرسل ملاحظتك أو اطلب المساعدة</small></span><i class="fa-solid fa-angle-left"></i></button>
+            <button class="settings-detail-row" type="button" data-modal="contribute"><span class="settings-row-icon pink"><i class="fa-solid fa-hand-holding-heart"></i></span><span><b>ساهم في تطوير التطبيق</b><small>شاركنا أفكارك لتحسين تجربة الطلاب</small></span><i class="fa-solid fa-angle-left"></i></button>
+            <a class="settings-detail-row" href="about.html"><span class="settings-row-icon slate"><i class="fa-solid fa-circle-info"></i></span><span><b>معلومات التطبيق</b><small>نبض التفوق · الإصدار 1.0.0</small></span><i class="fa-solid fa-angle-left"></i></a>
+            <a class="settings-detail-row" href="admin-dashboard.html"><span class="settings-row-icon violet"><i class="fa-solid fa-user-shield"></i></span><span><b>بوابة المشرفين</b><small>مساحة المتابعة والإشراف داخل المنصة</small></span><i class="fa-solid fa-angle-left"></i></a>
+          </article>
+        </section>
+
+        <div class="settings-student-id"><span>معرّف الطالب</span><b id="profileStudentId">0000000000</b></div>
+        <div class="developer-credit"><span>تم تطوير التطبيق بواسطة</span><a href="https://www.instagram.com/b_xl.rs?igsh=YnpncXExeGJmN3c1" target="_blank" rel="noopener noreferrer" aria-label="فتح حساب Ali Haj Hussain على إنستغرام"><img src="assets/nabd-logo.jpg" alt="شعار نبض التفوق"><strong>Ali Haj Hussain</strong><i class="fa-brands fa-instagram"></i></a><small>نبض التفوق © 2026 · v1.0.0</small></div>
+      </main>
+    </div>
+  </div>
+  <nav class="bottom-nav" id="bottomNav"></nav>
+  <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div>
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>

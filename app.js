@@ -12,7 +12,7 @@
   const defaultStudent = {
     first: '', last: '', phone: '', birth: '', city: 'دمشق', stage: 'بكالوريا علمي',
     bio: 'طالب في منصة نبض التفوق، أعمل على تنظيم رحلتي الدراسية والوصول إلى أهدافي.',
-    avatar: '', notifications: true, theme: 'dark', studentId: '', gender: '', verificationRequested: false, verificationStatus: ''
+    avatar: '', notifications: true, theme: 'dark', motion: true, studentId: '', gender: '', verificationRequested: false, verificationStatus: ''
   };
 
   function readStorage(key, fallback) {
@@ -246,6 +246,17 @@
     if (switcher) switcher.checked = student.theme === 'dark';
     const buttonIcon = $('#profileThemeButton i');
     if (buttonIcon) buttonIcon.className = student.theme === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    $$('[data-theme-choice]').forEach(button => button.classList.toggle('active', button.dataset.themeChoice === student.theme));
+    const status = $('#settingsThemeStatus');
+    if (status) status.textContent = student.theme === 'dark' ? 'المظهر الداكن مفعّل' : 'المظهر الفاتح مفعّل';
+    if (persist) saveState();
+  }
+
+  function applyMotion(enabled = student.motion !== false, persist = true) {
+    student.motion = Boolean(enabled);
+    document.documentElement.classList.toggle('reduced-motion', !student.motion);
+    const switcher = $('#motionSwitch');
+    if (switcher) switcher.checked = student.motion;
     if (persist) saveState();
   }
 
@@ -425,7 +436,7 @@
     const verificationStatus = $('#verificationStatus');
     if (verificationStatus) { verificationStatus.classList.toggle('hidden', !verificationState); verificationStatus.className = `verification-status ${verificationState || 'hidden'}`; verificationStatus.innerHTML = verificationState === 'approved' ? '<i class="fa-solid fa-circle-check"></i> الحساب موثّق' : verificationState === 'revoked' ? '<i class="fa-solid fa-circle-xmark"></i> تم إلغاء التوثيق' : verificationState === 'rejected' ? '<i class="fa-solid fa-circle-xmark"></i> راجع بيانات التوثيق' : '<i class="fa-solid fa-circle-check"></i> طلب التوثيق قيد المراجعة'; }
     const verificationButton = $('#verificationRequest');
-    if (verificationButton) { const title = $('.setting-copy strong', verificationButton); const detail = $('.setting-copy small', verificationButton); verificationButton.disabled = verificationState === 'pending' || verificationState === 'approved'; if (title) title.textContent = verificationState === 'approved' ? 'الحساب موثّق' : verificationState === 'pending' ? 'طلب التوثيق قيد المراجعة' : verificationState === 'revoked' ? 'إعادة طلب شارة التوثيق' : verificationState === 'rejected' ? 'إعادة طلب شارة التوثيق' : 'طلب شارة التوثيق'; if (detail) detail.textContent = verificationState === 'approved' ? 'تم اعتماد الشارة على هذا المتصفح' : verificationState === 'pending' ? 'تم إرسال طلبك وسيبقى ظاهرًا في ملفك' : verificationState === 'revoked' ? 'يمكنك مراجعة البيانات وإرسال طلب جديد' : verificationState === 'rejected' ? 'يمكنك مراجعة البيانات وإرسال طلب جديد' : 'راجع ملفك وأرسل الطلب للمراجعة'; }
+    if (verificationButton) { const title = $('.setting-copy strong, b', verificationButton); const detail = $('.setting-copy small, small', verificationButton); verificationButton.disabled = verificationState === 'pending' || verificationState === 'approved'; if (title) title.textContent = verificationState === 'approved' ? 'الحساب موثّق' : verificationState === 'pending' ? 'طلب التوثيق قيد المراجعة' : verificationState === 'revoked' ? 'إعادة طلب شارة التوثيق' : verificationState === 'rejected' ? 'إعادة طلب شارة التوثيق' : 'طلب شارة التوثيق'; if (detail) detail.textContent = verificationState === 'approved' ? 'تم اعتماد الشارة على هذا المتصفح' : verificationState === 'pending' ? 'تم إرسال طلبك وسيبقى ظاهرًا في ملفك' : verificationState === 'revoked' ? 'يمكنك مراجعة البيانات وإرسال طلب جديد' : verificationState === 'rejected' ? 'يمكنك مراجعة البيانات وإرسال طلب جديد' : 'راجع ملفك وأرسل الطلب للمراجعة'; }
     const notificationSwitch = $('#notificationsSwitch');
     if (notificationSwitch) notificationSwitch.checked = Boolean(student.notifications);
     setAvatar('profileAvatar', 'profile-avatar');
@@ -1568,6 +1579,8 @@
       if (document.body.classList.contains('sidebar-open') && event.target.closest('.side-link, .sidebar-edit-cta')) toggleSidebar(false);
       if (document.body.classList.contains('sidebar-open') && !event.target.closest('#desktopSidebar, #sidebarToggle')) toggleSidebar(false);
       if (event.target.closest('#profileThemeButton')) applyTheme(student.theme === 'dark' ? 'light' : 'dark');
+      const themeChoice = event.target.closest('[data-theme-choice]');
+      if (themeChoice) applyTheme(themeChoice.dataset.themeChoice);
       const galleryOpen = event.target.closest('[data-gallery-image]');
       if (galleryOpen) openGalleryImage(galleryOpen.dataset.galleryImage);
       const galleryShare = event.target.closest('[data-gallery-share]');
@@ -1622,6 +1635,7 @@
       reader.readAsDataURL(file);
     });
     $('#themeSwitch')?.addEventListener('change', event => applyTheme(event.target.checked ? 'dark' : 'light'));
+    $('#motionSwitch')?.addEventListener('change', event => { applyMotion(event.target.checked); toast(event.target.checked ? 'تم تفعيل الحركات الخفيفة.' : 'تم تقليل الحركات والتأثيرات.'); });
     $('#notificationsSwitch')?.addEventListener('change', event => { student.notifications = event.target.checked; saveState(); toast(event.target.checked ? 'تم تفعيل الإشعارات.' : 'تم إيقاف الإشعارات.'); });
     document.addEventListener('focusin', event => {
       if (!window.matchMedia('(max-width: 980px)').matches || !event.target.matches('input, textarea, select')) return;
@@ -1648,6 +1662,7 @@
     renderBrand();
     renderTopActions();
     applyTheme(student.theme, false);
+    applyMotion(student.motion !== false, false);
     updateProfileUI();
     syncAdminStudent(false);
     bindEvents();
