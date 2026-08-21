@@ -573,8 +573,16 @@
   }
 
   function renderPreview() {
-    const preview = $('#composePreview');
+    const preview = $('#composePreview'); const clear = $('#clearImages'); const status = $('#composeImageStatus');
     if (preview) preview.innerHTML = uploadImages.map(source => `<img loading="lazy" src="${source}" alt="معاينة الصورة">`).join('');
+    if (clear) clear.hidden = !uploadImages.length;
+    if (status) status.textContent = uploadImages.length ? `${uploadImages.length} صورة جاهزة` : '';
+  }
+
+  function resizeNewsComposer() {
+    const input = $('#postText'); if (!input) return;
+    input.style.height = 'auto'; input.style.height = `${Math.min(Math.max(input.scrollHeight, 44), 118)}px`;
+    $('#newsComposerDock')?.classList.toggle('has-text', Boolean(input.value.trim()));
   }
 
   function publishPost() {
@@ -586,8 +594,9 @@
     if (!saveState()) { posts.shift(); return; }
     uploadImages = [];
     const input = $('#postText');
-    if (input) input.value = '';
+    if (input) { input.value = ''; input.style.height = ''; }
     renderPreview();
+    resizeNewsComposer();
     renderFeed();
     updateProfileUI();
     toast('تم نشر خبرك في مجتمع نبض.');
@@ -648,6 +657,8 @@
       if (invalid) { event.target.value = ''; return toast('اختر حتى صورتين، وحجم كل صورة لا يتجاوز 700 كيلوبايت.'); }
       Promise.all(files.map(file => new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(file); }))).then(images => { uploadImages = images; renderPreview(); });
     });
+    $('#postText')?.addEventListener('input', resizeNewsComposer);
+    resizeNewsComposer();
     $$('.community-tab').forEach(tab => tab.addEventListener('click', () => { activeFeedFilter = tab.dataset.filter || 'all'; $$('.community-tab').forEach(item => item.classList.toggle('active', item === tab)); renderFeed(); }));
   }
 
@@ -1227,7 +1238,7 @@
       { title: 'فرنسي', scope: 'قواعد وقراءة ومفردات', summary: 'قواعد وكلمات أساسية', exam: 'قراءة وقواعد وتعبير', icon: 'fa-language', max: 400, pass: 160 }
     ]
   };
-  let activeCurriculumStage = 'nine';
+  let activeCurriculumStage = 'science';
   let activeCurriculumResource = 'books';
 
   function curriculumCards(stageKey, resourceKey) {
@@ -1265,10 +1276,12 @@
 
   function initCurriculum() {
     if (!$('#curriculumGrid')) return;
+    const scope = document.body.dataset.curriculumScope || 'all';
+    const allowedStages = scope === 'nine' ? ['nine'] : scope === 'baccalaureate' ? ['science', 'literary'] : Object.keys(curriculumHub);
     const requestedStage = new URLSearchParams(location.search).get('stage') || location.hash.replace('#', '');
-    if (requestedStage && curriculumHub[requestedStage]) activeCurriculumStage = requestedStage;
+    activeCurriculumStage = allowedStages.includes(requestedStage) ? requestedStage : allowedStages.includes(activeCurriculumStage) ? activeCurriculumStage : allowedStages[0];
     renderCurriculum();
-    $$('#curriculumStageTabs [data-curriculum-stage]').forEach(button => button.addEventListener('click', () => { activeCurriculumStage = button.dataset.curriculumStage; activeCurriculumResource = 'books'; renderCurriculum(); }));
+    $$('#curriculumStageTabs [data-curriculum-stage]').forEach(button => button.addEventListener('click', () => { const nextStage = button.dataset.curriculumStage; if (!allowedStages.includes(nextStage)) return; activeCurriculumStage = nextStage; activeCurriculumResource = 'books'; renderCurriculum(); }));
     $$('#curriculumResourceTabs [data-curriculum-resource]').forEach(button => button.addEventListener('click', () => { activeCurriculumResource = button.dataset.curriculumResource; renderCurriculum(); }));
     $('#curriculumGrid')?.addEventListener('click', event => { const item = event.target.closest('[data-curriculum-item]'); if (item) openCurriculumResource(item.dataset.curriculumItem); });
   }

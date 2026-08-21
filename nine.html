@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080d19">
+  <title>نبض التفوق | خدمات التاسع</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="curriculum" data-curriculum-scope="nine">
+  <div class="app">
+    <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
+    <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content">
+      <section class="curriculum-hub curriculum-nine-hub">
+        <header class="curriculum-hub-hero"><span class="curriculum-hub-mark"><i class="fa-solid fa-school"></i></span><div><span>مرحلة مستقلة</span><h2>خدمات التاسع</h2><p>كتب وملخصات ونماذج وحدود نجاح وقنوات تعليمية، مخصصة لمنهاج التاسع فقط.</p></div></header>
+        <section class="curriculum-stage-switch curriculum-single-stage" id="curriculumStageTabs" aria-label="مرحلة التاسع"><button type="button" class="active" data-curriculum-stage="nine"><i class="fa-solid fa-school"></i><span><b>التاسع</b><small>موارد مراجعة منظمة</small></span></button></section>
+        <section class="curriculum-stage-summary" id="curriculumStageSummary" aria-live="polite"></section>
+        <section class="curriculum-resource-tabs" id="curriculumResourceTabs" aria-label="اختيار نوع المورد"><button type="button" class="active" data-curriculum-resource="books"><i class="fa-solid fa-book"></i><span>كتب المنهاج</span></button><button type="button" data-curriculum-resource="summaries"><i class="fa-solid fa-note-sticky"></i><span>ملخصات</span></button><button type="button" data-curriculum-resource="exams"><i class="fa-solid fa-file-circle-check"></i><span>أسئلة دورات ونماذج</span></button><button type="button" data-curriculum-resource="success"><i class="fa-solid fa-chart-simple"></i><span>حدود النجاح</span></button><button type="button" data-curriculum-resource="channels"><i class="fa-solid fa-bullhorn"></i><span>القنوات التعليمية</span></button></section>
+        <section class="curriculum-resource-head"><div><span id="curriculumResourceKicker">موردك الحالي</span><h3 id="curriculumResourceTitle">كتب المنهاج</h3><p id="curriculumResourceDescription">نسخ مرجعية منظمة للمواد الأساسية.</p></div><span class="curriculum-resource-count"><b id="curriculumResourceCount">0</b> موارد</span></section>
+        <section class="curriculum-resource-grid" id="curriculumGrid" aria-live="polite"></section>
+        <section class="curriculum-hub-footer"><i class="fa-solid fa-circle-info"></i><p>هذه الصفحة مخصصة لخدمات التاسع فقط؛ انتقل إلى بوابة البكالوريا للخدمات العلمية والأدبية.</p></section>
+      </section>
+    </main></div>
+  </div>
+  <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script src="app.js"></script>
+</body>
+</html>

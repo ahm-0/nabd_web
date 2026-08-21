@@ -33,14 +33,16 @@
             <button class="community-tab" data-filter="mine" type="button"><i class="fa-regular fa-user"></i> منشوراتي</button>
           </nav>
 
-          <article class="compose panel" aria-label="إنشاء منشور جديد">
-            <div class="compose-top"><div class="avatar" id="composerAvatar">ن</div><div class="compose-entry"><label for="postText">ماذا تريد أن تشارك مع المجتمع؟</label><textarea id="postText" maxlength="1200" placeholder="اكتب خبرًا مفيدًا، إنجازًا دراسيًا، أو سؤالًا يمكن أن يفيد زملاءك..."></textarea></div></div>
-            <div class="compose-preview" id="composePreview"></div>
-            <div class="compose-bottom"><div class="attach-buttons"><label title="إضافة حتى صورتين"><i class="fa-regular fa-images"></i><span>إرفاق صور</span><input id="postImages" class="hidden" type="file" accept="image/*" multiple></label><button id="clearImages" title="إزالة الصور" type="button"><i class="fa-solid fa-xmark"></i><span>مسح</span></button></div><button class="primary-button" id="publishPost" type="button"><i class="fa-solid fa-paper-plane"></i> نشر الخبر</button></div>
-          </article>
-
           <div class="feed-toolbar"><div><span class="eyebrow" id="feedEyebrow">الخلاصة التعليمية</span><h3 id="feedTitle">أحدث المنشورات</h3></div><span><i class="fa-solid fa-shield-heart"></i> شارك محتوى مفيدًا ومحترمًا</span></div>
           <section id="feed" aria-live="polite"></section>
+          <div class="news-composer-dock" id="newsComposerDock" aria-label="شريط كتابة خبر جديد">
+            <article class="compose panel" aria-label="إنشاء منشور جديد">
+              <div class="compose-dock-head"><div class="avatar" id="composerAvatar">ن</div><label for="postText">شارك خبرًا أو إنجازًا مع المجتمع</label><span class="compose-image-status" id="composeImageStatus" aria-live="polite"></span></div>
+              <div class="compose-message-row"><textarea id="postText" maxlength="1200" rows="1" placeholder="اكتب رسالتك..." aria-label="نص الخبر"></textarea><button class="compose-send-button" id="publishPost" type="button" title="نشر الخبر" aria-label="نشر الخبر"><i class="fa-solid fa-paper-plane"></i></button></div>
+              <div class="compose-preview" id="composePreview" aria-live="polite"></div>
+              <div class="compose-dock-tools"><label class="compose-photo-button" title="إضافة حتى صورتين"><i class="fa-regular fa-images"></i><span>إضافة صور</span><input id="postImages" class="hidden" type="file" accept="image/*" multiple></label><button id="clearImages" class="compose-clear-images" title="إزالة الصور" type="button" hidden><i class="fa-solid fa-xmark"></i><span>إزالة الصور</span></button><small><i class="fa-solid fa-shield-heart"></i> شارك محتوى مفيدًا ومحترمًا</small></div>
+            </article>
+          </div>
         </div>
       </main>
     </div>
