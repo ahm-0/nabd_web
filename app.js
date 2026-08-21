@@ -478,46 +478,6 @@
     updateCountdown();
   }
 
-  function initWelcomeScreen() {
-    const screen = $('#welcomeScreen');
-    if (!screen) return;
-    const sessionKey = `${STORE}welcome_seen`;
-    let seen = false;
-    try { seen = sessionStorage.getItem(sessionKey) === '1'; } catch { /* يستمر العرض عند تعذر التخزين */ }
-    if (seen) { screen.remove(); return; }
-    const progressBar = $('#welcomeProgressBar');
-    const progressValue = $('#welcomeProgressValue');
-    const loadingText = $('#welcomeLoadingText');
-    const duration = 4200;
-    const startedAt = performance.now();
-    let animationFrame = 0;
-    let closed = false;
-    const closeWelcome = () => {
-      if (closed) return;
-      closed = true;
-      window.cancelAnimationFrame(animationFrame);
-      try { sessionStorage.setItem(sessionKey, '1'); } catch { /* لا حاجة لإيقاف الواجهة */ }
-      screen.classList.add('is-leaving');
-      screen.setAttribute('aria-hidden', 'true');
-      window.setTimeout(() => screen.remove(), 560);
-    };
-    const updateProgress = now => {
-      if (closed) return;
-      const progress = Math.min(100, Math.round(((now - startedAt) / duration) * 100));
-      if (progressBar) progressBar.style.width = `${progress}%`;
-      if (progressValue) progressValue.textContent = `${progress}%`;
-      if (loadingText && progress >= 100) loadingText.innerHTML = '<i class="fa-solid fa-circle-check"></i> اكتمل التجهيز، أهلًا بك في نبض التفوق';
-      if (progress >= 100) { window.setTimeout(closeWelcome, 280); return; }
-      animationFrame = window.requestAnimationFrame(updateProgress);
-    };
-    screen.classList.add('is-visible');
-    screen.setAttribute('aria-hidden', 'false');
-    $('#welcomeStart')?.addEventListener('click', closeWelcome);
-    $('#welcomeSkip')?.addEventListener('click', closeWelcome);
-    animationFrame = window.requestAnimationFrame(updateProgress);
-    window.setTimeout(() => $('#welcomeStart')?.focus(), 160);
-  }
-
   function setExamCountdownCollapsed(collapsed, persist = true) {
     const wrap = $('#examCountdownWrap'); const toggle = $('#examCountdownToggle');
     if (!wrap || !toggle) return;
@@ -1831,8 +1791,10 @@
   }
 
   function init() {
-    if (typeof android !== 'undefined' && android.webReady) android.webReady();
-    nativeReady();
+    window.setTimeout(() => {
+      if (typeof android !== 'undefined' && android.webReady) android.webReady();
+      nativeReady();
+    }, 2000);
     initMobileViewport();
     renderBrand();
     renderTopActions();
@@ -1842,7 +1804,6 @@
     syncAdminStudent(false);
     bindEvents();
     initAdminDashboard();
-    initWelcomeScreen();
     initHome();
     initNews();
     initGallery();
