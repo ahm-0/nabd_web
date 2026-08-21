@@ -4,26 +4,32 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#080d19">
-  <title>نبض التفوق | قسم البكالوريا</title>
+  <title>نبض التفوق | البكالوريا</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20260821-restore">
 </head>
-<body data-page="curriculum">
+<body data-page="curriculum" data-curriculum-scope="baccalaureate">
   <div class="app">
     <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
     <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content">
-      <section class="study-page-shell">
-        <header class="study-page-head bac-head">
-          <span class="study-page-head-icon"><i class="fa-solid fa-graduation-cap"></i></span>
-          <div><span class="study-page-eyebrow">مسارات الدراسة</span><h2>قسم البكالوريا</h2><p>اختر الفرع المناسب للوصول إلى موارده الدراسية.</p></div>
-        </header>
-        <section class="study-card-list" aria-label="فروع البكالوريا">
-          <a class="study-card study-card-science" href="baccalaureate-science.html"><span class="study-card-icon"><i class="fa-solid fa-flask"></i></span><span class="study-card-copy"><b>بكالوريا علمي</b><small>كتب وملخصات ونماذج وحدود النجاح والرسوب</small></span><i class="fa-solid fa-chevron-left"></i></a>
-          <a class="study-card study-card-literary" href="baccalaureate-literary.html"><span class="study-card-icon"><i class="fa-solid fa-feather-pointed"></i></span><span class="study-card-copy"><b>بكالوريا أدبي</b><small>كتب وملخصات ونماذج وحدود النجاح والرسوب</small></span><i class="fa-solid fa-chevron-left"></i></a>
-        </section>
+      <section class="curriculum-page curriculum-scope-baccalaureate">
+        <header class="curriculum-hero panel"><a class="study-back-link" href="index.html" aria-label="العودة إلى الرئيسية"><i class="fa-solid fa-arrow-right"></i></a><div><span class="eyebrow"><i class="fa-solid fa-graduation-cap"></i> مسارات الدراسة</span><h2>البكالوريا</h2><p>اختر الفرع ثم نوع المورد للوصول إلى المواد والمراجعات والنماذج وحدود النجاح.</p></div></header>
+        <div class="curriculum-stage-tabs" id="curriculumStageTabs" aria-label="اختيار فرع البكالوريا">
+          <button type="button" class="active" data-curriculum-stage="science"><i class="fa-solid fa-flask"></i><span>بكالوريا علمي</span></button>
+          <button type="button" data-curriculum-stage="literary"><i class="fa-solid fa-feather-pointed"></i><span>بكالوريا أدبي</span></button>
+        </div>
+        <div class="curriculum-stage-summary panel" id="curriculumStageSummary" aria-live="polite"></div>
+        <div class="curriculum-resource-tabs" id="curriculumResourceTabs" aria-label="اختيار نوع المورد">
+          <button type="button" class="active" data-curriculum-resource="books"><i class="fa-solid fa-book"></i> كتب المنهاج</button>
+          <button type="button" data-curriculum-resource="summaries"><i class="fa-solid fa-note-sticky"></i> ملخصات</button>
+          <button type="button" data-curriculum-resource="exams"><i class="fa-solid fa-file-circle-check"></i> أسئلة دورات</button>
+          <button type="button" data-curriculum-resource="success"><i class="fa-solid fa-chart-simple"></i> حدود النجاح</button>
+          <button type="button" data-curriculum-resource="channels"><i class="fa-solid fa-bullhorn"></i> القنوات</button>
+        </div>
+        <section class="curriculum-resource-section panel"><header><div><span class="eyebrow" id="curriculumResourceKicker"></span><h3 id="curriculumResourceTitle">كتب المنهاج</h3><p id="curriculumResourceDescription"></p></div><span class="curriculum-resource-count"><b id="curriculumResourceCount">0</b> موارد</span></header><div class="curriculum-resource-grid" id="curriculumGrid" aria-live="polite"></div></section>
       </section>
     </main></div>
   </div>
-  <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script src="app.js"></script>
+  <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script src="app.js?v=20260821-restore"></script>
 </body>
 </html>
