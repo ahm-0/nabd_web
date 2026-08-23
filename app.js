@@ -104,8 +104,9 @@
   let activeFeedFilter = 'all';
   const openComments = new Set();
   const likePulsePosts = new Set();
-  let communityPromo = readStorage('community_promo', { visible: true });
-  communityPromo = communityPromo && typeof communityPromo === 'object' ? { visible: communityPromo.visible !== false } : { visible: true };
+  const defaultCommunityPromo = { visible: true, title: 'مساحة طلاب نبض', body: 'تابع جديد المنصة، وشارك إنجازاتك، وكن جزءًا من مجتمع دراسي منظم ومحترم.', ctaLabel: 'اكتشف المزيد', link: '' };
+  let communityPromo = { ...defaultCommunityPromo, ...readStorage('community_promo', {}) };
+  communityPromo.visible = communityPromo.visible !== false;
 
   const escapeHTML = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
@@ -450,6 +451,7 @@
   }
 
   function openNamedModal(name) {
+    if (name === 'contact') { window.location.href = 'support-chat.html'; return; }
     const modals = {
       edit: `<div class="modal-head"><h3>تعديل الملف الشخصي</h3><button class="close-modal" aria-label="إغلاق">×</button></div>
         <form id="editForm"><div class="form-grid">
@@ -605,7 +607,7 @@
       images: Array.isArray(row.images) ? row.images : [],
       likes: Number(row.like_count || 0),
       liked: Boolean(row.liked_by_me),
-      comments: Array.isArray(row.comments) ? row.comments.map(comment => ({ id: comment.id, name: comment.name || 'طالب نبض', meta: comment.meta || 'مجتمع الأخبار', text: comment.text || '', mine: Boolean(currentAuthUser && comment.author_id === currentAuthUser.id), verified: false, createdAt: comment.created_at })) : [],
+      comments: Array.isArray(row.comments) ? row.comments.map(comment => ({ id: comment.id, parentId: comment.parent_id || comment.parentId || '', name: comment.name || 'طالب نبض', meta: comment.meta || 'مجتمع الأخبار', text: comment.text || '', mine: Boolean(currentAuthUser && comment.author_id === currentAuthUser.id), verified: false, createdAt: comment.created_at })) : [],
       remote: true,
       mine: Boolean(currentAuthUser && row.author_id === currentAuthUser.id),
       verified: true,
@@ -627,12 +629,12 @@
   }
 
   function enrichedPost(post) {
-    const interaction = post.remote ? {} : (postInteractions[post.id] || {});
+    const interaction = postInteractions[post.id] || {};
     return {
       ...post,
       liked: post.remote ? Boolean(post.liked) : Boolean(interaction.liked ?? post.liked),
       likes: post.remote ? Number(post.likes || 0) : (Number.isFinite(interaction.likes) ? interaction.likes : (post.likes || 0)),
-      comments: post.remote ? [...(post.comments || [])] : [...(post.comments || []), ...(interaction.comments || [])]
+      comments: [...(post.comments || []), ...(interaction.comments || [])]
     };
   }
 
@@ -648,12 +650,43 @@
     return `<article class="post ${likePulsePosts.has(post.id) ? 'like-pulse' : ''}" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong class="post-author-name"><span>${escapeHTML(post.name)}</span>${verifiedBadgeMarkup(verified)}</strong><span>${escapeHTML(post.meta || `${student.stage} · ${student.city}`)} · الآن</span></div>${menu}</div><p class="post-content">${escapeHTML(post.text)}</p>${images}<div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
   }
 
+  function commentItemMarkup(comment, postId, replies = []) {
+    const verified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified);
+    const avatar = comment.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((comment.name || 'ط')[0])}</span>`;
+    const children = replies.length ? `<div class="comment-replies">${replies.map(reply => commentItemMarkup(reply, postId)).join('')}</div>` : '';
+    return `<article class="comment-thread-item" data-comment-id="${escapeHTML(comment.id || '')}"><div class="comment-thread-head">${avatar}<div><b>${escapeHTML(comment.name || 'طالب نبض')}${verifiedBadgeMarkup(verified)}</b><small>${escapeHTML(comment.meta || 'مجتمع الأخبار')}</small></div></div><p>${escapeHTML(comment.text || '')}</p><button type="button" class="comment-reply-button" data-comment-reply="${escapeHTML(comment.id || '')}" data-comment-post="${escapeHTML(postId)}" data-comment-name="${escapeHTML(comment.name || 'طالب نبض')}"><i class="fa-solid fa-reply"></i> رد</button>${children}</article>`;
+  }
+
+  function commentThreadMarkup(post) {
+    const comments = post.comments || [];
+    const roots = comments.filter(comment => !comment.parentId);
+    if (!roots.length) return '<div class="comment-thread-empty"><i class="fa-regular fa-comments"></i><b>ابدأ الحوار</b><span>كن أول من يضيف تعليقًا محترمًا.</span></div>';
+    return roots.map(comment => commentItemMarkup(comment, post.id, comments.filter(reply => reply.parentId === comment.id))).join('');
+  }
+
+  function openPostComments(postId, replyTo = null) {
+    const rawPost = feedPost(postId); if (!rawPost) return;
+    const post = enrichedPost(rawPost);
+    const replyHint = replyTo ? `<div class="comment-reply-target"><i class="fa-solid fa-reply"></i><span>رد على <b>${escapeHTML(replyTo.name)}</b></span><button type="button" data-clear-comment-reply="${escapeHTML(postId)}" title="إلغاء الرد"><i class="fa-solid fa-xmark"></i></button></div>` : '';
+    openModal(`<div class="modal-head"><div><span class="eyebrow">مجتمع الأخبار</span><h3>التعليقات</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><section class="comment-thread-list">${commentThreadMarkup(post)}</section><form class="comment-modal-form" data-post-id="${escapeHTML(postId)}" data-parent-id="${escapeHTML(replyTo?.id || '')}">${replyHint}<div><input name="comment" required maxlength="280" placeholder="اكتب تعليقك..." autocomplete="off"><button type="submit" title="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></div></form>`);
+    window.setTimeout(() => $('.comment-modal-form input')?.focus(), 80);
+  }
+
+  function communityPromoTemplate() {
+    if (!communityPromo.visible) return '';
+    const link = String(communityPromo.link || '').trim();
+    const safeLink = /^https?:\/\//i.test(link) ? link : '';
+    const action = safeLink ? `<a class="community-ad-action" href="${escapeHTML(safeLink)}" target="_blank" rel="noopener noreferrer"><span>${escapeHTML(communityPromo.ctaLabel || 'اكتشف المزيد')}</span><i class="fa-solid fa-arrow-left"></i></a>` : '';
+    return `<aside class="community-ad-slot" aria-label="مساحة إعلانية"><span class="community-ad-label"><i class="fa-solid fa-bullhorn"></i> مساحة إعلانية</span><div class="community-ad-icon"><i class="fa-solid fa-graduation-cap"></i></div><div class="community-ad-copy"><small>إعلان منصة نبض التفوق</small><h3>${escapeHTML(communityPromo.title || defaultCommunityPromo.title)}</h3><p>${escapeHTML(communityPromo.body || defaultCommunityPromo.body)}</p>${action}</div></aside>`;
+  }
+
   function renderFeed() {
     const feed = $('#feed');
     if (!feed) return;
     const entries = [...posts];
     const visible = entries;
-    feed.innerHTML = visible.length ? visible.map(postTemplate).join('') : '<div class="empty-feed"><i class="fa-regular fa-newspaper"></i><b>لا توجد منشورات منشورة حاليًا.</b><span>ستظهر هنا الأخبار التي ينشرها المشرف.</span></div>';
+    const listing = visible.length ? visible.map(postTemplate).join('') : '<div class="empty-feed"><i class="fa-regular fa-newspaper"></i><b>لا توجد منشورات منشورة حاليًا.</b><span>ستظهر هنا الأخبار التي ينشرها المشرف.</span></div>';
+    feed.innerHTML = `${communityPromoTemplate()}${listing}`;
     const postCount = $('#profilePosts');
     if (postCount) postCount.textContent = posts.filter(post => post.mine).length;
   }
@@ -799,35 +832,43 @@
   }
 
   async function addComment(form) {
-    const postId = form.closest('[data-post]')?.dataset.post;
+    const postId = form.dataset.postId || form.closest('[data-post]')?.dataset.post;
+    const parentId = String(form.dataset.parentId || '');
     const post = feedPost(postId);
-    const input = $('input', form);
+    const input = $('input[name="comment"], input', form);
     const text = input?.value.trim();
     if (!post || !text) return;
-    if (post.remote) {
-      const submit = $('button', form);
-      if (submit) submit.disabled = true;
-      try {
-        const { data, error } = await supabaseClient.rpc('news_add_comment', { p_post_id: postId, p_body: text });
-        if (error) throw error;
-        const result = Array.isArray(data) ? data[0] : data;
+    const submit = $('button[type="submit"], button', form);
+    if (submit) submit.disabled = true;
+    const localComment = { id: `comment-${Date.now()}-${Math.random().toString(16).slice(2)}`, parentId, name: fullName(), meta: `${student.stage} · ${student.city}`, text, mine: true, verified: student.verificationStatus === 'approved', createdAt: new Date().toISOString() };
+    try {
+      if (post.remote) {
+        let result = null;
+        const response = await supabaseClient.rpc('news_add_comment_with_reply', { p_post_id: postId, p_body: text, p_parent_id: parentId || null });
+        if (!response.error) result = Array.isArray(response.data) ? response.data[0] : response.data;
+        if (response.error || !result) {
+          if (parentId) throw response.error || new Error('تعذر حفظ الرد في قاعدة البيانات.');
+          const legacy = await supabaseClient.rpc('news_add_comment', { p_post_id: postId, p_body: text });
+          if (legacy.error) throw legacy.error;
+          result = Array.isArray(legacy.data) ? legacy.data[0] : legacy.data;
+        }
         if (!result) throw new Error('تعذر حفظ التعليق.');
-        post.comments = [...(post.comments || []), { id: result.id, name: result.name || fullName(), meta: result.meta || 'مجتمع الأخبار', text: result.text || text, mine: true, verified: student.verificationStatus === 'approved', createdAt: result.created_at }];
-        openComments.add(postId);
-        input.value = '';
-        renderFeed();
-      } catch (error) {
-        toast(error.message || 'تعذر حفظ التعليق حاليًا.');
-      } finally {
-        if (submit) submit.disabled = false;
+        post.comments = [...(post.comments || []), { ...localComment, id: result.id || localComment.id, parentId: result.parent_id || parentId, name: result.name || localComment.name, meta: result.meta || localComment.meta, text: result.text || localComment.text, createdAt: result.created_at || localComment.createdAt }];
+      } else {
+        postInteractions[postId] = { ...(postInteractions[postId] || {}), comments: [...(postInteractions[postId]?.comments || []), localComment] };
+        saveState();
       }
-      return;
+      input.value = '';
+      renderFeed();
+      if (form.matches('.comment-modal-form')) openPostComments(postId);
+    } catch (error) {
+      if (parentId) {
+        postInteractions[postId] = { ...(postInteractions[postId] || {}), comments: [...(postInteractions[postId]?.comments || []), localComment] };
+        saveState(); renderFeed(); if (form.matches('.comment-modal-form')) openPostComments(postId); toast('حُفظ الرد على هذا الجهاز، وسيُزامن بعد تفعيل ترقية الردود.');
+      } else toast(error.message || 'تعذر حفظ التعليق حاليًا.');
+    } finally {
+      if (submit) submit.disabled = false;
     }
-    const comment = { name: fullName(), text, mine: true, verified: student.verificationStatus === 'approved' };
-    post.comments = [...(post.comments || []), comment];
-    openComments.add(postId);
-    saveState();
-    renderFeed();
   }
 
   function elevateNewsComposer() {
@@ -1731,6 +1772,46 @@
     toast('تم إرسال طلب شارة التوثيق للمراجعة.');
   }
 
+  function supportThread(ticket) {
+    if (!ticket) return [];
+    if (Array.isArray(ticket.messages) && ticket.messages.length) return ticket.messages;
+    return ticket.message ? [{ id: `legacy-${ticket.id}`, sender: 'student', text: ticket.message, createdAt: ticket.createdAt || Date.now() }] : [];
+  }
+
+  function mySupportTicket() {
+    ensureStudentId();
+    return supportTickets.filter(ticket => ticket.studentId === student.studentId).sort((a, b) => Number(b.updatedAt || b.createdAt || 0) - Number(a.updatedAt || a.createdAt || 0))[0] || null;
+  }
+
+  function renderSupportChat() {
+    const holder = $('#supportChatMessages'); if (!holder) return;
+    const ticket = mySupportTicket(); const messages = supportThread(ticket);
+    const status = $('#supportChatStatus'); if (status) status.textContent = ticket?.status === 'resolved' ? 'تمت المعالجة' : ticket ? 'الدعم متاح للمتابعة' : 'ابدأ محادثة جديدة';
+    holder.innerHTML = messages.length ? messages.map(message => `<article class="support-message ${message.sender === 'admin' ? 'admin' : 'student'}"><span class="support-message-avatar"><i class="fa-solid ${message.sender === 'admin' ? 'fa-headset' : 'fa-user'}"></i></span><div><p>${escapeHTML(message.text)}</p><small>${message.sender === 'admin' ? 'دعم نبض التفوق' : 'أنت'} · ${displayAdminDate(message.createdAt || Date.now())}</small></div></article>`).join('') : '<div class="support-chat-empty"><i class="fa-regular fa-comments"></i><b>كيف يمكننا مساعدتك؟</b><span>اكتب رسالتك وسيتابعها المشرف من بوابة الدعم.</span></div>';
+    holder.scrollTop = holder.scrollHeight;
+  }
+
+  function sendSupportChatMessage(form) {
+    const input = $('[name="message"]', form); const text = String(input?.value || '').trim(); const category = String($('[name="category"]', form)?.value || 'استفسار عام');
+    if (!text) return;
+    ensureStudentId(); const now = Date.now(); let ticket = mySupportTicket();
+    const entry = { id: `support-message-${now}-${Math.random().toString(16).slice(2)}`, sender: 'student', text, createdAt: now };
+    if (!ticket) { const snapshot = studentSnapshot(); ticket = { id: `support-${now}`, studentId: snapshot.id, name: snapshot.name, phone: snapshot.phone, city: snapshot.city, gender: snapshot.gender, category, message: text, messages: [entry], status: 'open', createdAt: now, updatedAt: now }; supportTickets.unshift(ticket); }
+    else { ticket.messages = [...supportThread(ticket), entry]; ticket.message = text; ticket.category = category || ticket.category; ticket.status = 'open'; ticket.updatedAt = now; }
+    saveAdminState(); adminLog('support', `رسالة دعم جديدة: ${ticket.name}`, ticket.category); input.value = ''; renderSupportChat(); toast('تم إرسال رسالتك إلى الدعم.');
+  }
+
+  function openSupportReply(ticketId) {
+    const ticket = supportTickets.find(item => item.id === ticketId); if (!ticket) return;
+    const messages = supportThread(ticket).map(message => `<article class="admin-support-message ${message.sender === 'admin' ? 'admin' : 'student'}"><b>${message.sender === 'admin' ? 'المشرف' : escapeHTML(ticket.name)}</b><p>${escapeHTML(message.text)}</p><small>${displayAdminDate(message.createdAt || ticket.createdAt)}</small></article>`).join('');
+    openModal(`<div class="modal-head"><div><span class="eyebrow">صندوق الدعم</span><h3>${escapeHTML(ticket.name)}</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><section class="admin-support-thread">${messages || '<p class="sheet-hint">لا توجد رسائل بعد.</p>'}</section><form class="admin-support-reply-form" data-ticket-id="${escapeHTML(ticket.id)}"><div class="form-group"><label>رد المشرف</label><textarea name="reply" required maxlength="700" placeholder="اكتب ردًا واضحًا ومفيدًا للطالب..." autofocus></textarea></div><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button type="submit" class="primary-button"><i class="fa-solid fa-paper-plane"></i> إرسال الرد</button></div></form>`);
+  }
+
+  function sendAdminSupportReply(form) {
+    const ticket = supportTickets.find(item => item.id === form.dataset.ticketId); const text = String($('[name="reply"]', form)?.value || '').trim(); if (!ticket || !text) return;
+    const now = Date.now(); ticket.messages = [...supportThread(ticket), { id: `support-reply-${now}`, sender: 'admin', text, createdAt: now }]; ticket.status = 'resolved'; ticket.updatedAt = now; saveAdminState(); adminLog('support', `رد على رسالة الدعم: ${ticket.name}`, ticket.category); closeModal(); renderAdminDashboard(); toast('تم إرسال الرد للطالب وحفظ المحادثة.');
+  }
+
   function submitSupportRequest(form) {
     const data = Object.fromEntries(new FormData(form).entries());
     const message = String(data.message || '').trim();
@@ -1761,6 +1842,11 @@
     return `<span class="admin-status ${escapeHTML(status)}">${labels[status] || 'غير محدد'}</span>`;
   }
 
+  function adminSupportTicketMarkup(ticket) {
+    const thread = supportThread(ticket); const latest = thread[thread.length - 1]; const replyCount = thread.filter(message => message.sender === 'admin').length;
+    return `<article class="admin-request admin-support-ticket"><div class="admin-request-head"><div class="admin-request-person">${adminAvatarMarkup(ticket)}<div><b>${escapeHTML(ticket.name)}</b><small>${escapeHTML(ticket.category)} · ${displayAdminDate(ticket.updatedAt || ticket.createdAt)}</small></div></div>${adminStatusMarkup(ticket.status)}</div><div class="admin-request-body"><span class="admin-detail-chip"><i class="fa-solid fa-phone"></i> ${escapeHTML(ticket.phone)}</span><span class="admin-detail-chip"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(ticket.city)}</span><span class="admin-detail-chip"><i class="fa-regular fa-comments"></i> ${thread.length} رسالة</span></div><p class="admin-request-message">${escapeHTML(latest?.text || ticket.message || '')}</p><div class="admin-request-actions"><button class="admin-resolve" type="button" data-admin-action="support-reply" data-admin-id="${escapeHTML(ticket.id)}"><i class="fa-solid fa-reply"></i> ${replyCount ? 'متابعة المحادثة' : 'الرد على الطالب'}</button>${ticket.status === 'open' ? `<button class="admin-resolve secondary" type="button" data-admin-action="support-resolve" data-admin-id="${escapeHTML(ticket.id)}"><i class="fa-solid fa-check"></i> إغلاق</button>` : ''}</div></article>`;
+  }
+
   function renderAdminDashboard() {
     if (!$('#adminStudentCount')) return;
     const pending = verificationRequests.filter(request => request.status === 'pending');
@@ -1769,16 +1855,17 @@
     $('#adminVerificationCount').textContent = String(pending.length);
     $('#adminSupportCount').textContent = String(open.length);
     $('#adminPostCount').textContent = String(posts.length);
-    const promoToggle = $('#adminCommunityPromoToggle'); const promoStatus = $('#adminCommunityPromoStatus');
+    const promoToggle = $('#adminCommunityPromoToggle'); const promoStatus = $('#adminCommunityPromoStatus'); const promoForm = $('#adminCommunityPromoForm');
     if (promoToggle) promoToggle.checked = communityPromo.visible;
     if (promoStatus) { promoStatus.textContent = communityPromo.visible ? 'ظاهرة' : 'مخفية'; promoStatus.className = `admin-status ${communityPromo.visible ? 'open' : 'pending'}`; }
+    if (promoForm) { promoForm.elements.title.value = communityPromo.title || ''; promoForm.elements.body.value = communityPromo.body || ''; promoForm.elements.ctaLabel.value = communityPromo.ctaLabel || ''; promoForm.elements.link.value = communityPromo.link || ''; }
     const activities = $('#adminActivityList');
     if (activities) activities.innerHTML = adminActivity.length ? adminActivity.slice(0, 7).map(item => `<div class="admin-activity"><i class="${item.type === 'verification' ? 'fa-solid fa-certificate' : item.type === 'support' ? 'fa-solid fa-headset' : item.type === 'content' ? 'fa-regular fa-newspaper' : 'fa-solid fa-user-pen'}"></i><div><b>${escapeHTML(item.title)}</b><span>${escapeHTML(item.detail || 'تحديث داخل المنصة')} · ${displayAdminDate(item.createdAt)}</span></div></div>`).join('') : '<div class="admin-empty">لا توجد أحداث إشرافية بعد. ستظهر هنا تحديثات ملفات الطلاب والطلبات والرسائل.</div>';
     renderAdminStudents();
     const verificationRows = $('#adminVerificationRows');
     if (verificationRows) verificationRows.innerHTML = verificationRequests.length ? verificationRequests.map(request => `<article class="admin-request"><div class="admin-request-head"><div class="admin-request-person">${adminAvatarMarkup(request)}<div><b>${escapeHTML(request.name)}</b><small>${displayAdminDate(request.createdAt)}</small></div></div>${adminStatusMarkup(request.status)}</div><div class="admin-request-body"><span class="admin-detail-chip"><i class="fa-solid fa-phone"></i> ${escapeHTML(request.phone)}</span><span class="admin-detail-chip"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(request.city)}</span><span class="admin-detail-chip">${escapeHTML(request.gender || 'الجنس غير محدد')}</span><span class="admin-detail-chip">${escapeHTML(request.stage)}</span></div>${request.status === 'pending' ? `<div class="admin-request-actions"><button class="admin-approve" type="button" data-admin-action="verification-approve" data-admin-id="${escapeHTML(request.id)}"><i class="fa-solid fa-check"></i> قبول</button><button class="admin-reject" type="button" data-admin-action="verification-reject" data-admin-id="${escapeHTML(request.id)}"><i class="fa-solid fa-xmark"></i> رفض</button></div>` : ''}</article>`).join('') : '<div class="admin-empty">لا توجد طلبات توثيق حتى الآن.</div>';
     const supportRows = $('#adminSupportRows');
-    if (supportRows) supportRows.innerHTML = supportTickets.length ? supportTickets.map(ticket => `<article class="admin-request"><div class="admin-request-head"><div class="admin-request-person">${adminAvatarMarkup(ticket)}<div><b>${escapeHTML(ticket.name)}</b><small>${escapeHTML(ticket.category)} · ${displayAdminDate(ticket.createdAt)}</small></div></div>${adminStatusMarkup(ticket.status)}</div><div class="admin-request-body"><span class="admin-detail-chip"><i class="fa-solid fa-phone"></i> ${escapeHTML(ticket.phone)}</span><span class="admin-detail-chip"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(ticket.city)}</span></div><p class="admin-request-message">${escapeHTML(ticket.message)}</p>${ticket.status === 'open' ? `<div class="admin-request-actions"><button class="admin-resolve" type="button" data-admin-action="support-resolve" data-admin-id="${escapeHTML(ticket.id)}"><i class="fa-solid fa-check"></i> تم الرد والمعالجة</button></div>` : ''}</article>`).join('') : '<div class="admin-empty">صندوق الدعم هادئ حاليًا، وستظهر الرسائل الجديدة هنا.</div>';
+    if (supportRows) supportRows.innerHTML = supportTickets.length ? supportTickets.map(adminSupportTicketMarkup).join('') : '<div class="admin-empty">صندوق الدعم هادئ حاليًا، وستظهر الرسائل الجديدة هنا.</div>';
     const postRows = $('#adminPostRows');
     if (postRows) postRows.innerHTML = posts.length ? posts.map(post => `<article class="admin-post"><header><div><b>${escapeHTML(post.name || 'طالب')}</b><small>${escapeHTML(post.meta || 'منشور دراسي')} · ${displayAdminDate(post.createdAt || Date.now())}</small></div>${post.mine ? '<span class="admin-status open">منشور الطالب</span>' : ''}</header><p>${escapeHTML(post.text || 'منشور مرفق بصور دراسية')}</p><button type="button" data-admin-action="post-remove" data-admin-id="${escapeHTML(post.id)}"><i class="fa-solid fa-trash"></i> إزالة من العرض المحلي</button></article>`).join('') : '<div class="admin-empty">لا توجد منشورات محلية يحتاج المشرف إلى مراجعتها.</div>';
   }
@@ -1835,10 +1922,11 @@
       adminLog('verification', `${status === 'approved' ? 'توثيق يدوي' : 'إلغاء توثيق'}: ${entry.name}`, entry.city);
       toast(status === 'approved' ? 'تم توثيق الحساب يدويًا.' : 'تم إلغاء توثيق الحساب.');
     }
+    if (action === 'support-reply') return openSupportReply(id);
     if (action === 'support-resolve') {
       const ticket = supportTickets.find(item => item.id === id);
       if (!ticket) return;
-      ticket.status = 'resolved';
+      ticket.status = 'resolved'; ticket.updatedAt = Date.now();
       adminLog('support', `إغلاق رسالة دعم: ${ticket.name}`, ticket.category);
       toast('تم وضع رسالة الدعم كمعالجة.');
     }
@@ -1980,7 +2068,8 @@
     adminControlsBound = true;
     $$('.admin-tab').forEach(tab => tab.addEventListener('click', () => { $$('.admin-tab').forEach(item => item.classList.toggle('active', item === tab)); $$('.admin-pane').forEach(pane => pane.classList.toggle('active', pane.dataset.adminPane === tab.dataset.adminTab)); }));
     $('#adminStudentSearch')?.addEventListener('input', event => renderAdminStudents(event.target.value));
-    $('#adminCommunityPromoToggle')?.addEventListener('change', event => { communityPromo.visible = event.target.checked; if (!saveCommunityPromo()) return; adminLog('content', communityPromo.visible ? 'إظهار الإعلان: مساحة طلاب نبض' : 'إخفاء الإعلان: مساحة طلاب نبض', 'إعداد مجتمع الأخبار'); renderAdminDashboard(); toast(communityPromo.visible ? 'سيظهر إعلان مساحة طلاب نبض في الأخبار.' : 'تم إخفاء إعلان مساحة طلاب نبض من الأخبار.'); });
+    $('#adminCommunityPromoToggle')?.addEventListener('change', event => { communityPromo.visible = event.target.checked; if (!saveCommunityPromo()) return; adminLog('content', communityPromo.visible ? 'إظهار الإعلان: مساحة طلاب نبض' : 'إخفاء الإعلان: مساحة طلاب نبض', 'إعداد مجتمع الأخبار'); renderAdminDashboard(); toast(communityPromo.visible ? 'سيظهر الإعلان في الأخبار.' : 'تم إخفاء الإعلان من الأخبار.'); });
+    $('#adminCommunityPromoForm')?.addEventListener('submit', event => { event.preventDefault(); const data = new FormData(event.currentTarget); const link = String(data.get('link') || '').trim(); if (link && !/^https?:\/\//i.test(link)) return toast('أدخل رابطًا يبدأ بـ https:// أو اترك الحقل فارغًا.'); communityPromo = { ...communityPromo, title: String(data.get('title') || '').trim() || defaultCommunityPromo.title, body: String(data.get('body') || '').trim() || defaultCommunityPromo.body, ctaLabel: String(data.get('ctaLabel') || '').trim() || defaultCommunityPromo.ctaLabel, link }; if (!saveCommunityPromo()) return; adminLog('content', 'نشر أو تحديث إعلان مجتمع الأخبار', communityPromo.title); renderAdminDashboard(); toast('تم نشر الإعلان وتحديثه في مجتمع الأخبار.'); });
   }
 
   function bindEvents() {
@@ -2024,12 +2113,16 @@
 
       const newsManage = event.target.closest('[data-news-manage]');
       if (newsManage) { const id = newsManage.dataset.postId; if (newsManage.dataset.newsManage === 'edit') openPostEditor(id); if (newsManage.dataset.newsManage === 'delete') { closeModal(); deleteNewsPost(id); } return; }
+      const replyButton = event.target.closest('[data-comment-reply]');
+      if (replyButton) { const post = enrichedPost(feedPost(replyButton.dataset.commentPost) || {}); const comment = (post.comments || []).find(item => item.id === replyButton.dataset.commentReply); if (comment) openPostComments(replyButton.dataset.commentPost, comment); return; }
+      const clearReply = event.target.closest('[data-clear-comment-reply]');
+      if (clearReply) { openPostComments(clearReply.dataset.clearCommentReply); return; }
 
       const tool = event.target.closest('[data-action]');
       if (tool) {
         const postId = tool.closest('[data-post]')?.dataset.post;
         if (tool.dataset.action === 'like') toggleLike(postId);
-        if (tool.dataset.action === 'comments') { openComments.has(postId) ? openComments.delete(postId) : openComments.add(postId); renderFeed(); }
+        if (tool.dataset.action === 'comments') openPostComments(postId);
         if (tool.dataset.action === 'share') sharePost(postId);
         if (tool.dataset.action === 'post-menu') openPostMenu(postId);
       }
@@ -2045,11 +2138,13 @@
       if (event.target.id === 'customCountdownForm') { event.preventDefault(); handleCountdownSave(event.target); }
       if (event.target.id === 'verificationForm') { event.preventDefault(); submitVerificationRequest(); }
       if (event.target.id === 'supportForm') { event.preventDefault(); submitSupportRequest(event.target); }
+      if (event.target.id === 'supportChatForm') { event.preventDefault(); sendSupportChatMessage(event.target); }
+      if (event.target.matches('.admin-support-reply-form')) { event.preventDefault(); sendAdminSupportReply(event.target); }
       if (event.target.id === 'adminLoginForm') { event.preventDefault(); submitAdminLogin(event.target); }
       if (event.target.id === 'studyTaskForm') { event.preventDefault(); saveStudyTask(event.target); }
       if (event.target.id === 'completionPlanForm') { event.preventDefault(); saveCompletionPlan(event.target); }
       if (event.target.id === 'libraryResourceForm') { event.preventDefault(); saveLibraryResource(event.target); }
-      if (event.target.matches('.comment-form')) { event.preventDefault(); addComment(event.target); }
+      if (event.target.matches('.comment-form, .comment-modal-form')) { event.preventDefault(); addComment(event.target); }
       if (event.target.id === 'postEditForm') { event.preventDefault(); savePostEdit(event.target); }
     });
 
@@ -2128,6 +2223,7 @@
       library: initLibrary,
       'study-schedule': initStudySchedule,
       ai: initChat,
+      'support-chat': renderSupportChat,
       supervision: initAdminDashboard
     };
     const initializePage = pageInitializers[PAGE];
