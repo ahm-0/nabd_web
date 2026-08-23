@@ -83,6 +83,7 @@
   let adminCredential = readStorage('admin_credential', null);
   let adminSession = readStorage('admin_session', null);
   let adminControlsBound = false;
+  let remoteAdminVerified = false;
   let customCountdown = readStorage('custom_countdown', {
     title: 'هدفي الخاص', target: new Date('2027-04-15T08:00:00').getTime()
   });
@@ -212,7 +213,7 @@
   }
 
   function isAdminAuthenticated() {
-    return Boolean(adminSession && adminSession.email === ADMIN_EMAIL && adminSession.active === true);
+    return Boolean(remoteAdminVerified && adminSession && adminSession.email === ADMIN_EMAIL && adminSession.active === true);
   }
 
   function showAdminWorkspace(allowed) {
@@ -224,6 +225,7 @@
   }
 
   async function submitAdminLogin(form) {
+    if (!remoteAdminVerified) return toast('هذا الحساب لا يملك صلاحية Admin في قاعدة البيانات.');
     const data = Object.fromEntries(new FormData(form).entries());
     const email = String(data.email || '').trim().toLowerCase();
     const password = String(data.password || '');
@@ -1838,8 +1840,16 @@
 
   async function initStudySchedule() { if (!$('#studyTasks')) return; await loadStudyTasks(); const note = $('#studyNativeNote'); if (note) note.innerHTML = isNativeNabd() && capacitorPlugin('LocalNotifications') ? '<i class="fa-solid fa-mobile-screen-button"></i><span>التذكيرات الأصلية متاحة داخل التطبيق.</span>' : '<i class="fa-solid fa-globe"></i><span>يعمل الجدول في المتصفح؛ الإشعار الأصلي يحتاج جسر التطبيق.</span>'; renderStudyTasks(); }
 
-  function initAdminDashboard() {
+  async function initAdminDashboard() {
     if (!$('#adminLoginScreen')) return;
+    try {
+      const result = await supabaseClient?.rpc('premium_is_admin');
+      remoteAdminVerified = !result?.error && result?.data === true;
+    } catch { remoteAdminVerified = false; }
+    const form = $('#adminLoginForm');
+    const note = $('.admin-login-note');
+    if (form) form.classList.toggle('hidden', !remoteAdminVerified);
+    if (note && !remoteAdminVerified) note.innerHTML = '<i class="fa-solid fa-lock"></i> هذا الحساب غير مخوّل للوصول إلى أدوات المشرفين.';
     const allowed = isAdminAuthenticated();
     showAdminWorkspace(allowed);
     if (!allowed || !$('#adminStudentCount')) return;
