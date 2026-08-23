@@ -2112,23 +2112,28 @@
     updateProfileUI();
     syncAdminStudent(false);
     bindEvents();
-    initAdminDashboard();
-    initHome();
-    initNews();
-    initGallery();
-    initCalculator();
-    initTests();
-    initCompletion();
-    initUniversities();
-    initUniversityMajors();
-    initUniversityInfo();
-    initCurriculum();
-    initPredictions();
-    initLibrary();
-    initStudySchedule();
-    initChat();
+    const pageInitializers = {
+      home: initHome,
+      news: initNews,
+      gallery: initGallery,
+      calculator: initCalculator,
+      tests: initTests,
+      completion: initCompletion,
+      'university-directory': initUniversities,
+      'university-majors': initUniversityMajors,
+      'university-info': initUniversityInfo,
+      curriculum: initCurriculum,
+      nine: initCurriculum,
+      predictions: initPredictions,
+      library: initLibrary,
+      'study-schedule': initStudySchedule,
+      ai: initChat,
+      supervision: initAdminDashboard
+    };
+    const initializePage = pageInitializers[PAGE];
+    if (initializePage) await initializePage();
     nativeReady();
-    window.setTimeout(nativeReady, 900);
+    window.setTimeout(nativeReady, 450);
   }
 
   document.addEventListener('DOMContentLoaded', init);
