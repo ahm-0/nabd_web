@@ -603,8 +603,10 @@
       meta: row.author_meta || 'إدارة الأخبار · نبض التفوق',
       text: row.body || '',
       images: Array.isArray(row.images) ? row.images : [],
-      likes: 0,
-      comments: [],
+      likes: Number(row.like_count || 0),
+      liked: Boolean(row.liked_by_me),
+      comments: Array.isArray(row.comments) ? row.comments.map(comment => ({ id: comment.id, name: comment.name || 'طالب نبض', meta: comment.meta || 'مجتمع الأخبار', text: comment.text || '', mine: Boolean(currentAuthUser && comment.author_id === currentAuthUser.id), verified: false, createdAt: comment.created_at })) : [],
+      remote: true,
       mine: Boolean(currentAuthUser && row.author_id === currentAuthUser.id),
       verified: true,
       createdAt: row.created_at,
@@ -612,8 +614,8 @@
     };
   }
 
-  async function loadRemoteNewsPosts() {
-    if (!supabaseClient || newsRemotePostsLoaded === true) return;
+  async function loadRemoteNewsPosts(force = false) {
+    if (!supabaseClient || (newsRemotePostsLoaded === true && !force)) return;
     const { data, error } = await supabaseClient.rpc('news_list_posts', { p_limit: 100 });
     if (error) throw error;
     posts = Array.isArray(data) ? data.map(mapRemoteNewsPost) : [];
@@ -625,12 +627,12 @@
   }
 
   function enrichedPost(post) {
-    const interaction = postInteractions[post.id] || {};
+    const interaction = post.remote ? {} : (postInteractions[post.id] || {});
     return {
       ...post,
-      liked: Boolean(interaction.liked ?? post.liked),
-      likes: Number.isFinite(interaction.likes) ? interaction.likes : (post.likes || 0),
-      comments: [...(post.comments || []), ...(interaction.comments || [])]
+      liked: post.remote ? Boolean(post.liked) : Boolean(interaction.liked ?? post.liked),
+      likes: post.remote ? Number(post.likes || 0) : (Number.isFinite(interaction.likes) ? interaction.likes : (post.likes || 0)),
+      comments: post.remote ? [...(post.comments || [])] : [...(post.comments || []), ...(interaction.comments || [])]
     };
   }
 
@@ -689,7 +691,7 @@
       const images = await Promise.all(uploadImages.map(uploadNewsImageToImgBB));
       const { data: postId, error } = await supabaseClient.rpc('news_admin_create_post', { p_body: text, p_images: images });
       if (error) throw error;
-      const draft = { id: postId, name: fullName(), meta: `${student.stage} · إدارة الأخبار`, text, images, likes: 0, comments: [], mine: true, verified: true, createdAt: new Date().toISOString() };
+      const draft = { id: postId, name: fullName(), meta: `${student.stage} · إدارة الأخبار`, text, images, likes: 0, liked: false, comments: [], remote: true, mine: true, verified: true, createdAt: new Date().toISOString() };
       posts.unshift(draft);
       uploadImages = [];
       const input = $('#postText');
@@ -706,17 +708,27 @@
     }
   }
 
-  function toggleLike(postId) {
+  async function toggleLike(postId) {
     const post = feedPost(postId);
     if (!post) return;
+    if (post.remote) {
+      try {
+        const { data, error } = await supabaseClient.rpc('news_toggle_like', { p_post_id: postId });
+        if (error) throw error;
+        const result = Array.isArray(data) ? data[0] : data;
+        post.liked = Boolean(result?.liked);
+        post.likes = Number(result?.like_count || 0);
+        if (post.liked) { likePulsePosts.add(postId); window.setTimeout(() => { likePulsePosts.delete(postId); renderFeed(); }, 360); }
+        renderFeed();
+      } catch (error) {
+        toast(error.message || 'تعذر حفظ الإعجاب حاليًا.');
+      }
+      return;
+    }
     const current = enrichedPost(post);
     const next = { liked: !current.liked, likes: Math.max(0, current.likes + (current.liked ? -1 : 1)), comments: postInteractions[postId]?.comments || [] };
-    if (posts.some(item => item.id === postId)) {
-      post.liked = next.liked;
-      post.likes = next.likes;
-    } else {
-      postInteractions[postId] = next;
-    }
+    post.liked = next.liked;
+    post.likes = next.likes;
     if (next.liked) { likePulsePosts.add(postId); window.setTimeout(() => { likePulsePosts.delete(postId); renderFeed(); }, 360); }
     saveState();
     renderFeed();
@@ -724,8 +736,11 @@
 
   async function sharePost(postId) {
     const url = `${location.origin}${location.pathname}#${postId}`;
+    const payload = { title: 'مجتمع نبض التفوق', text: 'منشور جديد في مجتمع نبض التفوق', url, dialogTitle: 'مشاركة المنشور' };
     try {
-      if (navigator.share) await navigator.share({ title: 'مجتمع نبض التفوق', text: 'منشور جديد في مجتمع نبض التفوق', url });
+      const nativeShare = capacitorPlugin('Share');
+      if (isNativeNabd() && nativeShare?.share) { await nativeShare.share(payload); return; }
+      if (navigator.share) await navigator.share(payload);
       else if (navigator.clipboard) { await navigator.clipboard.writeText(url); toast('تم نسخ رابط المنشور.'); }
       else toast('ميزة المشاركة متاحة عند نشر التطبيق على الهاتف.');
     } catch (error) {
@@ -756,19 +771,33 @@
     confirmAction('حذف المنشور؟', 'سيتم حذف هذا المنشور والصور المرفقة به من هذا الجهاز.', () => { posts = posts.filter(item => item.id !== postId); delete postInteractions[postId]; openComments.delete(postId); saveState(); renderFeed(); toast('تم حذف المنشور.'); }, 'حذف المنشور');
   }
 
-  function addComment(form) {
+  async function addComment(form) {
     const postId = form.closest('[data-post]')?.dataset.post;
     const post = feedPost(postId);
     const input = $('input', form);
     const text = input?.value.trim();
     if (!post || !text) return;
-    const comment = { name: fullName(), text, mine: true, verified: student.verificationStatus === 'approved' };
-    if (posts.some(item => item.id === postId)) {
-      post.comments = [...(post.comments || []), comment];
-    } else {
-      const current = postInteractions[postId] || {};
-      postInteractions[postId] = { ...current, comments: [...(current.comments || []), comment] };
+    if (post.remote) {
+      const submit = $('button', form);
+      if (submit) submit.disabled = true;
+      try {
+        const { data, error } = await supabaseClient.rpc('news_add_comment', { p_post_id: postId, p_body: text });
+        if (error) throw error;
+        const result = Array.isArray(data) ? data[0] : data;
+        if (!result) throw new Error('تعذر حفظ التعليق.');
+        post.comments = [...(post.comments || []), { id: result.id, name: result.name || fullName(), meta: result.meta || 'مجتمع الأخبار', text: result.text || text, mine: true, verified: student.verificationStatus === 'approved', createdAt: result.created_at }];
+        openComments.add(postId);
+        input.value = '';
+        renderFeed();
+      } catch (error) {
+        toast(error.message || 'تعذر حفظ التعليق حاليًا.');
+      } finally {
+        if (submit) submit.disabled = false;
+      }
+      return;
     }
+    const comment = { name: fullName(), text, mine: true, verified: student.verificationStatus === 'approved' };
+    post.comments = [...(post.comments || []), comment];
     openComments.add(postId);
     saveState();
     renderFeed();
