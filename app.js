@@ -13,9 +13,17 @@
 
   async function requireStudentSession() {
     if (!supabaseClient) { window.location.replace('auth.html'); return false; }
-    const { data, error } = await supabaseClient.auth.getSession();
-    if (error || !data.session) { window.location.replace('auth.html'); return false; }
-    currentAuthUser = data.session.user;
+    let session = null;
+    let lastError = null;
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      const { data, error } = await supabaseClient.auth.getSession();
+      lastError = error || null;
+      session = data?.session || null;
+      if (session) break;
+      if (attempt < 3) await new Promise(resolve => setTimeout(resolve, 250));
+    }
+    if (lastError || !session) { window.location.replace('auth.html'); return false; }
+    currentAuthUser = session.user;
     const { data: profile, error: profileError } = await supabaseClient.from('student_profiles').select('user_id,first_name,father_name,family_name,study_stage,email,avatar_url,bio').eq('user_id', currentAuthUser.id).maybeSingle();
     if (!profileError && profile) {
       student = { ...student, first: profile.first_name || student.first, father: profile.father_name || student.father, last: profile.family_name || student.last, stage: profile.study_stage || student.stage, bio: profile.bio || student.bio, avatar: profile.avatar_url || student.avatar };

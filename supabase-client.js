@@ -18,4 +18,11 @@ window.nabdNativeReady = function nabdNativeReady() {
   }
 };
 
-window.nabdSupabase = window.supabase.createClient(window.NABD_SUPABASE_URL, window.NABD_SUPABASE_ANON_KEY);
+window.nabdSupabase = window.supabase.createClient(window.NABD_SUPABASE_URL, window.NABD_SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storageKey: 'sb-vyjosbxjizttdwnrphza-auth-token'
+  }
+});
