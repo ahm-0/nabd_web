@@ -8,9 +8,45 @@
   const ADMIN_EMAIL = 'aaaaaaaa@gmail.com';
   const $ = (selector, scope = document) => scope.querySelector(selector);
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
+  const supabaseClient = window.nabdSupabase;
+  let currentAuthUser = null;
+
+  async function requireStudentSession() {
+    if (!supabaseClient) { window.location.replace('auth.html'); return false; }
+    const { data, error } = await supabaseClient.auth.getSession();
+    if (error || !data.session) { window.location.replace('auth.html'); return false; }
+    currentAuthUser = data.session.user;
+    const { data: profile, error: profileError } = await supabaseClient.from('student_profiles').select('user_id,first_name,father_name,family_name,study_stage,email,avatar_url,bio').eq('user_id', currentAuthUser.id).maybeSingle();
+    if (!profileError && profile) {
+      student = { ...student, first: profile.first_name || student.first, father: profile.father_name || student.father, last: profile.family_name || student.last, stage: profile.study_stage || student.stage, bio: profile.bio || student.bio, avatar: profile.avatar_url || student.avatar };
+      saveState();
+    }
+    return true;
+  }
+
+  async function persistStudentProfile() {
+    if (!supabaseClient || !currentAuthUser) return;
+    const { error } = await supabaseClient.from('student_profiles').upsert({ user_id: currentAuthUser.id, first_name: student.first, father_name: student.father || '', family_name: student.last, study_stage: student.stage, email: currentAuthUser.email, avatar_url: student.avatar || null, bio: student.bio || '' }, { onConflict: 'user_id' });
+    if (error) console.warn('تعذر مزامنة ملف الطالب مع Supabase', error);
+  }
+
+  async function signOutStudent() {
+    await supabaseClient?.auth.signOut();
+    window.location.replace('auth.html');
+  }
+
+  function addAuthControls() {
+    const host = $('.top-actions');
+    if (!host || $('#studentLogout')) return;
+    const button = document.createElement('button');
+    button.className = 'icon-button'; button.id = 'studentLogout'; button.title = 'تسجيل الخروج'; button.setAttribute('aria-label', 'تسجيل الخروج');
+    button.innerHTML = '<i class="fa-solid fa-arrow-right-from-bracket"></i>';
+    button.addEventListener('click', signOutStudent); host.appendChild(button);
+  }
+
 
   const defaultStudent = {
-    first: '', last: '', phone: '', birth: '', city: 'دمشق', stage: 'بكالوريا علمي',
+    first: '', father: '', last: '', phone: '', birth: '', city: 'دمشق', stage: 'بكالوريا علمي',
     bio: 'طالب في منصة نبض التفوق، أعمل على تنظيم رحلتي الدراسية والوصول إلى أهدافي.',
     avatar: '', notifications: true, theme: 'dark', motion: true, studentId: '', gender: '', verificationRequested: false, verificationStatus: ''
   };
@@ -63,9 +99,9 @@
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
   }[char]));
 
-  const fullName = () => `${student.first || 'طالب'} ${student.last || ''}`.trim();
+  const fullName = () => `${student.first || 'طالب'} ${student.father || ''} ${student.last || ''}`.replace(/\s+/g, ' ').trim();
   const initials = () => fullName().split(/\s+/).map(word => word[0]).join('').slice(0, 2);
-  const profileIncomplete = () => !(student.first && student.last && student.phone && student.birth);
+  const profileIncomplete = () => !(student.first && student.father && student.last && student.stage);
 
   function saveState() {
     try {
@@ -394,12 +430,13 @@
       edit: `<div class="modal-head"><h3>تعديل الملف الشخصي</h3><button class="close-modal" aria-label="إغلاق">×</button></div>
         <form id="editForm"><div class="form-grid">
           <div class="form-group"><label>الاسم الأول</label><input name="first" required maxlength="32" value="${escapeHTML(student.first)}"></div>
-          <div class="form-group"><label>اسم العائلة</label><input name="last" required maxlength="32" value="${escapeHTML(student.last)}"></div>
+          <div class="form-group"><label>اسم الأب</label><input name="father" required maxlength="32" value="${escapeHTML(student.father || '')}"></div>
+          <div class="form-group"><label>الكنية</label><input name="last" required maxlength="32" value="${escapeHTML(student.last)}"></div>
           <div class="form-group"><label>رقم الهاتف</label><input name="phone" type="tel" inputmode="tel" maxlength="20" value="${escapeHTML(student.phone)}"></div>
           <div class="form-group"><label>تاريخ الميلاد</label><input name="birth" type="date" value="${escapeHTML(student.birth)}"></div>
           <div class="form-group"><label>المنطقة</label><input name="city" maxlength="40" value="${escapeHTML(student.city)}"></div>
           <div class="form-group"><label>الجنس</label><select name="gender"><option value="" ${!student.gender ? 'selected' : ''}>أفضل عدم التحديد</option><option value="ذكر" ${student.gender === 'ذكر' ? 'selected' : ''}>ذكر</option><option value="أنثى" ${student.gender === 'أنثى' ? 'selected' : ''}>أنثى</option></select></div>
-          <div class="form-group"><label>المرحلة</label><select name="stage"><option ${student.stage === 'بكالوريا علمي' ? 'selected' : ''}>بكالوريا علمي</option><option ${student.stage === 'بكالوريا أدبي' ? 'selected' : ''}>بكالوريا أدبي</option><option ${student.stage === 'التاسع الأساسي' ? 'selected' : ''}>التاسع الأساسي</option><option ${student.stage === 'جامعة' ? 'selected' : ''}>جامعة</option><option ${student.stage === 'معهد' ? 'selected' : ''}>معهد</option></select></div>
+          <div class="form-group"><label>المرحلة الدراسية</label><select name="stage"><option ${student.stage === 'بكالوريا علمي' ? 'selected' : ''}>بكالوريا علمي</option><option ${student.stage === 'بكالوريا أدبي' ? 'selected' : ''}>بكالوريا أدبي</option><option ${student.stage === 'التاسع' || student.stage === 'التاسع الأساسي' ? 'selected' : ''}>التاسع</option><option ${student.stage === 'ثانوي' ? 'selected' : ''}>ثانوي</option><option ${student.stage === 'جامعة' || student.stage === 'مرحلة جامعية' ? 'selected' : ''}>مرحلة جامعية</option><option ${student.stage === 'معهد' ? 'selected' : ''}>معهد</option></select></div>
           <div class="form-group full"><label>السيرة الذاتية</label><textarea name="bio" maxlength="240">${escapeHTML(student.bio)}</textarea></div>
         </div><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">حفظ التغييرات</button></div></form>`,
       customCountdown: `<div class="modal-head"><h3>ضبط العداد المخصص</h3><button class="close-modal" aria-label="إغلاق">×</button></div>
@@ -420,6 +457,10 @@
     const savedAverage = Number(gradeCalculator?.lastAverage);
     const values = {
       profileName: fullName(),
+      profileNameData: fullName(),
+      profileFather: student.father || '—',
+      profileStageData: student.stage || '—',
+      profileEmail: currentAuthUser?.email || '—',
       profileHandle: '@' + fullName().replaceAll(' ', '_'),
       profileBio: student.bio || 'أضف نبذة بسيطة لتظهر في مجتمع الأخبار.',
       profilePhone: student.phone || '—',
@@ -1525,10 +1566,11 @@
     $('#newChat')?.addEventListener('click', () => { activeChatId = null; renderChat(); });
   }
 
-  function handleProfileSave(form) {
+  async function handleProfileSave(form) {
     const data = Object.fromEntries(new FormData(form).entries());
-    student = { ...student, ...data, first: String(data.first || '').trim(), last: String(data.last || '').trim(), phone: String(data.phone || '').trim(), city: String(data.city || '').trim(), bio: String(data.bio || '').trim() || defaultStudent.bio };
+    student = { ...student, ...data, first: String(data.first || '').trim(), father: String(data.father || '').trim(), last: String(data.last || '').trim(), phone: String(data.phone || '').trim(), city: String(data.city || '').trim(), bio: String(data.bio || '').trim() || defaultStudent.bio };
     saveState();
+    await persistStudentProfile();
     syncAdminStudent(true);
     closeModal();
     updateProfileUI();
@@ -1918,7 +1960,9 @@
     updateKeyboardOffset();
   }
 
-  function init() {
+  async function init() {
+    if (!(await requireStudentSession())) return;
+    addAuthControls();
     window.setTimeout(() => {
       if (typeof android !== 'undefined' && android.webReady) android.webReady();
       nativeReady();
