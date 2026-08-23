@@ -594,7 +594,7 @@
     window.addEventListener('pagehide', () => window.clearInterval(timer), { once: true });
   }
 
-  const IMGBB_API_KEY = '6c5a914483dcd8e1fb8e060db64543ea';
+  const IMGBB_API_KEY = '5e1ed9082e860053f7058781896e9189';
 
   function mapRemoteNewsPost(row) {
     return {
