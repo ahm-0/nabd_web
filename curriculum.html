@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080d19">
   <title>نبض التفوق | البكالوريا</title>
   <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name=\"theme-color\"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=20260821-restore">
+  <link rel="stylesheet" href="styles.css?v=20260823-layout-font">
 </head>
 <body data-page="curriculum" data-curriculum-scope="baccalaureate">
   <div class="app">
@@ -14,9 +14,9 @@
     <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content">
       <section class="curriculum-page curriculum-scope-baccalaureate">
         <header class="curriculum-hero panel"><a class="study-back-link" href="index.html" aria-label="العودة إلى الرئيسية"><i class="fa-solid fa-arrow-right"></i></a><div><span class="eyebrow"><i class="fa-solid fa-graduation-cap"></i> مسارات الدراسة</span><h2>البكالوريا</h2><p>اختر الفرع ثم نوع المورد للوصول إلى المواد والمراجعات والنماذج وحدود النجاح.</p></div></header>
-        <div class="curriculum-stage-tabs" id="curriculumStageTabs" aria-label="اختيار فرع البكالوريا">
-          <button type="button" class="active" data-curriculum-stage="science"><i class="fa-solid fa-flask"></i><span>بكالوريا علمي</span></button>
-          <button type="button" data-curriculum-stage="literary"><i class="fa-solid fa-feather-pointed"></i><span>بكالوريا أدبي</span></button>
+        <div class="curriculum-stage-tabs curriculum-stage-service-list" id="curriculumStageTabs" aria-label="اختيار فرع البكالوريا">
+          <button type="button" class="active" data-curriculum-stage="science"><span class="curriculum-stage-route-icon"><i class="fa-solid fa-flask"></i></span><span class="curriculum-stage-route-copy"><b>بكالوريا علمي</b><small>كتب وملخصات ونماذج وحدود النجاح للفرع العلمي</small></span><i class="fa-solid fa-chevron-left"></i></button>
+          <button type="button" data-curriculum-stage="literary"><span class="curriculum-stage-route-icon"><i class="fa-solid fa-feather-pointed"></i></span><span class="curriculum-stage-route-copy"><b>بكالوريا أدبي</b><small>كتب وملخصات ونماذج وحدود النجاح للفرع الأدبي</small></span><i class="fa-solid fa-chevron-left"></i></button>
         </div>
         <div class="curriculum-stage-summary panel" id="curriculumStageSummary" aria-live="polite"></div>
         <div class="curriculum-resource-tabs" id="curriculumResourceTabs" aria-label="اختيار نوع المورد">
