@@ -84,6 +84,7 @@
   let adminSession = readStorage('admin_session', null);
   let adminControlsBound = false;
   let remoteAdminVerified = false;
+  let adminShortcutChecked = false;
   let customCountdown = readStorage('custom_countdown', {
     title: 'هدفي الخاص', target: new Date('2027-04-15T08:00:00').getTime()
   });
@@ -358,6 +359,16 @@
     return verified ? '<span class="verified-badge" role="img" aria-label="حساب موثّق" title="حساب موثّق"><i class="fa-solid fa-check"></i></span>' : '';
   }
 
+  async function revealPremiumAdminShortcut() {
+    const shortcuts = $$('#premiumAdminShortcut, #premiumAdminHomeShortcut');
+    if (!shortcuts.length || adminShortcutChecked || !supabaseClient) return;
+    adminShortcutChecked = true;
+    try {
+      const result = await supabaseClient.rpc('premium_is_admin');
+      if (!result.error && result.data === true) shortcuts.forEach(shortcut => shortcut.classList.remove('hidden'));
+    } catch { /* يبقى الرابط مخفيًا للمستخدم غير المشرف */ }
+  }
+
   function renderShell() {
     const sidebar = $('#desktopSidebar');
     if (sidebar) {
@@ -385,6 +396,7 @@
           <a class="side-link ${PAGE === 'notifications' ? 'active' : ''}" href="notifications.html"><span class="nav-icon notify-nav"><i class="fa-regular fa-bell"></i></span><span>الإشعارات</span></a>
           <a class="side-link ${PAGE === 'about' ? 'active' : ''}" href="about.html"><span class="nav-icon about-nav"><i class="fa-solid fa-circle-info"></i></span><span>عن المنصة</span></a>
           <a class="side-link ${PAGE === 'supervision' ? 'active' : ''}" href="admin-dashboard.html"><span class="nav-icon shield-nav"><i class="fa-solid fa-shield-halved"></i></span><span>بوابة الإشراف</span></a>
+          <a class="side-link premium-admin-shortcut hidden ${PAGE === 'premium-admin' ? 'active' : ''}" id="premiumAdminShortcut" href="premium-admin.html"><span class="nav-icon shield-nav"><i class="fa-solid fa-crown"></i></span><span>إدارة القسم المميز</span><em>Admin</em></a>
           <a class="side-link ${PAGE === 'privacy' ? 'active' : ''}" href="privacy.html"><span class="nav-icon lock-nav"><i class="fa-solid fa-lock"></i></span><span>الخصوصية والأمان</span></a>
         </nav>
         <a class="sidebar-edit-cta" href="settings.html"><i class="fa-solid fa-gear"></i><span>إعدادات التطبيق</span><i class="fa-solid fa-arrow-left"></i></a>`;
@@ -492,6 +504,7 @@
     setAvatar('profileAvatar', 'profile-avatar');
     setAvatar('composerAvatar', 'avatar');
     renderShell();
+    revealPremiumAdminShortcut();
   }
 
   const homeExams = {
