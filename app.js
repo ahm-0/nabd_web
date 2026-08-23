@@ -97,6 +97,8 @@
     title: 'هدفي الخاص', target: new Date('2027-04-15T08:00:00').getTime()
   });
   let uploadImages = [];
+  let newsIsAdmin = false;
+  let newsRemotePostsLoaded = false;
   let activeChatId = null;
   let activeExam = 'bac';
   let activeFeedFilter = 'all';
@@ -592,13 +594,34 @@
     window.addEventListener('pagehide', () => window.clearInterval(timer), { once: true });
   }
 
-  const seedPosts = [
-    { id: 'sample-1', name: 'سارة الحلبي', meta: 'بكالوريا علمي · حلب', text: 'تم نشر برنامج المراجعة المكثفة لمادة الفيزياء في المدرسة، بالتوفيق للجميع في التحضير للامتحانات.', likes: 24, comments: [{ name: 'محمد', text: 'شكرًا على المشاركة، خبر مفيد جدًا.' }], images: [] },
-    { id: 'sample-2', name: 'ياسر الدمشقي', meta: 'التاسع الأساسي · دمشق', text: 'شاركتكم صورًا من معرض المشاريع العلمية اليوم. كانت تجربة ملهمة ومليئة بالأفكار الجديدة.', likes: 38, comments: [], images: ['https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1000&q=80', 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1000&q=80'] }
-  ];
+  const IMGBB_API_KEY = '6c5a914483dcd8e1fb8e060db64543ea';
+
+  function mapRemoteNewsPost(row) {
+    return {
+      id: row.id,
+      name: row.author_name || 'مشرف نبض',
+      meta: row.author_meta || 'إدارة الأخبار · نبض التفوق',
+      text: row.body || '',
+      images: Array.isArray(row.images) ? row.images : [],
+      likes: 0,
+      comments: [],
+      mine: Boolean(currentAuthUser && row.author_id === currentAuthUser.id),
+      verified: true,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at
+    };
+  }
+
+  async function loadRemoteNewsPosts() {
+    if (!supabaseClient || newsRemotePostsLoaded === true) return;
+    const { data, error } = await supabaseClient.rpc('news_list_posts', { p_limit: 100 });
+    if (error) throw error;
+    posts = Array.isArray(data) ? data.map(mapRemoteNewsPost) : [];
+    newsRemotePostsLoaded = true;
+  }
 
   function feedPost(id) {
-    return posts.find(post => post.id === id) || seedPosts.find(post => post.id === id) || null;
+    return posts.find(post => post.id === id) || null;
   }
 
   function enrichedPost(post) {
@@ -616,31 +639,19 @@
     const avatar = rawPost.mine ? avatarMarkup() : `<span class="avatar">${escapeHTML((post.name || 'ط')[0])}</span>`;
     const verified = rawPost.mine ? student.verificationStatus === 'approved' : Boolean(post.verified);
     const images = (post.images || []).length
-      ? `<div class="post-images ${(post.images || []).length > 1 ? 'multiple' : ''}">${post.images.map(src => `<img loading="lazy" src="${src}" alt="صورة مرفقة بالمنشور">`).join('')}</div><div class="post-media-indicator">${post.images.length > 1 ? `<i class="fa-solid fa-images"></i> اسحب لمشاهدة الصور ${post.images.length}` : ''}</div>`
+      ? `<div class="post-images ${(post.images || []).length > 1 ? 'multiple' : ''}">${post.images.map(src => `<img loading="lazy" src="${escapeHTML(src)}" alt="صورة مرفقة بالمنشور">`).join('')}</div><div class="post-media-indicator">${post.images.length > 1 ? `<i class="fa-solid fa-images"></i> اسحب لمشاهدة الصور ${post.images.length}` : ''}</div>`
       : '';
     const comments = post.comments.map(comment => { const commentVerified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified); const commentAvatar = comment.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((comment.name || 'ط')[0])}</span>`; return `<div class="comment">${commentAvatar}<div><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(commentVerified)}</b><p>${escapeHTML(comment.text)}</p></div></div>`; }).join('');
-    const menu = rawPost.mine ? `<button class="post-menu" type="button" data-action="post-menu" aria-label="خيارات المنشور" title="تعديل أو حذف"><i class="fa-solid fa-ellipsis"></i></button>` : '';
+    const menu = '';
     return `<article class="post ${likePulsePosts.has(post.id) ? 'like-pulse' : ''}" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong class="post-author-name"><span>${escapeHTML(post.name)}</span>${verifiedBadgeMarkup(verified)}</strong><span>${escapeHTML(post.meta || `${student.stage} · ${student.city}`)} · الآن</span></div>${menu}</div><p class="post-content">${escapeHTML(post.text)}</p>${images}<div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
   }
 
   function renderFeed() {
     const feed = $('#feed');
     if (!feed) return;
-    const entries = [...posts, ...seedPosts];
-    let visible = [...entries];
-    if (activeFeedFilter === 'mine') visible = entries.filter(post => post.mine);
-    if (activeFeedFilter === 'study') visible = entries.filter(post => /دراس|مراجعة|امتحان|فيزياء|رياض|منهاج|تعليم/.test(`${post.text} ${post.meta}`));
-    if (activeFeedFilter === 'popular') visible.sort((first, second) => enrichedPost(second).likes - enrichedPost(first).likes);
-    const headings = { all: ['الخلاصة التعليمية', 'أحدث المنشورات'], popular: ['اختيارات المجتمع', 'الأكثر تفاعلًا'], study: ['مساحة المذاكرة', 'أخبار الدراسة'], mine: ['مساحتك الشخصية', 'منشوراتي'] };
-    const [eyebrow, title] = headings[activeFeedFilter] || headings.all;
-    const feedTitle = $('#feedTitle');
-    const feedEyebrow = $('#feedEyebrow');
-    const communityPostCount = $('#communityPostCount');
-    $('#communityPromoSlot')?.classList.toggle('hidden', !communityPromo.visible);
-    if (feedTitle) feedTitle.textContent = title;
-    if (feedEyebrow) feedEyebrow.textContent = eyebrow;
-    if (communityPostCount) communityPostCount.textContent = entries.length;
-    feed.innerHTML = visible.length ? visible.map(postTemplate).join('') : '<div class="empty-feed"><i class="fa-regular fa-newspaper"></i><b>لا توجد منشورات في هذا القسم بعد.</b><span>جرّب فئة أخرى أو كن أول من يشارك خبرًا مفيدًا.</span></div>';
+    const entries = [...posts];
+    const visible = entries;
+    feed.innerHTML = visible.length ? visible.map(postTemplate).join('') : '<div class="empty-feed"><i class="fa-regular fa-newspaper"></i><b>لا توجد منشورات منشورة حاليًا.</b><span>ستظهر هنا الأخبار التي ينشرها المشرف.</span></div>';
     const postCount = $('#profilePosts');
     if (postCount) postCount.textContent = posts.filter(post => post.mine).length;
   }
@@ -658,21 +669,41 @@
     $('#newsComposerDock')?.classList.toggle('has-text', Boolean(input.value.trim()));
   }
 
-  function publishPost() {
+  async function uploadNewsImageToImgBB(dataUrl) {
+    const form = new FormData();
+    form.append('image', String(dataUrl).split(',').pop());
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(IMGBB_API_KEY)}&expiration=0`, { method: 'POST', body: form });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok || !payload?.success || !payload?.data?.url) throw new Error(payload?.error?.message || 'تعذر رفع الصورة إلى ImgBB.');
+    return payload.data.url;
+  }
+
+  async function publishPost() {
+    if (!newsIsAdmin) return toast('المشرف فقط يستطيع نشر الأخبار.');
     const text = $('#postText')?.value.trim() || '';
     if (!text && !uploadImages.length) return toast('اكتب الخبر أو أرفق صورة قبل النشر.');
     if (text.length > 1200) return toast('يرجى اختصار الخبر إلى 1200 حرف أو أقل.');
-    const draft = { id: `post-${Date.now()}`, name: fullName(), meta: `${student.stage} · ${student.city}`, text, images: [...uploadImages], likes: 0, comments: [], mine: true, verified: student.verificationStatus === 'approved' };
-    posts.unshift(draft);
-    if (!saveState()) { posts.shift(); return; }
-    uploadImages = [];
-    const input = $('#postText');
-    if (input) { input.value = ''; input.style.height = ''; }
-    renderPreview();
-    resizeNewsComposer();
-    renderFeed();
-    updateProfileUI();
-    toast('تم نشر خبرك في مجتمع نبض.');
+    const button = $('#publishPost');
+    if (button) { button.disabled = true; button.dataset.originalLabel = button.innerHTML; button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+    try {
+      const images = await Promise.all(uploadImages.map(uploadNewsImageToImgBB));
+      const { data: postId, error } = await supabaseClient.rpc('news_admin_create_post', { p_body: text, p_images: images });
+      if (error) throw error;
+      const draft = { id: postId, name: fullName(), meta: `${student.stage} · إدارة الأخبار`, text, images, likes: 0, comments: [], mine: true, verified: true, createdAt: new Date().toISOString() };
+      posts.unshift(draft);
+      uploadImages = [];
+      const input = $('#postText');
+      if (input) { input.value = ''; input.style.height = ''; }
+      renderPreview();
+      resizeNewsComposer();
+      renderFeed();
+      updateProfileUI();
+      toast('تم نشر الخبر وحفظ الصور في ImgBB وSupabase.');
+    } catch (error) {
+      toast(error.message || 'تعذر نشر الخبر.');
+    } finally {
+      if (button) { button.disabled = false; button.innerHTML = button.dataset.originalLabel || '<i class="fa-solid fa-paper-plane"></i>'; }
+    }
   }
 
   function toggleLike(postId) {
@@ -750,21 +781,34 @@
     dock.dataset.viewportLayer = 'true';
   }
 
-  function initNews() {
+  async function initNews() {
     if (!$('#feed')) return;
     elevateNewsComposer();
+    const dock = $('#newsComposerDock');
+    if (dock) dock.hidden = true;
+    try {
+      await loadRemoteNewsPosts();
+      const { data, error } = await supabaseClient.rpc('premium_is_admin');
+      newsIsAdmin = !error && data === true;
+    } catch (error) {
+      newsIsAdmin = false;
+      posts = [];
+      toast(error.message || 'تعذر تحميل أخبار المشرف.');
+    }
+    document.body.classList.toggle('news-admin', newsIsAdmin);
+    if (dock) dock.hidden = !newsIsAdmin;
     renderFeed();
+    if (!newsIsAdmin) return;
     $('#publishPost')?.addEventListener('click', publishPost);
     $('#clearImages')?.addEventListener('click', () => { uploadImages = []; renderPreview(); });
     $('#postImages')?.addEventListener('change', event => {
       const files = [...event.target.files].slice(0, 2);
       const invalid = files.some(file => file.size > 700 * 1024);
       if (invalid) { event.target.value = ''; return toast('اختر حتى صورتين، وحجم كل صورة لا يتجاوز 700 كيلوبايت.'); }
-      Promise.all(files.map(file => new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(file); }))).then(images => { uploadImages = images; renderPreview(); });
+      Promise.all(files.map(file => new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }))).then(images => { uploadImages = images; renderPreview(); }).catch(() => toast('تعذر قراءة الصور المحددة.'));
     });
     $('#postText')?.addEventListener('input', resizeNewsComposer);
     resizeNewsComposer();
-    $$('.community-tab').forEach(tab => tab.addEventListener('click', () => { activeFeedFilter = tab.dataset.filter || 'all'; $$('.community-tab').forEach(item => item.classList.toggle('active', item === tab)); renderFeed(); }));
   }
 
   function dateInputValue(date = new Date()) {

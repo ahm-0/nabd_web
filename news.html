@@ -18,25 +18,10 @@
       <aside class="sidebar panel" id="desktopSidebar"></aside>
       <main class="main-content">
         <div class="news-shell">
-          <div class="news-page-title"><span class="eyebrow"><i class="fa-regular fa-newspaper"></i> الأخبار التعليمية</span><h2>شارك وتابع المستجدات</h2></div>
-
-          <aside class="community-ad-slot" id="communityPromoSlot" aria-label="مساحة طلاب نبض الإعلانية">
-            <div class="community-ad-label"><i class="fa-solid fa-bullhorn"></i> مساحة إعلانية</div>
-            <div class="community-ad-content"><span class="community-ad-icon"><i class="fa-solid fa-graduation-cap"></i></span><div><span class="eyebrow">نبض التفوق للطلاب</span><h3>مساحة طلاب نبض</h3><p>تابع جديد المنصة، شارك إنجازاتك، وكن جزءًا من مجتمع دراسي منظم ومحترم.</p></div><span class="community-ad-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-left"></i></span></div>
-          </aside>
-
-          <nav class="community-tabs" aria-label="تصفية منشورات المجتمع">
-            <button class="community-tab active" data-filter="all" type="button"><i class="fa-solid fa-clock"></i> الأحدث</button>
-            <button class="community-tab" data-filter="popular" type="button"><i class="fa-solid fa-fire"></i> الأكثر تفاعلًا</button>
-            <button class="community-tab" data-filter="study" type="button"><i class="fa-solid fa-graduation-cap"></i> أخبار الدراسة</button>
-            <button class="community-tab" data-filter="mine" type="button"><i class="fa-regular fa-user"></i> منشوراتي</button>
-          </nav>
-
-          <div class="feed-toolbar"><div><span class="eyebrow" id="feedEyebrow">الخلاصة التعليمية</span><h3 id="feedTitle">أحدث المنشورات</h3></div><span><i class="fa-solid fa-shield-heart"></i> شارك محتوى مفيدًا ومحترمًا</span></div>
           <section id="feed" aria-live="polite"></section>
           <div class="news-composer-dock" id="newsComposerDock" aria-label="شريط كتابة خبر جديد">
-            <article class="compose panel" aria-label="إنشاء منشور جديد">
-              <div class="compose-dock-head"><div class="avatar" id="composerAvatar">ن</div><label for="postText">شارك خبرًا أو إنجازًا مع المجتمع</label><span class="compose-image-status" id="composeImageStatus" aria-live="polite"></span></div>
+            <article class="compose panel" aria-label="نشر خبر إداري">
+              <div class="compose-dock-head"><div class="avatar" id="composerAvatar">ن</div><label for="postText">نشر خبر من المشرف</label><span class="compose-image-status" id="composeImageStatus" aria-live="polite"></span></div>
               <div class="compose-message-row"><textarea id="postText" maxlength="1200" rows="1" placeholder="اكتب رسالتك..." aria-label="نص الخبر"></textarea><button class="compose-send-button" id="publishPost" type="button" title="نشر الخبر" aria-label="نشر الخبر"><i class="fa-solid fa-paper-plane"></i></button></div>
               <div class="compose-preview" id="composePreview" aria-live="polite"></div>
               <div class="compose-dock-tools"><label class="compose-photo-button" title="إضافة حتى صورتين"><i class="fa-regular fa-images"></i><span>إضافة صور</span><input id="postImages" class="hidden" type="file" accept="image/*" multiple></label><button id="clearImages" class="compose-clear-images" title="إزالة الصور" type="button" hidden><i class="fa-solid fa-xmark"></i><span>إزالة الصور</span></button><small><i class="fa-solid fa-shield-heart"></i> شارك محتوى مفيدًا ومحترمًا</small></div>
@@ -49,6 +34,6 @@
   <nav class="bottom-nav" id="bottomNav"></nav>
   <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div>
   <div class="toast" id="toast"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-client.js?v=20260823-session-fix?v=20260823-session-fix"></script><script src="app.js?v=20260823-session-fix"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="app.js?v=20260823-news-admin-imgbb"></script>
 </body>
 </html>
