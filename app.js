@@ -644,7 +644,7 @@
       ? `<div class="post-images ${(post.images || []).length > 1 ? 'multiple' : ''}">${post.images.map(src => `<img loading="lazy" src="${escapeHTML(src)}" alt="صورة مرفقة بالمنشور">`).join('')}</div><div class="post-media-indicator">${post.images.length > 1 ? `<i class="fa-solid fa-images"></i> اسحب لمشاهدة الصور ${post.images.length}` : ''}</div>`
       : '';
     const comments = post.comments.map(comment => { const commentVerified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified); const commentAvatar = comment.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((comment.name || 'ط')[0])}</span>`; return `<div class="comment">${commentAvatar}<div><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(commentVerified)}</b><p>${escapeHTML(comment.text)}</p></div></div>`; }).join('');
-    const menu = '';
+    const menu = newsIsAdmin ? `<button class="post-menu" type="button" data-action="post-menu" title="إدارة الخبر" aria-label="إدارة الخبر"><i class="fa-solid fa-ellipsis-vertical"></i></button>` : '';
     return `<article class="post ${likePulsePosts.has(post.id) ? 'like-pulse' : ''}" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong class="post-author-name"><span>${escapeHTML(post.name)}</span>${verifiedBadgeMarkup(verified)}</strong><span>${escapeHTML(post.meta || `${student.stage} · ${student.city}`)} · الآن</span></div>${menu}</div><p class="post-content">${escapeHTML(post.text)}</p>${images}<div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
   }
 
@@ -750,25 +750,52 @@
 
   function openPostMenu(postId) {
     const post = posts.find(item => item.id === postId);
-    if (!post?.mine) return toast('يمكن لصاحب المنشور فقط تعديل أو حذف منشوره.');
-    openModal(`<div class="modal-head"><div><span class="eyebrow">خيارات المنشور</span><h3>إدارة منشورك</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><div class="post-management-menu"><button type="button" data-news-manage="edit" data-post-id="${escapeHTML(post.id)}"><i class="fa-solid fa-pen"></i><span><b>تعديل المنشور</b><small>تحديث النص مع الاحتفاظ بالصور</small></span></button><button type="button" class="danger" data-news-manage="delete" data-post-id="${escapeHTML(post.id)}"><i class="fa-regular fa-trash-can"></i><span><b>حذف المنشور</b><small>إزالته من هذا الجهاز نهائيًا</small></span></button></div>`);
+    if (!newsIsAdmin || !post?.remote) return toast('المشرف فقط يستطيع إدارة الأخبار.');
+    openModal(`<div class="modal-head"><div><span class="eyebrow">خيارات الخبر</span><h3>إدارة خبر المشرف</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><div class="post-management-menu"><button type="button" data-news-manage="edit" data-post-id="${escapeHTML(post.id)}"><i class="fa-solid fa-pen"></i><span><b>تعديل الخبر</b><small>تحديث النص مع الاحتفاظ بالصور الحالية</small></span></button><button type="button" class="danger" data-news-manage="delete" data-post-id="${escapeHTML(post.id)}"><i class="fa-regular fa-trash-can"></i><span><b>حذف الخبر</b><small>حذفه نهائيًا من الأخبار وقاعدة البيانات</small></span></button></div>`);
   }
 
   function openPostEditor(postId) {
-    const post = posts.find(item => item.id === postId); if (!post?.mine) return;
-    openModal(`<div class="modal-head"><div><span class="eyebrow">تعديل المنشور</span><h3>حدّث ما تريد مشاركته</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><form id="postEditForm" data-post-id="${escapeHTML(post.id)}"><div class="form-group full"><label>نص المنشور</label><textarea name="text" maxlength="1200" required>${escapeHTML(post.text || '')}</textarea></div><p class="sheet-hint">تبقى الصور المرفقة كما هي عند تعديل النص.</p><div class="form-actions"><button class="outline-button close-modal" type="button">إلغاء</button><button class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ التعديل</button></div></form>`);
+    const post = posts.find(item => item.id === postId); if (!newsIsAdmin || !post?.remote) return;
+    openModal(`<div class="modal-head"><div><span class="eyebrow">تعديل الخبر</span><h3>تحديث خبر المشرف</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><form id="postEditForm" data-post-id="${escapeHTML(post.id)}"><div class="form-group full"><label>نص الخبر</label><textarea name="text" maxlength="1200" placeholder="يمكنك إبقاء الخبر بصورة فقط">${escapeHTML(post.text || '')}</textarea></div><p class="sheet-hint">تبقى الصور الحالية محفوظة كما هي عند تعديل النص.</p><div class="form-actions"><button class="outline-button close-modal" type="button">إلغاء</button><button class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ التعديل</button></div></form>`);
   }
 
-  function savePostEdit(form) {
+  async function savePostEdit(form) {
     const post = posts.find(item => item.id === form.dataset.postId); const text = String(new FormData(form).get('text') || '').trim();
-    if (!post?.mine || !text) return toast('اكتب نص المنشور قبل الحفظ.');
-    post.text = text; post.updatedAt = Date.now();
-    saveState(); closeModal(); renderFeed(); toast('تم تعديل المنشور.');
+    if (!newsIsAdmin || !post?.remote) return toast('المشرف فقط يستطيع تعديل الأخبار.');
+    if (!text && !(post.images || []).length) return toast('اكتب الخبر أو أرفق صورة قبل الحفظ.');
+    const submit = form.querySelector('[type="submit"]');
+    if (submit) { submit.disabled = true; submit.dataset.originalLabel = submit.innerHTML; submit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جارٍ الحفظ'; }
+    try {
+      const { data, error } = await supabaseClient.rpc('news_admin_update_post', { p_post_id: post.id, p_body: text, p_images: post.images || [] });
+      if (error) throw error;
+      if (data !== true) throw new Error('لم يتم العثور على الخبر.');
+      post.text = text;
+      post.updatedAt = new Date().toISOString();
+      closeModal();
+      renderFeed();
+      toast('تم تعديل الخبر وحفظه في Supabase.');
+    } catch (error) {
+      toast(error.message || 'تعذر تعديل الخبر حاليًا.');
+    } finally {
+      if (submit) { submit.disabled = false; submit.innerHTML = submit.dataset.originalLabel || '<i class="fa-solid fa-floppy-disk"></i> حفظ التعديل'; }
+    }
   }
 
-  function deleteOwnPost(postId) {
-    const post = posts.find(item => item.id === postId); if (!post?.mine) return;
-    confirmAction('حذف المنشور؟', 'سيتم حذف هذا المنشور والصور المرفقة به من هذا الجهاز.', () => { posts = posts.filter(item => item.id !== postId); delete postInteractions[postId]; openComments.delete(postId); saveState(); renderFeed(); toast('تم حذف المنشور.'); }, 'حذف المنشور');
+  function deleteNewsPost(postId) {
+    const post = posts.find(item => item.id === postId); if (!newsIsAdmin || !post?.remote) return toast('المشرف فقط يستطيع حذف الأخبار.');
+    confirmAction('حذف الخبر؟', 'سيتم حذف الخبر نهائيًا من Supabase، وتبقى الإعجابات والتعليقات مرتبطة به محذوفة تلقائيًا.', async () => {
+      try {
+        const { data, error } = await supabaseClient.rpc('news_admin_delete_post', { p_post_id: postId });
+        if (error) throw error;
+        if (data !== true) throw new Error('لم يتم العثور على الخبر.');
+        posts = posts.filter(item => item.id !== postId);
+        openComments.delete(postId);
+        renderFeed();
+        toast('تم حذف الخبر نهائيًا.');
+      } catch (error) {
+        toast(error.message || 'تعذر حذف الخبر حاليًا.');
+      }
+    }, 'حذف الخبر');
   }
 
   async function addComment(form) {
@@ -1996,7 +2023,7 @@
       if (demo) toast(demo.dataset.demo);
 
       const newsManage = event.target.closest('[data-news-manage]');
-      if (newsManage) { const id = newsManage.dataset.postId; if (newsManage.dataset.newsManage === 'edit') openPostEditor(id); if (newsManage.dataset.newsManage === 'delete') { closeModal(); deleteOwnPost(id); } return; }
+      if (newsManage) { const id = newsManage.dataset.postId; if (newsManage.dataset.newsManage === 'edit') openPostEditor(id); if (newsManage.dataset.newsManage === 'delete') { closeModal(); deleteNewsPost(id); } return; }
 
       const tool = event.target.closest('[data-action]');
       if (tool) {
