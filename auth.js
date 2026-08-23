@@ -32,7 +32,7 @@
       if (signupMode) {
         const { data: result, error } = await client.auth.signUp({ email: data.email.trim(), password: data.password, options: { data: { first_name: data.first_name.trim(), father_name: data.father_name.trim(), family_name: data.family_name.trim(), study_stage: data.study_stage } } });
         if (error) throw error;
-        if (!result.session) { setMessage('تم إنشاء الحساب. تحقق من بريدك الإلكتروني ثم سجّل الدخول.', true); setMode(false); form.email.value = data.email; return; }
+        if (!result.session) { setMessage('تم إنشاء الحساب. يمكنك تسجيل الدخول الآن.', true); setMode(false); form.email.value = data.email; return; }
         await saveProfile(result.user, data);
         window.location.replace('index.html');
       } else {
