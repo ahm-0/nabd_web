@@ -1,5 +1,6 @@
 (() => {
   'use strict';
+  window.nabdNativeReady?.();
   const client = window.nabdSupabase;
   const form = document.querySelector('#authForm');
   const fields = document.querySelector('#signupFields');
@@ -48,4 +49,5 @@
     if (error) throw error;
   }
   client.auth.getSession().then(({ data }) => { if (data.session) window.location.replace('index.html'); });
+  window.setTimeout(() => window.nabdNativeReady?.(), 700);
 })();

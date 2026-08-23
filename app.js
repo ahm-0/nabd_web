@@ -1748,7 +1748,15 @@
 
   const capacitorPlugin = name => window.Capacitor?.Plugins?.[name] || null;
   const isNativeNabd = () => Boolean(window.Capacitor?.isNativePlatform?.()) || Boolean(window.NabdAndroid);
-  const nativeReady = () => { try { window.NabdAndroid?.webReady?.(); } catch (error) { console.warn('تعذر إرسال إشارة الجاهزية للتطبيق', error); } };
+  const nativeReady = () => {
+    try {
+      if (typeof window.nabdNativeReady === 'function') return window.nabdNativeReady();
+      window.NabdAndroid?.webReady?.();
+      window.android?.webReady?.();
+      const splash = window.Capacitor?.Plugins?.SplashScreen;
+      if (typeof splash?.hide === 'function') splash.hide();
+    } catch (error) { console.warn('تعذر إرسال إشارة الجاهزية للتطبيق', error); }
+  };
 
   function saveStudyTasks() {
     try { localStorage.setItem(STORE + 'study_tasks', JSON.stringify(studyTasks)); } catch { toast('تعذر حفظ المهام محليًا.'); }
@@ -1961,12 +1969,9 @@
   }
 
   async function init() {
-    if (!(await requireStudentSession())) return;
+    if (!(await requireStudentSession())) { nativeReady(); return; }
     addAuthControls();
-    window.setTimeout(() => {
-      if (typeof android !== 'undefined' && android.webReady) android.webReady();
-      nativeReady();
-    }, 2000);
+    nativeReady();
     enableScreenCapture();
     initMobileViewport();
     renderBrand();
@@ -1991,6 +1996,8 @@
     initLibrary();
     initStudySchedule();
     initChat();
+    nativeReady();
+    window.setTimeout(nativeReady, 900);
   }
 
   document.addEventListener('DOMContentLoaded', init);
