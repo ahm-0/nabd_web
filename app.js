@@ -108,6 +108,7 @@
   let activeExam = 'bac';
   let activeFeedFilter = 'all';
   const openComments = new Set();
+  const expandedNewsPosts = new Set();
   const likePulsePosts = new Set();
   const defaultCommunityPromo = { visible: true, title: 'مساحة طلاب نبض', body: 'تابع جديد المنصة، وشارك إنجازاتك، وكن جزءًا من مجتمع دراسي منظم ومحترم.', ctaLabel: 'اكتشف المزيد', link: '' };
   let communityPromo = { ...defaultCommunityPromo, ...readStorage('community_promo', {}) };
@@ -369,6 +370,21 @@
       if (isNativeNabd() && typeof window.NabdAndroid?.openNativeChatViewer === 'function') { window.NabdAndroid.openNativeChatViewer(url, title, 'dark'); return; }
       window.open(url, '_blank', 'noopener,noreferrer');
     } catch (error) { console.warn('تعذر فتح نافذة الدردشة الأصلية', error); toast('تعذر فتح الصفحة الآن.'); }
+  }
+
+  async function openExternalUrl(rawUrl) {
+    const url = String(rawUrl || '').trim();
+    if (!/^https?:\/\//i.test(url)) return;
+    try {
+      const browser = capacitorPlugin('Browser');
+      if (isNativeNabd() && browser?.open) { await browser.open({ url }); return; }
+      if (isNativeNabd() && typeof window.NabdAndroid?.openExternalUrl === 'function') { window.NabdAndroid.openExternalUrl(url); return; }
+      const opened = window.open(url, '_blank', 'noopener,noreferrer');
+      if (!opened) window.location.href = url;
+    } catch (error) {
+      console.warn('تعذر فتح رابط الخبر', error);
+      toast('تعذر فتح الرابط الآن.');
+    }
   }
 
   function verifiedBadgeMarkup(verified = false) {
@@ -643,6 +659,35 @@
     };
   }
 
+  const NEWS_COLLAPSE_CHARS = 320;
+
+  function newsLinkMarkup(value) {
+    const source = String(value ?? '');
+    const pattern = /((?:https?:\/\/|www\.)[^\s<]+)/gi;
+    let output = '';
+    let cursor = 0;
+    for (const match of source.matchAll(pattern)) {
+      const raw = match[0];
+      const start = match.index ?? cursor;
+      output += escapeHTML(source.slice(cursor, start));
+      const trailing = raw.match(/[),.;:!?؟،؛\]}]+$/)?.[0] || '';
+      const clean = trailing ? raw.slice(0, -trailing.length) : raw;
+      const href = /^www\./i.test(clean) ? `https://${clean}` : clean;
+      output += `<a class="post-link" data-external-url="${escapeHTML(href)}" href="${escapeHTML(href)}" target="_blank" rel="noopener noreferrer">${escapeHTML(clean)}</a>${escapeHTML(trailing)}`;
+      cursor = start + raw.length;
+    }
+    return output + escapeHTML(source.slice(cursor));
+  }
+
+  function newsTextMarkup(post) {
+    const text = String(post.text || '');
+    const isLong = text.length > NEWS_COLLAPSE_CHARS || text.split(/\r?\n/).length > 6;
+    const expanded = expandedNewsPosts.has(post.id);
+    const copyClass = `post-copy${isLong && !expanded ? ' is-collapsed' : ''}`;
+    const readMore = isLong ? `<button type="button" class="read-more-button" data-news-more="${escapeHTML(post.id)}" aria-controls="post-copy-${escapeHTML(post.id)}" aria-expanded="${expanded}">${expanded ? 'إخفاء النص' : 'قراءة المزيد...'}</button>` : '';
+    return `<div class="post-content"><span id="post-copy-${escapeHTML(post.id)}" class="${copyClass}">${newsLinkMarkup(text)}</span>${readMore}</div>`;
+  }
+
   function postTemplate(rawPost) {
     const post = enrichedPost(rawPost);
     const avatar = rawPost.mine ? avatarMarkup() : `<span class="avatar">${escapeHTML((post.name || 'ط')[0])}</span>`;
@@ -650,16 +695,16 @@
     const images = (post.images || []).length
       ? `<div class="post-images ${(post.images || []).length > 1 ? 'multiple' : ''}">${post.images.map(src => `<img loading="lazy" src="${escapeHTML(src)}" alt="صورة مرفقة بالمنشور">`).join('')}</div><div class="post-media-indicator">${post.images.length > 1 ? `<i class="fa-solid fa-images"></i> اسحب لمشاهدة الصور ${post.images.length}` : ''}</div>`
       : '';
-    const comments = post.comments.map(comment => { const commentVerified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified); const commentAvatar = comment.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((comment.name || 'ط')[0])}</span>`; return `<div class="comment">${commentAvatar}<div><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(commentVerified)}</b><p>${escapeHTML(comment.text)}</p></div></div>`; }).join('');
+    const comments = post.comments.map(comment => { const commentVerified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified); const commentAvatar = comment.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((comment.name || 'ط')[0])}</span>`; return `<div class="comment">${commentAvatar}<div><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(commentVerified)}</b><p>${newsLinkMarkup(comment.text)}</p></div></div>`; }).join('');
     const menu = newsIsAdmin ? `<button class="post-menu" type="button" data-action="post-menu" title="إدارة الخبر" aria-label="إدارة الخبر"><i class="fa-solid fa-ellipsis-vertical"></i></button>` : '';
-    return `<article class="post ${likePulsePosts.has(post.id) ? 'like-pulse' : ''}" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong class="post-author-name"><span>${escapeHTML(post.name)}</span>${verifiedBadgeMarkup(verified)}</strong><span>${escapeHTML(post.meta || `${student.stage} · ${student.city}`)} · الآن</span></div>${menu}</div><p class="post-content">${escapeHTML(post.text)}</p>${images}<div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
+    return `<article class="post ${likePulsePosts.has(post.id) ? 'like-pulse' : ''}" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong class="post-author-name"><span>${escapeHTML(post.name)}</span>${verifiedBadgeMarkup(verified)}</strong><span>${escapeHTML(post.meta || `${student.stage} · ${student.city}`)} · الآن</span></div>${menu}</div>${newsTextMarkup(post)}${images}<div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
   }
 
   function commentItemMarkup(comment, postId, replies = []) {
     const verified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified);
     const avatar = comment.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((comment.name || 'ط')[0])}</span>`;
     const children = replies.length ? `<div class="comment-replies">${replies.map(reply => commentItemMarkup(reply, postId)).join('')}</div>` : '';
-    return `<article class="comment-thread-item" data-comment-id="${escapeHTML(comment.id || '')}"><div class="comment-thread-head">${avatar}<div><b>${escapeHTML(comment.name || 'طالب نبض')}${verifiedBadgeMarkup(verified)}</b><small>${escapeHTML(comment.meta || 'مجتمع الأخبار')}</small></div></div><p>${escapeHTML(comment.text || '')}</p><button type="button" class="comment-reply-button" data-comment-reply="${escapeHTML(comment.id || '')}" data-comment-post="${escapeHTML(postId)}" data-comment-name="${escapeHTML(comment.name || 'طالب نبض')}"><i class="fa-solid fa-reply"></i> رد</button>${children}</article>`;
+    return `<article class="comment-thread-item" data-comment-id="${escapeHTML(comment.id || '')}"><div class="comment-thread-head">${avatar}<div><b>${escapeHTML(comment.name || 'طالب نبض')}${verifiedBadgeMarkup(verified)}</b><small>${escapeHTML(comment.meta || 'مجتمع الأخبار')}</small></div></div><p>${newsLinkMarkup(comment.text || '')}</p><button type="button" class="comment-reply-button" data-comment-reply="${escapeHTML(comment.id || '')}" data-comment-post="${escapeHTML(postId)}" data-comment-name="${escapeHTML(comment.name || 'طالب نبض')}"><i class="fa-solid fa-reply"></i> رد</button>${children}</article>`;
   }
 
   function commentThreadMarkup(post) {
@@ -2142,6 +2187,11 @@
       if (studyFilter) { activeStudyFilter = studyFilter.dataset.studyFilter; renderStudyTasks(); }
       const demo = event.target.closest('[data-demo]');
       if (demo) toast(demo.dataset.demo);
+
+      const externalLink = event.target.closest('[data-external-url]');
+      if (externalLink) { event.preventDefault(); void openExternalUrl(externalLink.dataset.externalUrl); return; }
+      const readMore = event.target.closest('[data-news-more]');
+      if (readMore) { const postId = readMore.dataset.newsMore; if (expandedNewsPosts.has(postId)) expandedNewsPosts.delete(postId); else expandedNewsPosts.add(postId); renderFeed(); return; }
 
       const newsManage = event.target.closest('[data-news-manage]');
       if (newsManage) { const id = newsManage.dataset.postId; if (newsManage.dataset.newsManage === 'edit') openPostEditor(id); if (newsManage.dataset.newsManage === 'delete') { closeModal(); deleteNewsPost(id); } return; }

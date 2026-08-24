@@ -1,0 +1,12 @@
+/* قسم الأخبار: روابط قابلة للنقر ونصوص طويلة */
+.post-content{display:block;max-width:100%;line-height:1.9;overflow-wrap:anywhere}
+.post-copy{display:block;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+.post-copy.is-collapsed{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:6;max-height:11.4em}
+.post-link{display:inline;color:var(--primary);font-weight:800;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;overflow-wrap:anywhere;word-break:break-word;cursor:pointer}
+.post-link:hover{color:var(--text);text-decoration-thickness:2px}
+.post-link:focus-visible,.read-more-button:focus-visible{outline:3px solid rgba(var(--primary-rgb),.35);outline-offset:3px;border-radius:5px}
+.read-more-button{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:4px 0;border:0;background:transparent;color:var(--primary);font:inherit;font-size:11px;font-weight:900;cursor:pointer;transition:color .16s var(--ease-out),transform .16s var(--ease-out)}
+.read-more-button:hover{color:var(--text);transform:translateY(-1px)}
+.read-more-button:active{transform:scale(.97)}
+.comment p .post-link{font-size:inherit}
+@media(prefers-reduced-motion:reduce){.read-more-button{transition:none}}
