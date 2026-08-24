@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-08-24-2';
+const CACHE_VERSION = '2026-08-24-5';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -117,23 +117,51 @@ async function cacheFirst(request) {
   }
 }
 
+const NAVIGATION_REFRESH_TIMEOUT = 8000;
+
+async function fetchWithTimeout(request, timeout = NAVIGATION_REFRESH_TIMEOUT) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    return await fetch(request, { signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function refreshNavigation(request) {
+  const response = await fetchWithTimeout(request);
+  if (response.ok && response.type === 'basic') {
+    const cache = await caches.open(RUNTIME_CACHE);
+    await cache.put(request, response.clone());
+  }
+  return response;
+}
+
 async function networkFirstNavigation(request) {
   try {
-    const response = await fetch(request);
-    if (response.ok && response.type === 'basic') {
-      const cache = await caches.open(RUNTIME_CACHE);
-      await cache.put(request, response.clone());
-    }
-    return response;
+    return await refreshNavigation(request);
   } catch (error) {
     return (await caches.match(request, { ignoreSearch: true }))
       || (await caches.match('./index.html'))
       || new Response('لا تتوفر صفحات التطبيق حاليًا.', {
         status: 503,
         statusText: 'Offline',
-        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
       });
   }
+}
+
+async function staleWhileRevalidateNavigation(request, refresh) {
+  const cached = await caches.match(request, { ignoreSearch: true });
+  if (cached) return cached;
+  return (await refresh)
+    || (await caches.match('./index.html'))
+    || new Response('لا تتوفر صفحات التطبيق حاليًا.', {
+      status: 503,
+      statusText: 'Offline',
+      headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    });
 }
 
 self.addEventListener('fetch', event => {
@@ -143,7 +171,10 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
-    event.respondWith(networkFirstNavigation(request));
+    // استخدم الصفحة المحلية فورًا، وحاول تحديثها في الخلفية دون حجب التنقل.
+    const refresh = refreshNavigation(request).catch(() => null);
+    event.waitUntil(refresh);
+    event.respondWith(staleWhileRevalidateNavigation(request, refresh));
     return;
   }
 

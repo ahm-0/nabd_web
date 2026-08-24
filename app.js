@@ -883,29 +883,38 @@
     elevateNewsComposer();
     const dock = $('#newsComposerDock');
     if (dock) dock.hidden = true;
+    const cachedPosts = posts.slice();
+
+    // اعرض المحتوى المحلي فورًا، ولا تجعل طلبات الأخبار حاجزًا أمام بقية الصفحة.
+    renderFeed();
+    if (document.body.dataset.newsComposerBound !== 'true') {
+      document.body.dataset.newsComposerBound = 'true';
+      $('#publishPost')?.addEventListener('click', publishPost);
+      $('#clearImages')?.addEventListener('click', () => { uploadImages = []; renderPreview(); });
+      $('#postImages')?.addEventListener('change', event => {
+        const files = [...event.target.files].slice(0, 2);
+        const invalid = files.some(file => file.size > 700 * 1024);
+        if (invalid) { event.target.value = ''; return toast('اختر حتى صورتين، وحجم كل صورة لا يتجاوز 700 كيلوبايت.'); }
+        Promise.all(files.map(file => new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }))).then(images => { uploadImages = images; renderPreview(); }).catch(() => toast('تعذر قراءة الصور المحددة.'));
+      });
+      $('#postText')?.addEventListener('input', resizeNewsComposer);
+    }
+    resizeNewsComposer();
+
+    if (!supabaseClient) return;
     try {
       await loadRemoteNewsPosts();
       const { data, error } = await supabaseClient.rpc('premium_is_admin');
       newsIsAdmin = !error && data === true;
     } catch (error) {
+      // احتفظ بالنسخة المحلية عند بطء الشبكة أو فشل الطلب بدل إفراغ القسم.
       newsIsAdmin = false;
-      posts = [];
-      toast(error.message || 'تعذر تحميل أخبار المشرف.');
+      posts = cachedPosts;
+      console.warn('تعذر تحديث أخبار المشرف من Supabase؛ تم الإبقاء على النسخة المحلية.', error);
     }
     document.body.classList.toggle('news-admin', newsIsAdmin);
     if (dock) dock.hidden = !newsIsAdmin;
     renderFeed();
-    if (!newsIsAdmin) return;
-    $('#publishPost')?.addEventListener('click', publishPost);
-    $('#clearImages')?.addEventListener('click', () => { uploadImages = []; renderPreview(); });
-    $('#postImages')?.addEventListener('change', event => {
-      const files = [...event.target.files].slice(0, 2);
-      const invalid = files.some(file => file.size > 700 * 1024);
-      if (invalid) { event.target.value = ''; return toast('اختر حتى صورتين، وحجم كل صورة لا يتجاوز 700 كيلوبايت.'); }
-      Promise.all(files.map(file => new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }))).then(images => { uploadImages = images; renderPreview(); }).catch(() => toast('تعذر قراءة الصور المحددة.'));
-    });
-    $('#postText')?.addEventListener('input', resizeNewsComposer);
-    resizeNewsComposer();
   }
 
   function dateInputValue(date = new Date()) {
@@ -2049,21 +2058,7 @@
 
   async function initStudySchedule() { if (!$('#studyTasks')) return; await loadStudyTasks(); const note = $('#studyNativeNote'); if (note) note.innerHTML = isNativeNabd() && capacitorPlugin('LocalNotifications') ? '<i class="fa-solid fa-mobile-screen-button"></i><span>التذكيرات الأصلية متاحة داخل التطبيق.</span>' : '<i class="fa-solid fa-globe"></i><span>يعمل الجدول في المتصفح؛ الإشعار الأصلي يحتاج جسر التطبيق.</span>'; renderStudyTasks(); }
 
-  async function initAdminDashboard() {
-    if (!$('#adminLoginScreen')) return;
-    try {
-      const result = await supabaseClient?.rpc('premium_is_admin');
-      remoteAdminVerified = !result?.error && result?.data === true;
-    } catch { remoteAdminVerified = false; }
-    const form = $('#adminLoginForm');
-    const note = $('.admin-login-note');
-    if (form) form.classList.toggle('hidden', !remoteAdminVerified);
-    if (note && !remoteAdminVerified) note.innerHTML = '<i class="fa-solid fa-lock"></i> هذا الحساب غير مخوّل للوصول إلى أدوات المشرفين.';
-    const allowed = isAdminAuthenticated();
-    showAdminWorkspace(allowed);
-    if (!allowed || !$('#adminStudentCount')) return;
-    syncAdminStudent(false);
-    renderAdminDashboard();
+  function bindAdminDashboardControls() {
     if (adminControlsBound) return;
     adminControlsBound = true;
     const activateAdminTab = tabId => { const target = $(`.admin-tab[data-admin-tab="${tabId}"]`); if (!target) return; $$('.admin-tab').forEach(item => item.classList.toggle('active', item === target)); $$('.admin-pane').forEach(pane => pane.classList.toggle('active', pane.dataset.adminPane === tabId)); target.scrollIntoView?.({ block: 'nearest', inline: 'center', behavior: 'smooth' }); };
@@ -2072,6 +2067,33 @@
     $('#adminStudentSearch')?.addEventListener('input', event => renderAdminStudents(event.target.value));
     $('#adminCommunityPromoToggle')?.addEventListener('change', event => { communityPromo.visible = event.target.checked; if (!saveCommunityPromo()) return; adminLog('content', communityPromo.visible ? 'إظهار الإعلان: مساحة طلاب نبض' : 'إخفاء الإعلان: مساحة طلاب نبض', 'إعداد مجتمع الأخبار'); renderAdminDashboard(); toast(communityPromo.visible ? 'سيظهر الإعلان في الأخبار.' : 'تم إخفاء الإعلان من الأخبار.'); });
     $('#adminCommunityPromoForm')?.addEventListener('submit', event => { event.preventDefault(); const data = new FormData(event.currentTarget); const link = String(data.get('link') || '').trim(); if (link && !/^https?:\/\//i.test(link)) return toast('أدخل رابطًا يبدأ بـ https:// أو اترك الحقل فارغًا.'); communityPromo = { ...communityPromo, title: String(data.get('title') || '').trim() || defaultCommunityPromo.title, body: String(data.get('body') || '').trim() || defaultCommunityPromo.body, ctaLabel: String(data.get('ctaLabel') || '').trim() || defaultCommunityPromo.ctaLabel, link }; if (!saveCommunityPromo()) return; adminLog('content', 'نشر أو تحديث إعلان مجتمع الأخبار', communityPromo.title); renderAdminDashboard(); toast('تم نشر الإعلان وتحديثه في مجتمع الأخبار.'); });
+  }
+
+  async function initAdminDashboard() {
+    if (!$('#adminLoginScreen')) return;
+    // اعرض حالة الإدارة المحلية واربط عناصرها قبل انتظار فحص الصلاحية البعيد.
+    const allowed = isAdminAuthenticated();
+    showAdminWorkspace(allowed);
+    if (allowed && $('#adminStudentCount')) {
+      syncAdminStudent(false);
+      renderAdminDashboard();
+      bindAdminDashboardControls();
+    }
+
+    try {
+      const result = await supabaseClient?.rpc('premium_is_admin');
+      remoteAdminVerified = !result?.error && result?.data === true;
+    } catch { remoteAdminVerified = false; }
+    const form = $('#adminLoginForm');
+    const note = $('.admin-login-note');
+    if (form) form.classList.toggle('hidden', !remoteAdminVerified);
+    if (note && !remoteAdminVerified) note.innerHTML = '<i class="fa-solid fa-lock"></i> هذا الحساب غير مخوّل للوصول إلى أدوات المشرفين.';
+    if (!remoteAdminVerified) {
+      if (allowed) showAdminWorkspace(false);
+      return;
+    }
+    if (!allowed) return;
+    showAdminWorkspace(true);
   }
 
   function bindEvents() {
@@ -2197,7 +2219,7 @@
   }
 
   async function init() {
-    if (!(await requireStudentSession())) { nativeReady(); return; }
+    // الخط الأول محلي بالكامل: لا تنتظر Supabase قبل إظهار القائمة أو ربط التفاعلات.
     addAuthControls();
     nativeReady();
     enableScreenCapture();
@@ -2209,6 +2231,7 @@
     updateProfileUI();
     syncAdminStudent(false);
     bindEvents();
+
     const pageInitializers = {
       home: initHome,
       news: initNews,
@@ -2229,7 +2252,18 @@
       supervision: initAdminDashboard
     };
     const initializePage = pageInitializers[PAGE];
-    if (initializePage) await initializePage();
+    if (initializePage) {
+      window.setTimeout(() => Promise.resolve().then(() => initializePage()).catch(error => console.warn(`تعذر تهيئة قسم ${PAGE} في الخلفية:`, error)), 0);
+    }
+
+    // الجلسة والملف الشخصي مزامنة خلفية؛ عند اكتمالها نحدّث العناصر دون إعادة حجب الصفحة.
+    window.setTimeout(() => Promise.resolve().then(() => requireStudentSession()).then(ready => {
+      if (!ready) return;
+      addAuthControls();
+      updateProfileUI();
+      syncAdminStudent(false);
+    }).catch(error => console.warn('تعذر مزامنة جلسة الطالب في الخلفية:', error)), 0);
+
     nativeReady();
     window.setTimeout(nativeReady, 450);
   }

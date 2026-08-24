@@ -42,6 +42,30 @@
   function bindTabs() { $('#premiumAdminTabs')?.addEventListener('click', event => { const button = event.target.closest('[data-admin-pane]'); if (!button) return; document.querySelectorAll('#premiumAdminTabs button').forEach(item => item.classList.toggle('active', item === button)); document.querySelectorAll('[data-admin-pane-view]').forEach(pane => pane.classList.toggle('active', pane.dataset.adminPaneView === button.dataset.adminPane)); }); }
   function bindForms() { const handlers = { branchForm: saveBranch, teacherForm: saveTeacher, subjectForm: saveSubject, fileForm: saveFile, codeForm: saveCode, settingsForm: saveSettings }; Object.entries(handlers).forEach(([id, handler]) => $('#' + id)?.addEventListener('submit', async event => { event.preventDefault(); const button = event.currentTarget.querySelector('button[type="submit"]'); if (button) button.disabled = true; try { await handler(event.currentTarget); if (id !== 'codeForm') { resetForm(id); await loadCatalog(); toast('تم الحفظ بنجاح.'); } else { await loadCatalog(); toast('تم إنشاء الكود.'); } } catch (error) { toast(error.message || 'تعذر تنفيذ العملية.'); } finally { if (button) button.disabled = false; } })); document.querySelectorAll('[data-reset-form]').forEach(button => button.addEventListener('click', () => resetForm(button.dataset.resetForm))); $('#fileTeacher')?.addEventListener('change', () => refreshFileSubjects()); $('#codeType')?.addEventListener('change', event => { const bundle = event.target.value === 'teacher_bundle'; $('#codeFileWrap')?.classList.toggle('hidden', bundle); $('#codeTeacherWrap')?.classList.toggle('hidden', !bundle); }); }
   function bindLists() { document.body.addEventListener('click', event => { const toggle = event.target.closest('[data-toggle-code]'); if (toggle) { toggleCode(toggle); return; } const edit = event.target.closest('[data-edit]'); if (edit) { const type = edit.dataset.edit; const collections = { branch: 'branches', teacher: 'teachers', subject: 'subjects', file: 'files' }; const item = state.catalog[collections[type]]?.find(entry => entry.id === edit.dataset.id); const forms = { branch: 'branchForm', teacher: 'teacherForm', subject: 'subjectForm', file: 'fileForm' }; if (item && forms[type]) { setForm(forms[type], item); if (type === 'file') { $('#fileTeacher').value = item.teacher_id || state.catalog.subjects.find(subject => subject.id === item.subject_id)?.teacher_id || ''; refreshFileSubjects(item.subject_id); } document.querySelector(`[data-admin-pane="${collections[type]}"]`)?.click(); window.scrollTo({ top: 0, behavior: 'smooth' }); } return; } const remove = event.target.closest('[data-delete]'); if (remove) deleteEntity(remove.dataset.delete, remove.dataset.id); }); }
-  async function init() { if (!client) return; try { const allowed = await rpc('premium_is_admin'); if (!allowed) { showWorkspace(false); $('#premiumAdminGate').innerHTML = '<i class="fa-solid fa-lock"></i><h2>لا تملك صلاحية الوصول</h2><p>هذه الصفحة مخصصة للمشرفين المعتمدين في قاعدة البيانات.</p>'; return; } showWorkspace(true); bindTabs(); bindForms(); bindLists(); await loadCatalog(); } catch (error) { showWorkspace(false); $('#premiumAdminGate').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i><h2>تعذر التحقق من الصلاحية</h2><p>${escapeHTML(error.message || 'حاول تسجيل الدخول من جديد.')}</p>`; } }
+  async function init() {
+    // إظهار المساحة وربط التفاعلات محليًا أولًا، ثم فحص الصلاحية وجلب الكتالوج في الخلفية.
+    showWorkspace(true);
+    bindTabs();
+    bindForms();
+    bindLists();
+    if (!client) {
+      showWorkspace(false);
+      $('#premiumAdminGate').innerHTML = '<i class="fa-solid fa-wifi"></i><h2>تحتاج إلى اتصال للتحقق</h2><p>تعمل الواجهة محليًا، لكن صلاحية المشرف وبيانات الكتالوج تحتاج إلى الاتصال.</p>';
+      return;
+    }
+    try {
+      const allowed = await rpc('premium_is_admin');
+      if (!allowed) {
+        showWorkspace(false);
+        $('#premiumAdminGate').innerHTML = '<i class="fa-solid fa-lock"></i><h2>لا تملك صلاحية الوصول</h2><p>هذه الصفحة مخصصة للمشرفين المعتمدين في قاعدة البيانات.</p>';
+        return;
+      }
+      await loadCatalog();
+    } catch (error) {
+      showWorkspace(true);
+      $('#premiumAdminStatus')?.replaceChildren(document.createTextNode('تعذر تحديث الكتالوج من قاعدة البيانات؛ يمكنك مراجعة النماذج وإعادة المحاولة عند عودة الاتصال.'));
+      console.warn('تعذر تحميل كتالوج القسم المميز في الخلفية.', error);
+    }
+  }
   document.addEventListener('DOMContentLoaded', init);
 })();
