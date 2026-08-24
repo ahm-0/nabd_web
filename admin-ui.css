@@ -1,0 +1,30 @@
+/* بوابة المشرفين: طبقة استخدام محسّنة */
+.admin-workspace-main{width:min(100%,920px);margin-inline:auto}
+.admin-command-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:14px 0;padding:12px 14px;border:1px solid rgba(var(--primary-rgb),.16);border-radius:17px;background:linear-gradient(135deg,rgba(var(--primary-rgb),.08),var(--surface));box-shadow:0 10px 24px rgba(0,0,0,.08)}
+.admin-command-status{display:flex;align-items:center;gap:9px;min-width:0}
+.admin-command-status>div{display:grid;gap:2px;min-width:0}
+.admin-command-status b{font-size:12px}
+.admin-command-status small{color:var(--muted);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-command-status-dot{width:10px;height:10px;flex:none;border-radius:50%;background:var(--success);box-shadow:0 0 0 5px rgba(57,217,162,.12)}
+.admin-command-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.admin-command-actions .outline-button{min-height:34px;padding:7px 10px;font-size:10px;white-space:nowrap}
+.admin-workspace-priority{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+.admin-priority-card{min-height:104px;padding:13px;border-radius:17px;transition:transform .18s var(--ease-out),box-shadow .18s var(--ease-out),border-color .18s var(--ease-out)}
+.admin-priority-card:hover{transform:translateY(-2px);border-color:rgba(var(--primary-rgb),.34);box-shadow:0 13px 25px rgba(0,0,0,.12)}
+.admin-priority-card:active{transform:scale(.98)}
+.admin-priority-icon{width:35px;height:35px;border-radius:12px}
+.admin-priority-copy b{font-variant-numeric:tabular-nums}
+.admin-workspace-tabs{position:sticky;top:10px;z-index:8;padding:5px;border:1px solid var(--line);border-radius:16px;background:color-mix(in srgb,var(--surface) 91%,transparent);backdrop-filter:blur(14px);box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.admin-workspace-tabs .admin-tab{min-height:40px;border-radius:11px;font-weight:900;transition:background .18s var(--ease-out),color .18s var(--ease-out),transform .18s var(--ease-out)}
+.admin-workspace-tabs .admin-tab:hover{transform:translateY(-1px)}
+.admin-workspace-tabs .admin-tab:focus-visible,.admin-priority-card:focus-visible,.admin-command-actions .outline-button:focus-visible{outline:3px solid rgba(var(--primary-rgb),.35);outline-offset:2px}
+.admin-workspace-card{box-shadow:0 12px 28px rgba(0,0,0,.08)}
+.admin-workspace-card>header{gap:14px}
+.admin-workspace-card .admin-card-note{max-width:54ch;line-height:1.7}
+.admin-student-card,.admin-request,.admin-post{transition:transform .18s var(--ease-out),border-color .18s var(--ease-out),box-shadow .18s var(--ease-out)}
+.admin-student-card:hover,.admin-request:hover,.admin-post:hover{transform:translateY(-1px);border-color:rgba(var(--primary-rgb),.27);box-shadow:0 10px 22px rgba(0,0,0,.09)}
+.admin-pane.active{animation:adminPaneIn .18s var(--ease-out)}
+@keyframes adminPaneIn{from{opacity:.55;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:760px){.admin-command-bar{align-items:flex-start;flex-direction:column}.admin-command-actions{width:100%;justify-content:stretch}.admin-command-actions>*{flex:1}.admin-workspace-tabs{top:5px}.admin-workspace-priority{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.admin-command-bar{padding:11px}.admin-command-actions{display:grid;grid-template-columns:1fr 1fr}.admin-command-actions>*{width:100%}.admin-workspace-priority{gap:8px}.admin-priority-card{min-height:96px;padding:11px}}
+@media(prefers-reduced-motion:reduce){.admin-priority-card,.admin-workspace-tabs .admin-tab,.admin-student-card,.admin-request,.admin-post{transition:none}.admin-pane.active{animation:none}}

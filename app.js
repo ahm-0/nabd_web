@@ -93,9 +93,14 @@
   let adminControlsBound = false;
   let remoteAdminVerified = false;
   let adminShortcutChecked = false;
-  let customCountdown = readStorage('custom_countdown', {
-    title: 'هدفي الخاص', target: new Date('2027-04-15T08:00:00').getTime()
-  });
+  const defaultCustomCountdown = { title: 'هدفي الخاص', target: new Date('2027-01-01T08:00:00').getTime() };
+  const storedCustomCountdown = readStorage('custom_countdown', defaultCustomCountdown);
+  let customCountdown = {
+    ...defaultCustomCountdown,
+    ...(storedCustomCountdown && typeof storedCustomCountdown === 'object' ? storedCustomCountdown : {})
+  };
+  if (!customCountdown.title || !String(customCountdown.title).trim()) customCountdown.title = defaultCustomCountdown.title;
+  if (!Number.isFinite(Number(customCountdown.target))) customCountdown.target = defaultCustomCountdown.target;
   let uploadImages = [];
   let newsIsAdmin = false;
   let newsRemotePostsLoaded = false;
@@ -466,7 +471,7 @@
           <div class="form-group full"><label>السيرة الذاتية</label><textarea name="bio" maxlength="240">${escapeHTML(student.bio)}</textarea></div>
         </div><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">حفظ التغييرات</button></div></form>`,
       customCountdown: `<div class="modal-head"><h3>ضبط العداد المخصص</h3><button class="close-modal" aria-label="إغلاق">×</button></div>
-        <form id="customCountdownForm"><div class="form-group"><label>اسم الهدف</label><input name="title" required maxlength="34" value="${escapeHTML(customCountdown.title)}"></div><div class="form-group" style="margin-top:12px"><label>موعد الهدف</label><input name="target" type="datetime-local" required value="${formatDate(customCountdown.target)}"></div><p class="onboarding-note">يحفظ العداد على جهازك داخل المتصفح.</p><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">حفظ العداد</button></div></form>`,
+        <form id="customCountdownForm"><div class="form-group"><label>اسم الهدف</label><input name="title" required maxlength="34" value="${escapeHTML(customCountdown.title)}"></div><div class="form-group" style="margin-top:12px"><label>موعد الهدف</label><input name="target" type="datetime-local" required min="${formatDate(Date.now())}" value="${formatDate(customCountdown.target)}"></div><p class="onboarding-note">يحفظ العداد على جهازك داخل المتصفح.</p><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">حفظ العداد</button></div></form>`,
       appGuide: `<div class="modal-head"><h3>شرح استخدام التطبيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-regular fa-circle-play"></i></div><h2>ابدأ بخطوات بسيطة</h2><p>من الرئيسية تابع عدادات الامتحان واستخدم الأدوات الدراسية. اختر «مخصص» لضبط هدفك وموعده.</p><p>في الملف الشخصي عدّل بياناتك وصورتك وإعداداتك، ثم استخدم مجتمع الأخبار لمشاركة الأخبار والصور والتفاعل باحترام.</p></div>`,
       contribute: `<div class="modal-head"><h3>ساهم في التطبيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-solid fa-hand-holding-heart"></i></div><h2>رأيك يصنع فرقًا</h2><p>شارك اقتراحاتك للأقسام والأدوات الدراسية التي ترغب برؤيتها في الإصدارات القادمة.</p></div>`,
       contact: `<div class="modal-head"><h3>تواصل مع الدعم</h3><button class="close-modal" aria-label="إغلاق">×</button></div><form id="supportForm"><div class="info-page"><div class="info-icon"><i class="fa-regular fa-comment-dots"></i></div><h2>كيف يمكننا مساعدتك؟</h2><p>اكتب رسالتك، وستظهر في صندوق الدعم داخل بوابة المشرفين على هذا المتصفح.</p><div class="form-group" style="text-align:right"><label>نوع الرسالة</label><select name="category"><option>مساعدة دراسية</option><option>مشكلة تقنية</option><option>اقتراح تطوير</option><option>استفسار عام</option></select></div><div class="form-group" style="text-align:right;margin-top:11px"><label>رسالتك</label><textarea name="message" required maxlength="700" placeholder="اكتب تفاصيل المساعدة التي تحتاجها..."></textarea></div><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">إرسال للدعم</button></div></div></form>`,
@@ -520,8 +525,8 @@
   }
 
   const homeExams = {
-    bac: { title: 'امتحانات البكالوريا', badge: 'الثانوية العامة', note: 'رتّب خطتك اليومية لتصل إلى موعد الامتحان بثقة.', target: new Date('2027-06-24T07:00:00').getTime() },
-    nine: { title: 'امتحانات التاسع', badge: 'التعليم الأساسي', note: 'اجعل المراجعة اليومية عادة ثابتة قبل موعد الامتحان.', target: new Date('2027-05-28T07:00:00').getTime() },
+    bac: { title: 'امتحانات البكالوريا', badge: 'الثانوية العامة', note: 'موعد الفحص: 6 يونيو 2027 · رتّب خطتك اليومية لتصل إلى الموعد بثقة.', target: new Date('2027-06-06T08:00:00').getTime() },
+    nine: { title: 'امتحانات التاسع', badge: 'التعليم الأساسي', note: 'موعد الفحص: 2 يونيو 2027 · اجعل المراجعة اليومية عادة ثابتة قبل الموعد.', target: new Date('2027-06-02T08:00:00').getTime() },
     custom: { title: customCountdown.title, badge: 'عداد مخصص', note: 'اضبط اسم هدفك وموعده ليظهر عدادك الخاص هنا.', target: customCountdown.target }
   };
 
@@ -1753,14 +1758,16 @@
 
   function handleCountdownSave(form) {
     const data = new FormData(form);
+    const title = String(data.get('title') || '').trim();
     const target = new Date(data.get('target')).getTime();
-    if (!Number.isFinite(target)) return toast('اختر موعدًا صحيحًا.');
-    customCountdown = { title: String(data.get('title')).trim(), target };
-    homeExams.custom = { title: customCountdown.title, badge: 'عداد مخصص', note: 'اضبط اسم هدفك وموعده ليظهر عدادك الخاص هنا.', target };
+    if (title.length < 2) return toast('أضف اسمًا واضحًا للعداد.');
+    if (!Number.isFinite(target) || target <= Date.now()) return toast('اختر موعدًا مستقبليًا صحيحًا.');
+    customCountdown = { title: title.slice(0, 34), target };
+    homeExams.custom = { title: customCountdown.title, badge: 'عداد مخصص', note: `موعد الهدف: ${new Date(target).toLocaleDateString('ar-SY', { day: 'numeric', month: 'long', year: 'numeric' })} · استمر بخطوات صغيرة كل يوم.`, target };
     saveState();
     closeModal();
     setExam('custom');
-    toast('تم حفظ العداد المخصص.');
+    toast('تم حفظ العداد المخصص على جهازك.');
   }
 
   function submitVerificationRequest() {
@@ -1911,6 +1918,7 @@
     const id = button.dataset.adminId;
     if (action === 'logout') return logoutAdmin();
     if (!isAdminAuthenticated()) return toast('افتح بوابة المشرفين أولًا لتنفيذ هذا الإجراء.');
+    if (action === 'refresh-ui') { renderAdminDashboard(); return toast('تم تحديث عرض البوابة مع الحفاظ على البيانات.'); }
     if (action === 'verification-approve' || action === 'verification-reject') {
       const request = verificationRequests.find(item => item.id === id);
       if (!request) return;
@@ -2249,7 +2257,8 @@
       'study-schedule': initStudySchedule,
       ai: initChat,
       'support-chat': renderSupportChat,
-      supervision: initAdminDashboard
+      supervision: initAdminDashboard,
+      countdown: initHome
     };
     const initializePage = pageInitializers[PAGE];
     if (initializePage) {

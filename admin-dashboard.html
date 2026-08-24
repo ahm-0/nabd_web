@@ -8,6 +8,7 @@
   <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script>
   <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="styles.css?v=20260823-admin-workspace">
+  <link rel="stylesheet" href="admin-ui.css?v=20260825-admin-ui">
 
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
@@ -37,6 +38,11 @@
         <section class="admin-workspace-welcome">
           <div class="admin-workspace-welcome-copy"><span class="admin-workspace-kicker"><i class="fa-solid fa-circle-check"></i> لوحة الإدارة جاهزة</span><h3>تابع أهم ما يحتاج انتباهك</h3><p>إدارة منظمة للطلاب والتوثيق والرسائل والمحتوى دون التأثير في البيانات المرتبطة.</p></div>
           <div class="admin-workspace-welcome-mark"><i class="fa-solid fa-shield-heart"></i><small>محلي</small></div>
+        </section>
+
+        <section class="admin-command-bar" aria-label="أدوات الإدارة السريعة">
+          <div class="admin-command-status"><span class="admin-command-status-dot"></span><div><b>مساحة إدارة محلية</b><small>تبقى البيانات محفوظة في هذا المتصفح</small></div></div>
+          <div class="admin-command-actions"><a class="outline-button" href="exam-countdown.html"><i class="fa-solid fa-hourglass-half"></i><span>عدادات الامتحانات</span></a><button class="outline-button" type="button" data-admin-action="refresh-ui"><i class="fa-solid fa-arrows-rotate"></i><span>تحديث العرض</span></button></div>
         </section>
 
         <section class="admin-workspace-priority" aria-label="المتابعة السريعة">
