@@ -93,6 +93,11 @@
   let adminControlsBound = false;
   let remoteAdminVerified = false;
   let adminShortcutChecked = false;
+  let appNotifications = [];
+  let notificationsLoaded = false;
+  let notificationsEventsBound = false;
+  let adminNotificationImageData = '';
+  let adminStats = { total_users: 0, total_notifications: 0 };
   const defaultCustomCountdown = { title: 'هدفي الخاص', target: new Date('2027-01-01T08:00:00').getTime() };
   const storedCustomCountdown = readStorage('custom_countdown', defaultCustomCountdown);
   let customCountdown = {
@@ -392,12 +397,13 @@
   }
 
   async function revealPremiumAdminShortcut() {
-    const shortcuts = $$('#premiumAdminHomeShortcut');
-    if (!shortcuts.length || adminShortcutChecked || !supabaseClient) return;
-    adminShortcutChecked = true;
+    const shortcuts = $$('#premiumAdminHomeShortcut, #adminPortalShortcut');
+    if (!shortcuts.length || adminShortcutChecked || !supabaseClient || !currentAuthUser) return;
     try {
       const result = await supabaseClient.rpc('premium_is_admin');
-      if (!result.error && result.data === true) shortcuts.forEach(shortcut => shortcut.classList.remove('hidden'));
+      if (result.error) return;
+      adminShortcutChecked = true;
+      if (result.data === true) shortcuts.forEach(shortcut => shortcut.classList.remove('hidden'));
     } catch { /* يبقى الرابط مخفيًا للمستخدم غير المشرف */ }
   }
 
@@ -434,6 +440,109 @@
         <a class="bottom-link ${PAGE === 'news' ? 'active' : ''}" href="news.html"><i class="fa-regular fa-newspaper"></i><span>الأخبار</span></a>
         <a class="bottom-link ${PAGE === 'profile' ? 'active' : ''}" href="profile.html"><i class="fa-regular fa-user"></i><span>حسابي</span></a>`;
     }
+  }
+
+  function safeNotificationUrl(value) {
+    try {
+      const url = new URL(String(value || '').trim());
+      return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+    } catch { return ''; }
+  }
+
+  function updateNotificationBadges() {
+    const unread = appNotifications.filter(item => !item.read_at).length;
+    $$('.notification-dot').forEach(dot => {
+      dot.classList.toggle('has-unread', unread > 0);
+      dot.setAttribute('aria-label', unread ? `${unread} إشعار غير مقروء` : 'لا توجد إشعارات غير مقروءة');
+      dot.title = unread ? `${unread} إشعار غير مقروء` : 'لا توجد إشعارات غير مقروءة';
+    });
+  }
+
+  function notificationCardMarkup(notification) {
+    const unread = !notification.read_at;
+    const imageUrl = safeNotificationUrl(notification.image_url);
+    const actionUrl = safeNotificationUrl(notification.action_url);
+    return `<article class="notification-card ${unread ? 'is-unread' : ''}" data-notification-open="${escapeHTML(notification.id)}" tabindex="0"><div class="notification-card-marker" aria-hidden="true"></div>${imageUrl ? `<img class="notification-card-image" loading="lazy" src="${escapeHTML(imageUrl)}" alt="صورة مرفقة بالإشعار">` : ''}<div class="notification-card-content"><div class="notification-card-meta"><span><i class="fa-regular fa-clock"></i> ${escapeHTML(displayAdminDate(notification.created_at))}</span>${unread ? '<b>جديد</b>' : '<span>مقروء</span>'}</div><h3>${escapeHTML(notification.title)}</h3><p>${escapeHTML(notification.body).replace(/\n/g, '<br>')}</p>${actionUrl ? `<a class="notification-card-action" href="${escapeHTML(actionUrl)}" data-external-url="${escapeHTML(actionUrl)}"><i class="fa-solid fa-arrow-up-left-from-circle"></i> فتح الرابط</a>` : ''}<button class="notification-mark-read" type="button" data-notification-read="${escapeHTML(notification.id)}" ${unread ? '' : 'disabled'}>${unread ? '<i class="fa-solid fa-check"></i> تعليم كمقروء' : '<i class="fa-solid fa-check-double"></i> تمت القراءة'}</button></div></article>`;
+  }
+
+  function renderNotifications() {
+    const list = $('#notificationsList');
+    const empty = $('#notificationsEmpty');
+    const loading = $('#notificationsLoading');
+    if (!list) { updateNotificationBadges(); return; }
+    if (!notificationsLoaded) {
+      list.innerHTML = '';
+      if (loading) loading.hidden = false;
+      if (empty) empty.hidden = true;
+      updateNotificationBadges();
+      return;
+    }
+    if (loading) loading.hidden = true;
+    list.innerHTML = appNotifications.map(notificationCardMarkup).join('');
+    if (empty) empty.hidden = appNotifications.length > 0;
+    updateNotificationBadges();
+  }
+
+  async function loadAppNotifications() {
+    if (!supabaseClient || !currentAuthUser) return;
+    const { data, error } = await supabaseClient.rpc('get_notifications', { p_limit: 50 });
+    if (error) {
+      console.warn('تعذر تحميل الإشعارات', error);
+      const loading = $('#notificationsLoading');
+      if (loading) { loading.hidden = false; loading.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i><span>تعذر تحميل الإشعارات الآن. حاول التحديث لاحقًا.</span>'; }
+      return;
+    }
+    appNotifications = Array.isArray(data) ? data : [];
+    notificationsLoaded = true;
+    renderNotifications();
+    updateNotificationBadges();
+  }
+
+  async function markNotificationRead(notificationId) {
+    const notification = appNotifications.find(item => item.id === notificationId);
+    if (!notification || notification.read_at || !supabaseClient || !currentAuthUser) return;
+    const { error } = await supabaseClient.rpc('mark_notification_read', { p_notification_id: notificationId });
+    if (error) return toast('تعذر تحديث حالة الإشعار الآن.');
+    notification.read_at = new Date().toISOString();
+    renderNotifications();
+  }
+
+  async function markAllNotificationsRead() {
+    const unread = appNotifications.filter(item => !item.read_at);
+    if (!unread.length) return toast('جميع الإشعارات مقروءة.');
+    const button = $('#markAllNotificationsRead');
+    if (button) { button.disabled = true; button.dataset.originalLabel = button.innerHTML; button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جارٍ التحديث'; }
+    try {
+      const results = await Promise.all(unread.map(item => supabaseClient.rpc('mark_notification_read', { p_notification_id: item.id })));
+      if (results.some(result => result.error)) throw new Error('تعذر تعليم بعض الإشعارات.');
+      const now = new Date().toISOString();
+      appNotifications.forEach(item => { if (!item.read_at) item.read_at = now; });
+      renderNotifications();
+      toast('تم تعليم جميع الإشعارات كمقروءة.');
+    } catch (error) { console.warn('تعذر تعليم الإشعارات', error); toast('تعذر تحديث الإشعارات الآن.'); }
+    finally { if (button) { button.disabled = false; button.innerHTML = button.dataset.originalLabel || '<i class="fa-solid fa-check-double"></i> تعليم الكل كمقروء'; } }
+  }
+
+  function initNotifications() {
+    if (!$('#notificationsList')) return;
+    if (!notificationsEventsBound) {
+      notificationsEventsBound = true;
+      $('#markAllNotificationsRead')?.addEventListener('click', markAllNotificationsRead);
+      $('#notificationsList')?.addEventListener('click', event => {
+        const readButton = event.target.closest('[data-notification-read]');
+        const card = event.target.closest('[data-notification-open]');
+        const id = readButton?.dataset.notificationRead || card?.dataset.notificationOpen;
+        if (id && !event.target.closest('a')) void markNotificationRead(id);
+      });
+      $('#notificationsList')?.addEventListener('keydown', event => {
+        if ((event.key !== 'Enter' && event.key !== ' ') || event.target.closest('button, a')) return;
+        event.preventDefault();
+        const card = event.target.closest('[data-notification-open]');
+        if (card) void markNotificationRead(card.dataset.notificationOpen);
+      });
+    }
+    renderNotifications();
+    void loadAppNotifications();
   }
 
   function formatDate(timestamp) {
@@ -643,7 +752,7 @@
     window.addEventListener('pagehide', () => window.clearInterval(timer), { once: true });
   }
 
-  const IMGBB_API_KEY = '5e1ed9082e860053f7058781896e9189';
+  const APP_MEDIA_BUCKET = 'notification-assets';
 
   function mapRemoteNewsPost(row) {
     return {
@@ -812,13 +921,19 @@
     $('#newsComposerDock')?.classList.toggle('has-text', Boolean(input.value.trim()));
   }
 
-  async function uploadNewsImageToImgBB(dataUrl) {
-    const form = new FormData();
-    form.append('image', String(dataUrl).split(',').pop());
-    const response = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(IMGBB_API_KEY)}&expiration=0`, { method: 'POST', body: form });
-    const payload = await response.json().catch(() => null);
-    if (!response.ok || !payload?.success || !payload?.data?.url) throw new Error(payload?.error?.message || 'تعذر رفع الصورة إلى ImgBB.');
-    return payload.data.url;
+  async function uploadNewsImageToStorage(dataUrl) {
+    if (!supabaseClient || !currentAuthUser) throw new Error('يلزم تسجيل الدخول لرفع الصورة.');
+    const response = await fetch(String(dataUrl));
+    if (!response.ok) throw new Error('تعذر تجهيز الصورة للرفع.');
+    const blob = await response.blob();
+    const mime = blob.type || 'image/jpeg';
+    const extension = (mime.split('/')[1] || 'jpeg').replace('jpeg', 'jpg').replace(/[^a-z0-9]/gi, '').slice(0, 8) || 'jpg';
+    const uniqueId = typeof globalThis.crypto?.randomUUID === 'function' ? globalThis.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const path = `news/${currentAuthUser.id}/${uniqueId}.${extension}`;
+    const { error } = await supabaseClient.storage.from(APP_MEDIA_BUCKET).upload(path, blob, { cacheControl: '31536000', upsert: false, contentType: mime });
+    if (error) throw error;
+    const { data } = supabaseClient.storage.from(APP_MEDIA_BUCKET).getPublicUrl(path);
+    return data?.publicUrl || null;
   }
 
   async function publishPost() {
@@ -829,7 +944,7 @@
     const button = $('#publishPost');
     if (button) { button.disabled = true; button.dataset.originalLabel = button.innerHTML; button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
     try {
-      const images = await Promise.all(uploadImages.map(uploadNewsImageToImgBB));
+      const images = await Promise.all(uploadImages.map(uploadNewsImageToStorage));
       const { data: postId, error } = await supabaseClient.rpc('news_admin_create_post', { p_body: text, p_images: images });
       if (error) throw error;
       const draft = { id: postId, name: fullName(), meta: `${student.stage} · إدارة الأخبار`, text, images, likes: 0, liked: false, comments: [], remote: true, mine: true, verified: true, createdAt: new Date().toISOString() };
@@ -2003,11 +2118,19 @@
     return `<article class="admin-request admin-support-ticket"><div class="admin-request-head"><div class="admin-request-person">${adminAvatarMarkup(ticket)}<div><b>${escapeHTML(ticket.name)}</b><small>${escapeHTML(ticket.category)} · ${displayAdminDate(ticket.updatedAt || ticket.createdAt)}</small></div></div>${adminStatusMarkup(ticket.status)}</div><div class="admin-request-body"><span class="admin-detail-chip"><i class="fa-solid fa-phone"></i> ${escapeHTML(ticket.phone)}</span><span class="admin-detail-chip"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(ticket.city)}</span><span class="admin-detail-chip"><i class="fa-regular fa-comments"></i> ${thread.length} رسالة</span></div><p class="admin-request-message">${escapeHTML(latest?.text || ticket.message || '')}</p><div class="admin-request-actions"><button class="admin-resolve" type="button" data-admin-action="support-reply" data-admin-id="${escapeHTML(ticket.id)}"><i class="fa-solid fa-reply"></i> ${replyCount ? 'متابعة المحادثة' : 'الرد على الطالب'}</button>${ticket.status === 'open' ? `<button class="admin-resolve secondary" type="button" data-admin-action="support-resolve" data-admin-id="${escapeHTML(ticket.id)}"><i class="fa-solid fa-check"></i> إغلاق</button>` : ''}</div></article>`;
   }
 
+  async function loadAdminDashboardStats() {
+    if (!supabaseClient || !remoteAdminVerified || !$('#adminTotalUsers')) return;
+    const { data, error } = await supabaseClient.rpc('admin_get_dashboard_stats');
+    if (error || !data) { console.warn('تعذر تحميل إحصائيات الإدارة', error); return; }
+    adminStats = { ...adminStats, ...data };
+    renderAdminDashboard();
+  }
+
   function renderAdminDashboard() {
-    if (!$('#adminStudentCount')) return;
+    if (!$('#adminWorkspace')) return;
     const pending = verificationRequests.filter(request => request.status === 'pending');
     const open = supportTickets.filter(ticket => ticket.status === 'open');
-    $('#adminStudentCount').textContent = String(adminStudents.length);
+    $('#adminTotalUsers').textContent = String(Number(adminStats.total_users) || 0);
     $('#adminVerificationCount').textContent = String(pending.length);
     $('#adminSupportCount').textContent = String(open.length);
     $('#adminPostCount').textContent = String(posts.length);
@@ -2204,6 +2327,84 @@
 
   async function initStudySchedule() { if (!$('#studyTasks')) return; await loadStudyTasks(); const note = $('#studyNativeNote'); if (note) note.innerHTML = isNativeNabd() && capacitorPlugin('LocalNotifications') ? '<i class="fa-solid fa-mobile-screen-button"></i><span>التذكيرات الأصلية متاحة داخل التطبيق.</span>' : '<i class="fa-solid fa-globe"></i><span>يعمل الجدول في المتصفح؛ الإشعار الأصلي يحتاج جسر التطبيق.</span>'; renderStudyTasks(); }
 
+  function setAdminNotificationStatus(message = '', tone = '') {
+    const status = $('#adminNotificationStatus');
+    if (!status) return;
+    status.className = `notification-send-status ${tone}`;
+    status.innerHTML = message ? `<i class="fa-solid ${tone === 'success' ? 'fa-circle-check' : tone === 'warning' ? 'fa-circle-exclamation' : tone === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info'}"></i><span>${escapeHTML(message)}</span>` : '';
+  }
+
+  function clearAdminNotificationImage() {
+    adminNotificationImageData = '';
+    const input = $('#adminNotificationImage');
+    const preview = $('#adminNotificationImagePreview');
+    const image = $('#adminNotificationImagePreviewImg');
+    if (input) input.value = '';
+    if (image) image.removeAttribute('src');
+    if (preview) preview.hidden = true;
+  }
+
+  function previewAdminNotificationImage(event) {
+    const file = event.target.files?.[0];
+    if (!file) return clearAdminNotificationImage();
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { clearAdminNotificationImage(); return setAdminNotificationStatus('اختر صورة بصيغة JPG أو PNG أو WebP.', 'error'); }
+    if (file.size > 5 * 1024 * 1024) { clearAdminNotificationImage(); return setAdminNotificationStatus('حجم صورة الإشعار يجب ألا يتجاوز 5MB.', 'error'); }
+    const reader = new FileReader();
+    reader.onload = () => {
+      adminNotificationImageData = String(reader.result || '');
+      const image = $('#adminNotificationImagePreviewImg');
+      const preview = $('#adminNotificationImagePreview');
+      if (image) image.src = adminNotificationImageData;
+      if (preview) preview.hidden = false;
+      setAdminNotificationStatus('تم تجهيز الصورة للرفع الآمن.', '');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function uploadAdminNotificationImage(file) {
+    if (!file || !supabaseClient || !currentAuthUser) return null;
+    const extension = file.type.split('/')[1] || 'bin';
+    const path = `${currentAuthUser.id}/${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${extension}`;
+    const { error } = await supabaseClient.storage.from('notification-assets').upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type });
+    if (error) throw error;
+    const { data } = supabaseClient.storage.from('notification-assets').getPublicUrl(path);
+    return data?.publicUrl || null;
+  }
+
+  async function sendAdminNotification(form) {
+    if (!remoteAdminVerified || !currentAuthUser) return toast('يلزم فتح جلسة مشرف صالحة قبل إرسال الإشعار.');
+    const data = new FormData(form);
+    const title = String(data.get('title') || '').trim();
+    const body = String(data.get('body') || '').trim();
+    const actionUrl = String(data.get('action_url') || '').trim();
+    const file = $('#adminNotificationImage')?.files?.[0] || null;
+    if (!title || title.length > 120) return setAdminNotificationStatus('اكتب عنوانًا بين حرف واحد و120 حرفًا.', 'error');
+    if (!body || body.length > 2000) return setAdminNotificationStatus('اكتب وصفًا بين حرف واحد و2000 حرف.', 'error');
+    if (actionUrl && !/^https?:\/\//i.test(actionUrl)) return setAdminNotificationStatus('رابط الإجراء يجب أن يبدأ بـ https:// أو http://.', 'error');
+    const button = $('#sendAdminNotification');
+    if (button) { button.disabled = true; button.dataset.originalLabel = button.innerHTML; button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جارٍ الإرسال'; }
+    try {
+      let imageUrl = null;
+      if (file) { setAdminNotificationStatus('جارٍ رفع الصورة إلى مساحة آمنة...', ''); imageUrl = await uploadAdminNotificationImage(file); }
+      setAdminNotificationStatus('جارٍ حفظ الإشعار والتحقق من الإرسال...', '');
+      const { data: result, error } = await supabaseClient.functions.invoke('send-admin-notification', { body: { title, body, image_url: imageUrl, action_url: actionUrl || null } });
+      if (error) throw error;
+      if (!result?.saved) throw new Error(result?.error || 'تعذر حفظ الإشعار.');
+      adminLog('content', `إرسال إشعار: ${title}`, result.push_sent ? 'حُفظ وأُرسل للمشتركين' : 'حُفظ داخل التطبيق');
+      saveAdminState();
+      renderAdminDashboard();
+      form.reset();
+      clearAdminNotificationImage();
+      if (result.push_sent) setAdminNotificationStatus('تم حفظ الإشعار وإرساله للمشتركين بنجاح.', 'success');
+      else setAdminNotificationStatus('تم حفظ الإشعار داخل التطبيق. لم يُرسل Push الخارجي لأن إعدادات OneSignal غير مكتملة أو الخدمة رفضت الطلب.', 'warning');
+    } catch (error) {
+      console.warn('تعذر إرسال الإشعار الإداري', error);
+      setAdminNotificationStatus('تعذر إرسال الإشعار الآن. تحقق من الاتصال ثم حاول مجددًا.', 'error');
+    } finally {
+      if (button) { button.disabled = false; button.innerHTML = button.dataset.originalLabel || '<i class="fa-solid fa-paper-plane"></i> إرسال الإشعار'; }
+    }
+  }
+
   function bindAdminDashboardControls() {
     if (adminControlsBound) return;
     adminControlsBound = true;
@@ -2213,6 +2414,8 @@
     $('#adminStudentSearch')?.addEventListener('input', event => renderAdminStudents(event.target.value));
     $('#adminCommunityPromoToggle')?.addEventListener('change', event => { communityPromo.visible = event.target.checked; if (!saveCommunityPromo()) return; adminLog('content', communityPromo.visible ? 'إظهار الإعلان: مساحة طلاب نبض' : 'إخفاء الإعلان: مساحة طلاب نبض', 'إعداد مجتمع الأخبار'); renderAdminDashboard(); toast(communityPromo.visible ? 'سيظهر الإعلان في الأخبار.' : 'تم إخفاء الإعلان من الأخبار.'); });
     $('#adminCommunityPromoForm')?.addEventListener('submit', event => { event.preventDefault(); const data = new FormData(event.currentTarget); const link = String(data.get('link') || '').trim(); if (link && !/^https?:\/\//i.test(link)) return toast('أدخل رابطًا يبدأ بـ https:// أو اترك الحقل فارغًا.'); communityPromo = { ...communityPromo, title: String(data.get('title') || '').trim() || defaultCommunityPromo.title, body: String(data.get('body') || '').trim() || defaultCommunityPromo.body, ctaLabel: String(data.get('ctaLabel') || '').trim() || defaultCommunityPromo.ctaLabel, link }; if (!saveCommunityPromo()) return; adminLog('content', 'نشر أو تحديث إعلان مجتمع الأخبار', communityPromo.title); renderAdminDashboard(); toast('تم نشر الإعلان وتحديثه في مجتمع الأخبار.'); });
+    $('#adminNotificationImage')?.addEventListener('change', previewAdminNotificationImage);
+    $('#removeAdminNotificationImage')?.addEventListener('click', () => { clearAdminNotificationImage(); setAdminNotificationStatus('', ''); });
   }
 
   async function initAdminDashboard() {
@@ -2220,7 +2423,7 @@
     // اعرض حالة الإدارة المحلية واربط عناصرها قبل انتظار فحص الصلاحية البعيد.
     const allowed = isAdminAuthenticated();
     showAdminWorkspace(allowed);
-    if (allowed && $('#adminStudentCount')) {
+    if (allowed && $('#adminWorkspace')) {
       syncAdminStudent(false);
       renderAdminDashboard();
       bindAdminDashboardControls();
@@ -2240,6 +2443,7 @@
     }
     if (!allowed) return;
     showAdminWorkspace(true);
+    void loadAdminDashboardStats();
   }
 
   function bindEvents() {
@@ -2322,6 +2526,7 @@
       if (event.target.id === 'supportChatForm') { event.preventDefault(); sendSupportChatMessage(event.target); }
       if (event.target.matches('.admin-support-reply-form')) { event.preventDefault(); sendAdminSupportReply(event.target); }
       if (event.target.id === 'adminLoginForm') { event.preventDefault(); submitAdminLogin(event.target); }
+      if (event.target.id === 'adminNotificationForm') { event.preventDefault(); sendAdminNotification(event.target); }
       if (event.target.id === 'studyTaskForm') { event.preventDefault(); saveStudyTask(event.target); }
       if (event.target.id === 'completionPlanForm') { event.preventDefault(); saveCompletionPlan(event.target); }
       if (event.target.id === 'libraryResourceForm') { event.preventDefault(); saveLibraryResource(event.target); }
@@ -2406,6 +2611,7 @@
       'study-schedule': initStudySchedule,
       ai: initChat,
       'support-chat': renderSupportChat,
+      notifications: initNotifications,
       supervision: initAdminDashboard,
       countdown: initHome
     };
@@ -2420,6 +2626,9 @@
       addAuthControls();
       updateProfileUI();
       syncAdminStudent(false);
+      updateNotificationBadges();
+      if (PAGE === 'notifications') initNotifications();
+      else void loadAppNotifications();
       refreshNewsOwnership();
     }).catch(error => console.warn('تعذر مزامنة جلسة الطالب في الخلفية:', error)), 0);
 

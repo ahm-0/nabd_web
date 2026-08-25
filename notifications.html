@@ -1,8 +1,30 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080d19"><title>نبض التفوق | الإشعارات</title><script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name=\"theme-color\"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script><link rel="stylesheet" href="vendor/fontawesome/css/all.min.css"><link rel="stylesheet" href="styles.css">
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080d19">
+  <title>نبض التفوق | الإشعارات</title>
+  <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="styles.css?v=20260825-notifications">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="pwa.js" defer></script>
-</head><body data-page="notifications"><div class="app"><header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a></header><div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content"><div class="page-heading"><div><h2>إشعارات التطبيق</h2><p>أدر تنبيهات المجتمع والدراسة من مكان واحد.</p></div><span class="badge"><i class="fa-regular fa-bell"></i> تجريبي</span></div><section class="panel preferences"><div class="setting-line"><div><strong>تفعيل الإشعارات</strong><small>تنبيهات الأخبار والأنشطة داخل التطبيق</small></div><input id="notificationsSwitch" class="switch" type="checkbox"></div><div class="setting-line"><div><strong>مرحبًا بك في مجتمع نبض</strong><small>يمكنك الآن نشر الأخبار والتفاعل مع الطلاب.</small></div><i style="color:var(--success)" class="fa-solid fa-check"></i></div><div class="setting-line"><div><strong>حافظ على خصوصيتك</strong><small>لا تشارك بياناتك الشخصية الحساسة في المنشورات.</small></div><i style="color:#ffbd38" class="fa-solid fa-shield"></i></div><div class="notice" style="margin-top:14px">الإشعارات في هذه النسخة للعرض داخل الواجهة فقط، ولا تصدر تنبيهات خارج المتصفح.</div></section></main></div></div><nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix?v=20260823-session-fix"></script><script src="app.js?v=20260823-session-fix"></script></body></html>
+</head>
+<body data-page="notifications">
+  <div class="app">
+    <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات" aria-label="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
+    <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content">
+      <section class="notifications-page-head"><div><span class="eyebrow">صندوق الوارد</span><h2>إشعارات التطبيق</h2><p>آخر التنبيهات المهمة من إدارة نبض التفوق في مكان واحد.</p></div><button class="outline-button" type="button" id="markAllNotificationsRead"><i class="fa-solid fa-check-double"></i> تعليم الكل كمقروء</button></section>
+      <section class="notifications-inbox panel" aria-live="polite"><div class="notifications-list" id="notificationsList"></div><div class="notifications-empty" id="notificationsEmpty" hidden><span><i class="fa-regular fa-bell-slash"></i></span><h3>لا توجد إشعارات جديدة</h3><p>ستظهر هنا رسائل إدارة التطبيق والتنبيهات المهمة عند نشرها.</p></div><div class="notifications-loading" id="notificationsLoading"><i class="fa-solid fa-spinner fa-spin"></i><span>جارٍ تحميل الإشعارات...</span></div></section>
+      <section class="panel preferences notifications-preferences"><div class="setting-line"><div><strong>تفعيل الإشعارات</strong><small>السماح بالتنبيهات داخل التطبيق عند توفرها</small></div><input id="notificationsSwitch" class="switch" type="checkbox" aria-label="تفعيل الإشعارات"></div><div class="notice">تُحفظ الإشعارات داخل حسابك وتبقى متاحة عند عودتك إلى التطبيق. قد تحتاج تنبيهات الجهاز الخارجية إلى تفعيلها من إعدادات المتصفح.</div></section>
+    </main></div>
+  </div>
+  <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div>
+  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260825-notifications"></script><script src="app.js?v=20260825-notifications"></script>
+</body>
+</html>
