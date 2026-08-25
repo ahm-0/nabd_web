@@ -10,3 +10,22 @@
 .read-more-button:active{transform:scale(.97)}
 .comment p .post-link{font-size:inherit}
 @media(prefers-reduced-motion:reduce){.read-more-button{transition:none}}
+
+.comment-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:5px}
+.comment-replies-button{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid color-mix(in srgb,var(--primary) 24%,var(--line));border-radius:8px;background:var(--primary-soft);color:var(--primary);font:700 9px/1 var(--app-font);cursor:pointer;transition:background .16s var(--ease-out),transform .16s var(--ease-out),border-color .16s var(--ease-out)}
+.comment-replies-button:hover{border-color:color-mix(in srgb,var(--primary) 52%,var(--line));transform:translateY(-1px)}
+.comment-replies-button:active{transform:scale(.97)}
+.comment-replies-count{min-width:16px;height:16px;display:grid;place-items:center;padding:0 4px;border-radius:99px;background:var(--primary);color:var(--surface);font-size:8px}
+.comment-replies-screen{display:grid;gap:10px;min-width:0}
+.comment-replies-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px}
+.comment-replies-head>div{text-align:center;min-width:0}
+.comment-page-back{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:6px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--text);font:800 10px/1 var(--app-font);cursor:pointer;transition:background .16s var(--ease-out),transform .16s var(--ease-out)}
+.comment-page-back:hover{background:var(--primary-soft);transform:translateX(2px)}
+.comment-page-back:active{transform:scale(.97)}
+.comment-replies-body{display:grid;gap:9px;min-width:0}
+.comment-replies-label{display:flex;align-items:center;gap:6px;color:var(--primary);font-size:10px;font-weight:800}
+.comment-replies-origin{border:1px solid color-mix(in srgb,var(--primary) 30%,var(--line));background:color-mix(in srgb,var(--primary-soft) 48%,var(--surface-2))}
+.comment-replies-list{display:grid;gap:8px;max-height:min(44vh,420px);overflow-y:auto;padding:2px}
+.comment-replies-list .comment-thread-item{border:1px solid var(--line)}
+@media(max-width:480px){.comment-replies-head{gap:6px}.comment-page-back{min-height:32px;padding-inline:7px;font-size:9px}.comment-replies-head h3{font-size:14px}.comment-replies-list{max-height:42vh}.comment-actions{gap:6px}}
+@media(prefers-reduced-motion:reduce){.comment-replies-button,.comment-page-back{transition:none}}
