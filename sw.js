@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-08-25-10';
+const CACHE_VERSION = '2026-08-25-13';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -10,6 +10,7 @@ const APP_SHELL = [
   './advertising.html',
   './assistant.html',
   './auth.html',
+  './auth-ui.css',
   './baccalaureate-literary.html',
   './baccalaureate-science.html',
   './completion-program.html',

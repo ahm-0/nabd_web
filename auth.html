@@ -1,11 +1,67 @@
 <!doctype html>
-<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080d19"><meta name="apple-mobile-web-app-capable" content="yes"><title>نبض التفوق | تسجيل الدخول</title><script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name=\"theme-color\"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script><link rel="stylesheet" href="vendor/fontawesome/css/all.min.css"><link rel="stylesheet" href="styles.css"><style>
-:root{--auth-radius:20px}.auth-page{min-height:100dvh;display:flex;align-items:flex-start;justify-content:center;padding:clamp(16px,5vw,48px) 16px;background:radial-gradient(circle at 50% -10%,rgba(48,133,255,.2),transparent 45%),var(--bg);box-sizing:border-box}.auth-shell{width:100%;max-width:560px;overflow:hidden;border:1px solid var(--line);border-radius:var(--auth-radius);background:var(--surface);box-shadow:0 18px 55px rgba(0,0,0,.24)}.auth-form-wrap{padding:clamp(22px,6vw,42px)}.auth-brand{display:flex;align-items:center;gap:11px;margin-bottom:28px}.auth-brand .brand-mark{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(135deg,#3d92ff,#7359ee);color:#fff;font-size:18px}.auth-brand strong{font-size:20px;letter-spacing:-.3px}.auth-brand small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.auth-form-wrap h2{margin:0 0 8px;font-size:clamp(22px,6vw,28px)}.auth-form-wrap>p{color:var(--muted);margin:0 0 24px;line-height:1.7;font-size:13px}.auth-form{display:grid;gap:14px}.auth-grid{display:grid;grid-template-columns:1fr;gap:12px}.auth-grid .full{grid-column:1/-1}.auth-form label{display:grid;gap:7px;font-weight:700;font-size:13px}.auth-form input,.auth-form select{width:100%;min-height:48px;box-sizing:border-box;padding:12px 13px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font:inherit;font-size:16px}.auth-form input:focus,.auth-form select:focus{outline:2px solid rgba(45,132,255,.35);border-color:#3288ff}.auth-switch{margin-top:18px!important;text-align:center;color:var(--muted)}.auth-switch button{border:0;background:none;color:var(--primary);font:inherit;font-weight:800;cursor:pointer;padding:4px}.auth-message{min-height:24px;margin:2px 0;color:#f08a8a;font-size:13px;line-height:1.7}.auth-message.success{color:#53c991}.auth-submit{width:100%;min-height:50px;justify-content:center}.auth-form [hidden]{display:none!important}@media(min-width:520px){.auth-grid{grid-template-columns:repeat(2,1fr)}.auth-form-wrap{padding:42px}.auth-page{align-items:center}}@media(max-width:360px){.auth-page{padding:12px}.auth-form-wrap{padding:20px 16px}.auth-brand{margin-bottom:22px}}
-</style>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080d19">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>نبض التفوق | تسجيل الدخول</title>
+  <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="auth-ui.css?v=20260825-auth-steps-2">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="pwa.js" defer></script>
-</head><body data-page="auth"><main class="auth-page"><section class="auth-shell"><section class="auth-form-wrap"><div class="auth-brand"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><strong>نبض التفوق</strong><small>منصتك الدراسية</small></span></div><h2 id="authTitle">إنشاء حساب الطالب</h2><p id="authSubtitle">أدخل بياناتك الدراسية لإنشاء حسابك والوصول إلى التطبيق.</p><form id="authForm" class="auth-form"><div class="auth-grid" id="signupFields"><label>الاسم الأول<input name="first_name" autocomplete="given-name" required></label><label>اسم الأب<input name="father_name" autocomplete="additional-name" required></label><label>الكنية<input name="family_name" autocomplete="family-name" required></label><label class="full">المرحلة الدراسية<select name="study_stage" required><option value="">اختر المرحلة الدراسية</option><option>التاسع</option><option>بكالوريا علمي</option><option>بكالوريا أدبي</option><option>ثانوي</option><option>مرحلة جامعية</option></select></label></div><label>البريد الإلكتروني<input name="email" type="email" autocomplete="email" inputmode="email" required></label><label>كلمة السر<input name="password" type="password" minlength="6" autocomplete="new-password" required></label><p id="authMessage" class="auth-message" role="status" aria-live="polite"></p><button class="primary-button auth-submit" type="submit" id="authSubmit"><i class="fa-solid fa-user-plus"></i> إنشاء الحساب</button></form><p class="auth-switch"><span id="authSwitchText">لديك حساب بالفعل؟</span> <button type="button" id="authModeToggle">تسجيل الدخول</button></p></section></section></main><script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="auth.js"></script></body></html>
+</head>
+<body data-page="auth">
+  <main class="auth-page">
+    <div class="auth-orb auth-orb-one"></div>
+    <div class="auth-orb auth-orb-two"></div>
+    <section class="auth-shell" aria-labelledby="authTitle">
+      <aside class="auth-visual" aria-label="نبض التفوق، رحلتك الدراسية">
+        <div class="auth-visual-grid"></div>
+        <div class="auth-visual-brand"><span class="auth-visual-mark"><i class="fa-solid fa-wave-square"></i></span><span><b>نبض التفوق</b><small>خطوتك الأذكى نحو النجاح</small></span></div>
+        <div class="auth-visual-copy"><span class="auth-visual-eyebrow"><i class="fa-solid fa-sparkles"></i> تجربة مصممة للطلاب</span><h2>ابدأ من خطوة<br><strong>وواصل التفوق.</strong></h2><p>نظّم دراستك، تابع تقدمك، واحتفظ بكل ما يهمك في مساحة واحدة.</p></div>
+        <div class="auth-visual-pills"><span><i class="fa-solid fa-shield-heart"></i> بياناتك محفوظة</span><span><i class="fa-solid fa-bolt"></i> تجربة سريعة</span></div>
+      </aside>
+      <section class="auth-form-wrap">
+        <div class="auth-mobile-brand"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><strong>نبض التفوق</strong><small>منصتك الدراسية</small></span></div>
+        <div class="auth-topline"><span class="auth-kicker" id="authKicker">إنشاء حساب جديد</span><span class="auth-secure"><i class="fa-solid fa-lock"></i> اتصال آمن</span></div>
+        <div class="auth-progress" id="authProgress" aria-label="تقدم إنشاء الحساب">
+          <div class="auth-progress-head"><span id="authStepLabel">الخطوة 1 من 3</span><b id="authProgressValue">33%</b></div>
+          <div class="auth-progress-track"><i id="authProgressBar"></i></div>
+        </div>
+        <h1 id="authTitle">أنشئ حسابك</h1>
+        <p id="authSubtitle">ابدأ بمعلوماتك الأساسية، وأكمل حسابك بخطوات قصيرة.</p>
+        <form id="authForm" class="auth-form" novalidate>
+          <div class="auth-steps" id="signupFields">
+            <section class="auth-step is-active" data-auth-step="0" aria-labelledby="authStepOneTitle">
+              <div class="auth-step-heading"><span class="auth-step-number">01</span><div><h2 id="authStepOneTitle">لنبدأ بالتعريف بك</h2><p>نحتاج اسمك كما تحب أن يظهر داخل التطبيق.</p></div></div>
+              <div class="auth-grid"><label><span>الاسم الأول</span><div class="auth-input-wrap"><i class="fa-regular fa-user"></i><input name="signup_first_name" autocomplete="given-name" required></div></label><label><span>اسم الأب</span><div class="auth-input-wrap"><i class="fa-regular fa-user"></i><input name="signup_father_name" autocomplete="additional-name" required></div></label></div>
+            </section>
+            <section class="auth-step" data-auth-step="1" aria-labelledby="authStepTwoTitle" hidden>
+              <div class="auth-step-heading"><span class="auth-step-number">02</span><div><h2 id="authStepTwoTitle">أخبرنا عن دراستك</h2><p>هذه المعلومات تساعدنا على تخصيص تجربتك.</p></div></div>
+              <div class="auth-grid"><label><span>الكنية</span><div class="auth-input-wrap"><i class="fa-regular fa-id-card"></i><input name="signup_family_name" autocomplete="family-name" required></div></label><label><span>المرحلة الدراسية</span><div class="auth-input-wrap"><i class="fa-solid fa-graduation-cap"></i><select name="signup_study_stage" required><option value="">اختر المرحلة</option><option>التاسع</option><option>بكالوريا علمي</option><option>بكالوريا أدبي</option><option>ثانوي</option><option>مرحلة جامعية</option></select></div></label></div>
+            </section>
+            <section class="auth-step" data-auth-step="2" aria-labelledby="authStepThreeTitle" hidden>
+              <div class="auth-step-heading"><span class="auth-step-number">03</span><div><h2 id="authStepThreeTitle">أنشئ بيانات الدخول</h2><p>استخدم بريدًا إلكترونيًا وكلمة سر تتذكرهما بسهولة.</p></div></div>
+              <div class="auth-grid"><label><span>البريد الإلكتروني</span><div class="auth-input-wrap"><i class="fa-regular fa-envelope"></i><input name="signup_email" type="email" autocomplete="email" inputmode="email" required></div></label><label><span>كلمة السر</span><div class="auth-input-wrap"><i class="fa-solid fa-key"></i><input name="signup_password" type="password" minlength="6" autocomplete="new-password" required></div></label></div>
+            </section>
+          </div>
+          <div class="auth-login-fields" id="loginFields" hidden>
+            <div class="auth-step-heading"><span class="auth-step-number"><i class="fa-solid fa-arrow-right-to-bracket"></i></span><div><h2>مرحبًا بعودتك</h2><p>أدخل بياناتك للوصول إلى مساحتك الدراسية.</p></div></div>
+            <div class="auth-grid"><label><span>البريد الإلكتروني</span><div class="auth-input-wrap"><i class="fa-regular fa-envelope"></i><input name="login_email" type="email" autocomplete="email" inputmode="email"></div></label><label><span>كلمة السر</span><div class="auth-input-wrap"><i class="fa-solid fa-key"></i><input name="login_password" type="password" autocomplete="current-password"></div></label></div>
+          </div>
+          <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
+          <div class="auth-actions"><button class="auth-back" type="button" id="authBack" hidden><i class="fa-solid fa-arrow-right"></i><span>رجوع</span></button><button class="primary-button auth-next" type="button" id="authNext"><span>التالي</span><i class="fa-solid fa-arrow-left"></i></button><button class="primary-button auth-submit" type="submit" id="authSubmit" hidden><i class="fa-solid fa-user-plus"></i><span>إنشاء الحساب</span></button></div>
+        </form>
+        <p class="auth-switch"><span id="authSwitchText">لديك حساب بالفعل؟</span><button type="button" id="authModeToggle">تسجيل الدخول</button></p>
+        <div class="auth-footer-note"><i class="fa-solid fa-circle-check"></i><span>نحافظ على بياناتك لتبقى تجربتك متصلة وآمنة.</span></div>
+      </section>
+    </section>
+  </main>
+  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="auth.js?v=20260825-auth-steps-2"></script>
+</body>
+</html>
