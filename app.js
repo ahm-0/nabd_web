@@ -452,10 +452,47 @@
     window.setTimeout(() => modal.querySelector('input[autofocus], textarea[autofocus], select[autofocus]')?.focus(), 180);
   }
 
-  function closeModal() {
+  const NEWS_MODAL_STATE = 'nabdNewsModal';
+
+  function newsModalState() {
+    return window.history.state?.[NEWS_MODAL_STATE] || null;
+  }
+
+  function pushNewsModalState(mode, postId, commentId = null) {
+    const current = newsModalState();
+    const nextCommentId = commentId || null;
+    if (current?.mode === mode && current?.postId === postId && (current.commentId || null) === nextCommentId) return;
+    const depth = (Number(current?.depth) || 0) + 1;
+    window.history.pushState({ ...(window.history.state || {}), [NEWS_MODAL_STATE]: { mode, postId, commentId: nextCommentId, depth } }, '', window.location.href);
+  }
+
+  function clearNewsModalState() {
+    if (!newsModalState()) return;
+    const nextState = { ...(window.history.state || {}) };
+    delete nextState[NEWS_MODAL_STATE];
+    window.history.replaceState(nextState, document.title, window.location.href);
+  }
+
+  function closeModal({ preserveHistory = false } = {}) {
+    const activeNewsView = $('#modalContent .comments-screen, #modalContent .comment-replies-screen');
+    const state = newsModalState();
+    if (!preserveHistory && activeNewsView && state?.depth) {
+      window.history.go(-Math.max(1, Number(state.depth) || 1));
+      return;
+    }
+    if (!preserveHistory) clearNewsModalState();
     $('#modalBackdrop')?.classList.remove('show');
     document.body.classList.remove('sheet-open');
   }
+
+  function handleNewsModalPopState(event) {
+    const state = event.state?.[NEWS_MODAL_STATE];
+    if (state?.mode === 'comments' && state.postId) return openPostComments(state.postId, null, { fromHistory: true });
+    if (state?.mode === 'replies' && state.postId && state.commentId) return openPostReplies(state.postId, state.commentId, null, { fromHistory: true });
+    if ($('#modalBackdrop')?.classList.contains('show')) closeModal({ preserveHistory: true });
+  }
+
+  window.addEventListener('popstate', handleNewsModalPopState);
 
   function confirmAction(title, message, action, confirmLabel = 'حذف') {
     window.nabdConfirmAction = action;
@@ -728,16 +765,17 @@
     return roots.map(comment => commentItemMarkup(comment, post.id, comments.filter(reply => reply.parentId === comment.id))).join('');
   }
 
-  function openPostComments(postId, replyTo = null) {
+  function openPostComments(postId, replyTo = null, options = {}) {
     const rawPost = feedPost(postId); if (!rawPost) return;
+    if (!options.fromHistory) pushNewsModalState('comments', postId);
     const post = enrichedPost(rawPost);
     const replyHint = replyTo ? `<div class="comment-reply-target"><i class="fa-solid fa-reply"></i><span>رد على <b>${escapeHTML(replyTo.name)}</b></span><button type="button" data-clear-comment-reply="${escapeHTML(postId)}" title="إلغاء الرد"><i class="fa-solid fa-xmark"></i></button></div>` : '';
-    openModal(`<div class="modal-head"><div><span class="eyebrow">مجتمع الأخبار</span><h3>التعليقات</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><section class="comment-thread-list">${commentThreadMarkup(post)}</section><form class="comment-modal-form" data-post-id="${escapeHTML(postId)}" data-parent-id="${escapeHTML(replyTo?.id || '')}">${replyHint}<div><input name="comment" required maxlength="280" placeholder="اكتب تعليقك..." autocomplete="off"><button type="submit" title="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></div></form>`);
-    window.setTimeout(() => $('.comment-modal-form input')?.focus(), 80);
+    openModal(`<div class="comments-screen" data-comment-post-id="${escapeHTML(postId)}"><div class="modal-head comments-modal-head"><div class="comments-modal-title"><span class="comment-modal-icon"><i class="fa-regular fa-comments"></i></span><div><span class="eyebrow">مجتمع الأخبار</span><h3>التعليقات</h3><small>${post.comments.length} تعليق · شارك باحترام</small></div></div><button class="close-modal" aria-label="إغلاق">×</button></div><section class="comment-thread-list">${commentThreadMarkup(post)}</section><form class="comment-modal-form" data-post-id="${escapeHTML(postId)}" data-parent-id="${escapeHTML(replyTo?.id || '')}">${replyHint}<div><input name="comment" required maxlength="280" placeholder="اكتب تعليقك..." autocomplete="off"><button type="submit" title="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></div></form></div>`);
   }
 
-  function openPostReplies(postId, commentId, replyTo = null) {
+  function openPostReplies(postId, commentId, replyTo = null, options = {}) {
     const rawPost = feedPost(postId); if (!rawPost) return;
+    if (!options.fromHistory) pushNewsModalState('replies', postId, commentId);
     const post = enrichedPost(rawPost);
     const parent = (post.comments || []).find(comment => comment.id === commentId);
     if (!parent) return;
@@ -747,8 +785,7 @@
     const parentVerified = parent.mine ? student.verificationStatus === 'approved' : Boolean(parent.verified);
     const replyHint = replyTo ? `<div class="comment-reply-target"><i class="fa-solid fa-reply"></i><span>رد على <b>${escapeHTML(replyTo.name || 'التعليق')}</b></span><button type="button" data-clear-comment-reply="${escapeHTML(postId)}" data-return-replies="${escapeHTML(parent.id)}" title="إلغاء الرد"><i class="fa-solid fa-xmark"></i></button></div>` : '<div class="comment-reply-target"><i class="fa-solid fa-reply"></i><span>رد على التعليق الأصلي</span></div>';
     const parentMarkup = `<article class="comment-thread-item comment-replies-origin" data-comment-id="${escapeHTML(parent.id || '')}"><div class="comment-thread-head">${parentAvatar}<div><b>${escapeHTML(parent.name || 'طالب نبض')}${verifiedBadgeMarkup(parentVerified)}</b><small>${escapeHTML(parent.meta || 'مجتمع الأخبار')}</small></div></div><p>${newsLinkMarkup(parent.text || '')}</p>${commentActionsMarkup(parent, postId)}</article>`;
-    openModal(`<div class="comment-replies-screen" data-root-comment-id="${escapeHTML(parent.id)}"><div class="modal-head comment-replies-head"><button type="button" class="comment-page-back" data-comments-back="${escapeHTML(postId)}"><i class="fa-solid fa-arrow-right"></i> التعليقات</button><div><span class="eyebrow">مجتمع الأخبار</span><h3>الردود</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><section class="comment-replies-body"><div class="comment-replies-label"><i class="fa-solid fa-reply"></i><span>الردود على هذا التعليق</span></div>${parentMarkup}<div class="comment-replies-list">${replyList}</div></section><form class="comment-modal-form" data-post-id="${escapeHTML(postId)}" data-parent-id="${escapeHTML(replyTo?.id || parent.id)}">${replyHint}<div><input name="comment" required maxlength="280" placeholder="اكتب ردك..." autocomplete="off"><button type="submit" title="إرسال الرد"><i class="fa-solid fa-paper-plane"></i></button></div></form></div>`);
-    window.setTimeout(() => $('.comment-modal-form input')?.focus(), 80);
+    openModal(`<div class="comment-replies-screen" data-root-comment-id="${escapeHTML(parent.id)}"><div class="modal-head comment-replies-head"><button type="button" class="comment-page-back" data-comments-back="${escapeHTML(postId)}"><i class="fa-solid fa-arrow-right"></i><span>التعليقات</span></button><div class="comments-modal-title"><span class="comment-modal-icon replies-icon"><i class="fa-solid fa-reply"></i></span><div><span class="eyebrow">مجتمع الأخبار</span><h3>الردود</h3><small>${replies.length} رد على التعليق</small></div></div><button class="close-modal" aria-label="إغلاق">×</button></div><section class="comment-replies-body"><div class="comment-replies-label"><i class="fa-solid fa-reply"></i><span>الحوار مستمر هنا</span></div>${parentMarkup}<div class="comment-replies-list">${replyList}</div></section><form class="comment-modal-form" data-post-id="${escapeHTML(postId)}" data-parent-id="${escapeHTML(replyTo?.id || parent.id)}">${replyHint}<div><input name="comment" required maxlength="280" placeholder="اكتب ردك..." autocomplete="off"><button type="submit" title="إرسال الرد"><i class="fa-solid fa-paper-plane"></i></button></div></form></div>`);
   }
 
   function renderFeed() {
@@ -2256,7 +2293,7 @@
       const repliesButton = event.target.closest('[data-comment-replies]');
       if (repliesButton) { openPostReplies(repliesButton.dataset.commentPost, repliesButton.dataset.commentReplies); return; }
       const commentsBack = event.target.closest('[data-comments-back]');
-      if (commentsBack) { openPostComments(commentsBack.dataset.commentsBack); return; }
+      if (commentsBack) { if (newsModalState()?.mode === 'replies') window.history.back(); else openPostComments(commentsBack.dataset.commentsBack); return; }
       const replyButton = event.target.closest('[data-comment-reply]');
       if (replyButton) { const post = enrichedPost(feedPost(replyButton.dataset.commentPost) || {}); const comment = (post.comments || []).find(item => item.id === replyButton.dataset.commentReply); const repliesScreen = replyButton.closest('.comment-replies-screen'); if (comment) repliesScreen ? openPostReplies(replyButton.dataset.commentPost, repliesScreen.dataset.rootCommentId, comment) : openPostComments(replyButton.dataset.commentPost, comment); return; }
       const clearReply = event.target.closest('[data-clear-comment-reply]');
