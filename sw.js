@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-08-25-15';
+const CACHE_VERSION = '2026-08-25-16';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -174,10 +174,16 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
-    // استخدم الصفحة المحلية فورًا، وحاول تحديثها في الخلفية دون حجب التنقل.
-    const refresh = refreshNavigation(request).catch(() => null);
-    event.waitUntil(refresh);
-    event.respondWith(staleWhileRevalidateNavigation(request, refresh));
+    const forceRefresh = url.searchParams.has('__sw_refresh');
+    if (forceRefresh) {
+      // بعد تفعيل عامل جديد، اطلب HTML من الشبكة حتى لا تعود الصفحة القديمة من الكاش.
+      event.respondWith(networkFirstNavigation(request));
+    } else {
+      const refresh = refreshNavigation(request).catch(() => null);
+      // اعرض الصفحة المحلية فورًا في الاستخدام المعتاد، وحدّثها في الخلفية للعمل دون اتصال.
+      event.waitUntil(refresh);
+      event.respondWith(staleWhileRevalidateNavigation(request, refresh));
+    }
     return;
   }
 
