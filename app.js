@@ -684,7 +684,7 @@
     const images = (post.images || []).length
       ? `<div class="post-images ${(post.images || []).length > 1 ? 'multiple' : ''}">${post.images.map(src => `<img loading="lazy" src="${escapeHTML(src)}" alt="صورة مرفقة بالمنشور">`).join('')}</div><div class="post-media-indicator">${post.images.length > 1 ? `<i class="fa-solid fa-images"></i> اسحب لمشاهدة الصور ${post.images.length}` : ''}</div>`
       : '';
-    const comments = post.comments.map(comment => { const commentVerified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified); const commentAvatar = comment.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((comment.name || 'ط')[0])}</span>`; return `<div class="comment">${commentAvatar}<div><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(commentVerified)}</b><p>${newsLinkMarkup(comment.text)}</p></div></div>`; }).join('');
+    const comments = post.comments.map(comment => { const commentVerified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified); const commentAvatar = comment.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((comment.name || 'ط')[0])}</span>`; return `<div class="comment">${commentAvatar}<div><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(commentVerified)}</b><p>${newsLinkMarkup(comment.text)}</p><button type="button" class="comment-reply-button" data-comment-reply="${escapeHTML(comment.id || '')}" data-comment-post="${escapeHTML(post.id)}"><i class="fa-solid fa-reply"></i> رد</button></div></div>`; }).join('');
     const menu = newsIsAdmin ? `<button class="post-menu" type="button" data-action="post-menu" title="إدارة الخبر" aria-label="إدارة الخبر"><i class="fa-solid fa-ellipsis-vertical"></i></button>` : '';
     return `<article class="post ${likePulsePosts.has(post.id) ? 'like-pulse' : ''}" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong class="post-author-name"><span>${escapeHTML(post.name)}</span>${verifiedBadgeMarkup(verified)}</strong><span>${escapeHTML(post.meta || `${student.stage} · ${student.city}`)} · الآن</span></div>${menu}</div>${newsTextMarkup(post)}${images}<div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
   }
@@ -799,13 +799,15 @@
   }
 
   async function sharePost(postId) {
-    const url = `${location.origin}${location.pathname}#${postId}`;
-    const payload = { title: 'مجتمع نبض التفوق', text: 'منشور جديد في مجتمع نبض التفوق', url, dialogTitle: 'مشاركة المنشور' };
+    const post = feedPost(postId);
+    const text = String(post?.text || '').trim();
+    if (!text) return toast('لا يوجد نص في هذا المنشور لمشاركته.');
+    const payload = { text };
     try {
       const nativeShare = capacitorPlugin('Share');
       if (isNativeNabd() && nativeShare?.share) { await nativeShare.share(payload); return; }
       if (navigator.share) await navigator.share(payload);
-      else if (navigator.clipboard) { await navigator.clipboard.writeText(url); toast('تم نسخ رابط المنشور.'); }
+      else if (navigator.clipboard) { await navigator.clipboard.writeText(text); toast('تم نسخ محتوى المنشور.'); }
       else toast('ميزة المشاركة متاحة عند نشر التطبيق على الهاتف.');
     } catch (error) {
       if (error.name !== 'AbortError') toast('تعذر تنفيذ المشاركة حاليًا.');
@@ -893,10 +895,7 @@
       renderFeed();
       if (form.matches('.comment-modal-form')) openPostComments(postId);
     } catch (error) {
-      if (parentId) {
-        postInteractions[postId] = { ...(postInteractions[postId] || {}), comments: [...(postInteractions[postId]?.comments || []), localComment] };
-        saveState(); renderFeed(); if (form.matches('.comment-modal-form')) openPostComments(postId); toast('حُفظ الرد على هذا الجهاز، وسيُزامن بعد تفعيل ترقية الردود.');
-      } else toast(error.message || 'تعذر حفظ التعليق حاليًا.');
+      toast(parentId ? (error.message || 'تعذر حفظ الرد في قاعدة البيانات حاليًا.') : (error.message || 'تعذر حفظ التعليق حاليًا.'));
     } finally {
       if (submit) submit.disabled = false;
     }
@@ -1225,10 +1224,8 @@
   const completionTodayTarget = plan => Math.ceil(Math.max(0, Number(plan.totalUnits) - Number(plan.completedUnits || 0)) / completionRemainingDays(plan));
 
   function renderCompletionPlans() {
-    const list = $('#completionList'); const empty = $('#completionEmpty'); const overview = $('#completionOverview'); if (!list || !empty) return;
-    const totalPlans = completionPlans.length; const activePlans = completionPlans.filter(plan => Number(plan.completedUnits || 0) < Number(plan.totalUnits)).length;
-    const average = totalPlans ? completionPlans.reduce((sum, plan) => sum + completionProgress(plan), 0) / totalPlans : 0;
-    if (overview) overview.innerHTML = `<article><i class="fa-solid fa-list-check"></i><span><small>خطط نشطة</small><b>${activePlans}</b></span></article><article><i class="fa-solid fa-chart-line"></i><span><small>متوسط الإنجاز</small><b>${totalPlans ? `${average.toFixed(0)}%` : '—'}</b></span></article><article><i class="fa-solid fa-calendar-day"></i><span><small>مطلوب اليوم</small><b>${completionPlans.reduce((sum, plan) => sum + (completionProgress(plan) >= 100 ? 0 : completionTodayTarget(plan)), 0)} وحدات</b></span></article>`;
+    const list = $('#completionList'); const empty = $('#completionEmpty'); if (!list || !empty) return;
+    const totalPlans = completionPlans.length;
     empty.classList.toggle('hidden', totalPlans > 0); if (!totalPlans) { list.innerHTML = ''; return; }
     list.innerHTML = completionPlans.sort((a, b) => Number(b.updatedAt || 0) - Number(a.updatedAt || 0)).map(plan => { const progress = completionProgress(plan); const done = Number(plan.completedUnits || 0); const total = Number(plan.totalUnits); const complete = progress >= 100; const remaining = Math.max(0, total - done); const today = complete ? 0 : completionTodayTarget(plan); return `<article class="completion-card panel ${complete ? 'complete' : ''}"><header><div><span class="eyebrow">${escapeHTML(plan.unitLabel || 'وحدات دراسية')}</span><h3>${escapeHTML(plan.title)}</h3><p><i class="fa-regular fa-calendar"></i> من ${studyDateText(plan.startDate)} إلى ${studyDateText(plan.endDate)}</p></div><div class="completion-percent"><b>${progress.toFixed(0)}%</b><span>الإنجاز</span></div></header><div class="completion-progress"><i style="width:${progress}%"></i></div><div class="completion-stats"><span><b>${done} / ${total}</b><small>تم إنجازه</small></span><span><b>${remaining}</b><small>المتبقي</small></span><span><b>${today}</b><small>المطلوب اليوم</small></span></div>${complete ? '<div class="completion-done"><i class="fa-solid fa-circle-check"></i> اكتملت الخطة، أحسنت الاستمرار.</div>' : `<div class="completion-update"><label>سجّل المنجز الآن<input id="completionProgress-${escapeHTML(plan.id)}" type="number" min="0" max="${total}" value="${done}"></label><button class="primary-button" type="button" data-completion-action="update" data-plan-id="${escapeHTML(plan.id)}"><i class="fa-solid fa-check"></i> تحديث الإنجاز</button></div>`}<footer><button type="button" data-completion-action="edit" data-plan-id="${escapeHTML(plan.id)}"><i class="fa-solid fa-pen"></i> تعديل الخطة</button><button type="button" data-completion-action="delete" data-plan-id="${escapeHTML(plan.id)}"><i class="fa-regular fa-trash-can"></i> حذف</button></footer></article>`; }).join('');
   }
