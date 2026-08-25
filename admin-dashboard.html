@@ -23,9 +23,9 @@
     <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content admin-workspace-main">
       <section class="admin-login-screen admin-workspace-login panel" id="adminLoginScreen">
         <div class="admin-workspace-login-top"><span class="admin-workspace-shield"><i class="fa-solid fa-shield-halved"></i></span><span class="admin-workspace-lock-label"><i class="fa-solid fa-lock"></i> وصول محمي</span></div>
-        <div><span class="eyebrow">حساب المطور</span><h2>بوابة المشرفين</h2><p>مساحة تحكم خاصة لمتابعة طلاب نبض التفوق وإدارة خدمات المجتمع.</p></div>
-        <form id="adminLoginForm" class="admin-login-form"><div class="form-group"><label>بريد المطور</label><input name="email" type="email" value="aaaaaaaa@gmail.com" readonly></div><div class="form-group"><label>كلمة المرور المحلية</label><input id="adminPassword" name="password" type="password" required minlength="6" autocomplete="current-password" placeholder="أدخل كلمة المرور"></div><button class="primary-button" type="submit"><i class="fa-solid fa-arrow-left-to-line"></i> دخول مساحة الإدارة</button></form>
-        <p class="admin-login-note"><i class="fa-solid fa-laptop"></i> جلسة الإدارة والبيانات المحفوظة تخص المتصفح الحالي فقط.</p>
+        <div><span class="eyebrow">وصول موثّق</span><h2>بوابة المشرفين</h2><p>مساحة تحكم خاصة لمتابعة طلاب نبض التفوق وإدارة خدمات المجتمع.</p></div>
+        <div class="admin-login-status"><i class="fa-solid fa-shield-halved"></i><span>يتم التحقق من جلسة Supabase الحالية دون عرض بيانات حساب المشرف في الواجهة.</span></div>
+        <p class="admin-login-note"><i class="fa-solid fa-lock"></i> جارٍ التحقق من صلاحية الوصول...</p>
       </section>
 
       <section class="admin-dashboard admin-workspace hidden" id="adminWorkspace">

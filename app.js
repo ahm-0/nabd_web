@@ -5,7 +5,6 @@
   const STORE = 'nabd_v3_';
   const LEGACY_STORE = 'nabd_v2_';
   const PAGE = document.body.dataset.page || 'home';
-  const ADMIN_EMAIL = 'aaaaaaaa@gmail.com';
   const $ = (selector, scope = document) => scope.querySelector(selector);
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
   const supabaseClient = window.nabdSupabase;
@@ -88,8 +87,6 @@
   verificationRequests = Array.isArray(verificationRequests) ? verificationRequests : [];
   supportTickets = Array.isArray(supportTickets) ? supportTickets : [];
   adminActivity = Array.isArray(adminActivity) ? adminActivity : [];
-  let adminCredential = readStorage('admin_credential', null);
-  let adminSession = readStorage('admin_session', null);
   let adminControlsBound = false;
   let remoteAdminVerified = false;
   let adminShortcutChecked = false;
@@ -221,22 +218,8 @@
     catch { return '—'; }
   }
 
-  async function hashAdminPassword(value) {
-    const source = new TextEncoder().encode(String(value));
-    if (window.crypto?.subtle) {
-      const digest = await window.crypto.subtle.digest('SHA-256', source);
-      return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
-    }
-    return btoa(unescape(encodeURIComponent(String(value))));
-  }
-
-  function saveAdminAccess() {
-    localStorage.setItem(STORE + 'admin_credential', JSON.stringify(adminCredential));
-    localStorage.setItem(STORE + 'admin_session', JSON.stringify(adminSession));
-  }
-
   function isAdminAuthenticated() {
-    return Boolean(remoteAdminVerified && adminSession && adminSession.email === ADMIN_EMAIL && adminSession.active === true);
+    return Boolean(remoteAdminVerified && currentAuthUser?.id);
   }
 
   function showAdminWorkspace(allowed) {
@@ -247,33 +230,12 @@
     document.body.classList.toggle('admin-authenticated', allowed);
   }
 
-  async function submitAdminLogin(form) {
-    if (!remoteAdminVerified) return toast('هذا الحساب لا يملك صلاحية Admin في قاعدة البيانات.');
-    const data = Object.fromEntries(new FormData(form).entries());
-    const email = String(data.email || '').trim().toLowerCase();
-    const password = String(data.password || '');
-    if (email !== ADMIN_EMAIL) return toast('هذا البريد غير مخوّل بفتح بوابة المشرفين.');
-    if (password.length < 6) return toast('اختر كلمة مرور محلية من 6 أحرف على الأقل.');
-    const passwordHash = await hashAdminPassword(password);
-    if (!adminCredential?.passwordHash) {
-      adminCredential = { email: ADMIN_EMAIL, passwordHash, configuredAt: Date.now() };
-      toast('تم إعداد كلمة مرور بوابة المشرفين على هذا المتصفح.');
-    } else if (adminCredential.email !== ADMIN_EMAIL || adminCredential.passwordHash !== passwordHash) {
-      return toast('كلمة المرور غير صحيحة.');
-    }
-    adminSession = { email: ADMIN_EMAIL, active: true, openedAt: Date.now() };
-    saveAdminAccess();
-    showAdminWorkspace(true);
-    initAdminDashboard();
-  }
-
   function logoutAdmin() {
-    adminSession = null;
-    saveAdminAccess();
+    remoteAdminVerified = false;
     showAdminWorkspace(false);
-    const password = $('#adminPassword');
-    if (password) password.value = '';
-    toast('تم قفل بوابة المشرفين على هذا المتصفح.');
+    const note = $('.admin-login-note');
+    if (note) note.innerHTML = '<i class="fa-solid fa-lock"></i> تم قفل البوابة. أعد فتحها لإجراء تحقق جديد من حساب Supabase الحالي.';
+    toast('تم قفل بوابة المشرفين.');
   }
 
   function toast(message) {
@@ -2420,29 +2382,26 @@
 
   async function initAdminDashboard() {
     if (!$('#adminLoginScreen')) return;
-    // اعرض حالة الإدارة المحلية واربط عناصرها قبل انتظار فحص الصلاحية البعيد.
-    const allowed = isAdminAuthenticated();
-    showAdminWorkspace(allowed);
-    if (allowed && $('#adminWorkspace')) {
-      syncAdminStudent(false);
-      renderAdminDashboard();
-      bindAdminDashboardControls();
+    showAdminWorkspace(false);
+    const note = $('.admin-login-note');
+    if (!currentAuthUser?.id) {
+      if (note) note.innerHTML = '<i class="fa-solid fa-lock"></i> جارٍ التحقق من جلسة Supabase الحالية...';
+      return;
     }
-
+    if (note) note.innerHTML = '<i class="fa-solid fa-shield-halved"></i> جارٍ التحقق من صلاحية حساب Supabase الحالي...';
     try {
       const result = await supabaseClient?.rpc('premium_is_admin');
       remoteAdminVerified = !result?.error && result?.data === true;
     } catch { remoteAdminVerified = false; }
-    const form = $('#adminLoginForm');
-    const note = $('.admin-login-note');
-    if (form) form.classList.toggle('hidden', !remoteAdminVerified);
-    if (note && !remoteAdminVerified) note.innerHTML = '<i class="fa-solid fa-lock"></i> هذا الحساب غير مخوّل للوصول إلى أدوات المشرفين.';
     if (!remoteAdminVerified) {
-      if (allowed) showAdminWorkspace(false);
+      if (note) note.innerHTML = '<i class="fa-solid fa-lock"></i> هذا الحساب غير مخوّل للوصول إلى أدوات المشرفين.';
       return;
     }
-    if (!allowed) return;
+    if (note) note.innerHTML = '<i class="fa-solid fa-circle-check"></i> تم التحقق من الصلاحية عبر Supabase.';
     showAdminWorkspace(true);
+    syncAdminStudent(false);
+    renderAdminDashboard();
+    bindAdminDashboardControls();
     void loadAdminDashboardStats();
   }
 
@@ -2525,7 +2484,6 @@
       if (event.target.id === 'supportForm') { event.preventDefault(); submitSupportRequest(event.target); }
       if (event.target.id === 'supportChatForm') { event.preventDefault(); sendSupportChatMessage(event.target); }
       if (event.target.matches('.admin-support-reply-form')) { event.preventDefault(); sendAdminSupportReply(event.target); }
-      if (event.target.id === 'adminLoginForm') { event.preventDefault(); submitAdminLogin(event.target); }
       if (event.target.id === 'adminNotificationForm') { event.preventDefault(); sendAdminNotification(event.target); }
       if (event.target.id === 'studyTaskForm') { event.preventDefault(); saveStudyTask(event.target); }
       if (event.target.id === 'completionPlanForm') { event.preventDefault(); saveCompletionPlan(event.target); }
@@ -2629,6 +2587,7 @@
       updateNotificationBadges();
       if (PAGE === 'notifications') initNotifications();
       else void loadAppNotifications();
+      if (PAGE === 'supervision') void initAdminDashboard();
       refreshNewsOwnership();
     }).catch(error => console.warn('تعذر مزامنة جلسة الطالب في الخلفية:', error)), 0);
 

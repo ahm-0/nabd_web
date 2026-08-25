@@ -45,3 +45,7 @@
 .admin-notification-form .form-actions{margin-top:0}.admin-notification-form .form-actions .primary-button{min-width:170px}
 @media(max-width:620px){.notification-field-heading{align-items:stretch;flex-direction:column}.file-picker{width:100%}.notification-image-preview{align-items:flex-start;flex-direction:column}.notification-image-preview .danger-button{width:100%}.admin-notification-form .form-actions .primary-button{width:100%}}
 @media(prefers-reduced-motion:reduce){.admin-notification-form input,.admin-notification-form textarea{transition:none}}
+
+.admin-login-status{display:flex;align-items:center;gap:.65rem;margin-top:1.1rem;padding:.85rem 1rem;border:1px solid rgba(89,207,181,.22);border-radius:1rem;background:rgba(89,207,181,.08);color:var(--muted);font-size:.86rem;line-height:1.7}
+.admin-login-status i{flex:0 0 auto;color:#59cfb5}
+@media(max-width:600px){.admin-login-status{align-items:flex-start;font-size:.8rem}}
