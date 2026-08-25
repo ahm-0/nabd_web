@@ -611,13 +611,14 @@
   function mapRemoteNewsPost(row) {
     return {
       id: row.id,
+      authorId: row.author_id || '',
       name: row.author_name || 'مشرف نبض',
       meta: row.author_meta || 'إدارة الأخبار · نبض التفوق',
       text: row.body || '',
       images: Array.isArray(row.images) ? row.images : [],
       likes: Number(row.like_count || 0),
       liked: Boolean(row.liked_by_me),
-      comments: Array.isArray(row.comments) ? row.comments.map(comment => ({ id: comment.id, parentId: comment.parent_id || comment.parentId || '', name: comment.name || 'طالب نبض', meta: comment.meta || 'مجتمع الأخبار', text: comment.text || '', mine: Boolean(currentAuthUser && comment.author_id === currentAuthUser.id), verified: false, createdAt: comment.created_at })) : [],
+      comments: Array.isArray(row.comments) ? row.comments.map(comment => ({ id: comment.id, authorId: comment.author_id || '', parentId: comment.parent_id || comment.parentId || '', name: comment.name || 'طالب نبض', meta: comment.meta || 'مجتمع الأخبار', text: comment.text || '', mine: Boolean(currentAuthUser && comment.author_id === currentAuthUser.id), verified: false, createdAt: comment.created_at })) : [],
       remote: true,
       mine: Boolean(currentAuthUser && row.author_id === currentAuthUser.id),
       verified: true,
@@ -636,6 +637,17 @@
 
   function feedPost(id) {
     return posts.find(post => post.id === id) || null;
+  }
+
+  function refreshNewsOwnership() {
+    if (!currentAuthUser || PAGE !== 'news') return;
+    posts.forEach(post => {
+      if (post.authorId) post.mine = post.authorId === currentAuthUser.id;
+      (post.comments || []).forEach(comment => {
+        if (comment.authorId) comment.mine = comment.authorId === currentAuthUser.id;
+      });
+    });
+    renderFeed();
   }
 
   function enrichedPost(post) {
@@ -693,7 +705,8 @@
   function commentActionsMarkup(comment, postId, replyCount = 0) {
     const replyButton = `<button type="button" class="comment-reply-button" data-comment-reply="${escapeHTML(comment.id || '')}" data-comment-post="${escapeHTML(postId)}" data-comment-name="${escapeHTML(comment.name || 'طالب نبض')}"><i class="fa-solid fa-reply"></i> رد</button>`;
     const repliesButton = replyCount ? `<button type="button" class="comment-replies-button" data-comment-replies="${escapeHTML(comment.id || '')}" data-comment-post="${escapeHTML(postId)}" aria-label="عرض ردود ${escapeHTML(comment.name || 'التعليق')}"><i class="fa-solid fa-comments"></i> عرض الردود <span class="comment-replies-count">${replyCount}</span></button>` : '';
-    return `<div class="comment-actions">${replyButton}${repliesButton}</div>`;
+    const deleteButton = comment.mine ? `<button type="button" class="comment-delete-button" data-comment-delete="${escapeHTML(comment.id || '')}" data-comment-post="${escapeHTML(postId)}" aria-label="حذف تعليقي"><i class="fa-regular fa-trash-can"></i> حذف</button>` : '';
+    return `<div class="comment-actions">${replyButton}${repliesButton}${deleteButton}</div>`;
   }
 
   function commentItemMarkup(comment, postId, replies = []) {
@@ -930,6 +943,42 @@
     } finally {
       if (submit) submit.disabled = false;
     }
+  }
+
+  async function deleteComment(postId, commentId) {
+    const post = feedPost(postId);
+    const comment = enrichedPost(post || {}).comments.find(item => item.id === commentId);
+    if (!post || !comment) return;
+    if (!comment.mine) return toast('لا يمكنك حذف إلا تعليقاتك الخاصة.');
+    confirmAction('حذف تعليقك؟', 'سيتم حذف التعليق وجميع الردود التابعة له نهائيًا من الأخبار.', async () => {
+      try {
+        if (post.remote) {
+          const { data, error } = await supabaseClient.rpc('news_delete_comment', { p_comment_id: commentId });
+          if (error) throw error;
+          if (data !== true) throw new Error('لم يتم العثور على التعليق أو لا تملك صلاحية حذفه.');
+        }
+        const comments = post.remote ? (post.comments || []) : (postInteractions[postId]?.comments || []);
+        const removedIds = new Set([commentId]);
+        let changed = true;
+        while (changed) {
+          changed = false;
+          comments.forEach(item => { if (item.parentId && removedIds.has(item.parentId) && !removedIds.has(item.id)) { removedIds.add(item.id); changed = true; } });
+        }
+        if (post.remote) post.comments = comments.filter(item => !removedIds.has(item.id));
+        else {
+          postInteractions[postId] = { ...(postInteractions[postId] || {}), comments: comments.filter(item => !removedIds.has(item.id)) };
+          saveState();
+        }
+        const repliesScreen = $('.comment-replies-screen');
+        renderFeed();
+        if (repliesScreen && repliesScreen.dataset.rootCommentId !== commentId) openPostReplies(postId, repliesScreen.dataset.rootCommentId);
+        else if (repliesScreen) closeModal();
+        else openPostComments(postId);
+        toast('تم حذف تعليقك بنجاح.');
+      } catch (error) {
+        toast(error.message || 'تعذر حذف التعليق حاليًا.');
+      }
+    }, 'حذف التعليق');
   }
 
   function elevateNewsComposer() {
@@ -2202,6 +2251,8 @@
 
       const newsManage = event.target.closest('[data-news-manage]');
       if (newsManage) { const id = newsManage.dataset.postId; if (newsManage.dataset.newsManage === 'edit') openPostEditor(id); if (newsManage.dataset.newsManage === 'delete') { closeModal(); deleteNewsPost(id); } return; }
+      const commentDelete = event.target.closest('[data-comment-delete]');
+      if (commentDelete) { deleteComment(commentDelete.dataset.commentPost, commentDelete.dataset.commentDelete); return; }
       const repliesButton = event.target.closest('[data-comment-replies]');
       if (repliesButton) { openPostReplies(repliesButton.dataset.commentPost, repliesButton.dataset.commentReplies); return; }
       const commentsBack = event.target.closest('[data-comments-back]');
@@ -2332,6 +2383,7 @@
       addAuthControls();
       updateProfileUI();
       syncAdminStudent(false);
+      refreshNewsOwnership();
     }).catch(error => console.warn('تعذر مزامنة جلسة الطالب في الخلفية:', error)), 0);
 
     nativeReady();

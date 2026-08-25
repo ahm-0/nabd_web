@@ -29,3 +29,9 @@
 .comment-replies-list .comment-thread-item{border:1px solid var(--line)}
 @media(max-width:480px){.comment-replies-head{gap:6px}.comment-page-back{min-height:32px;padding-inline:7px;font-size:9px}.comment-replies-head h3{font-size:14px}.comment-replies-list{max-height:42vh}.comment-actions{gap:6px}}
 @media(prefers-reduced-motion:reduce){.comment-replies-button,.comment-page-back{transition:none}}
+
+.comment-delete-button{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid rgba(255,89,116,.24);border-radius:8px;background:rgba(255,89,116,.08);color:var(--danger);font:700 9px/1 var(--app-font);cursor:pointer;transition:background .16s var(--ease-out),transform .16s var(--ease-out),border-color .16s var(--ease-out)}
+.comment-delete-button:hover{border-color:rgba(255,89,116,.5);background:rgba(255,89,116,.15);transform:translateY(-1px)}
+.comment-delete-button:active{transform:scale(.97)}
+.comment-delete-button:focus-visible,.comment-replies-button:focus-visible{outline:3px solid rgba(255,89,116,.25);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.comment-delete-button{transition:none}}
