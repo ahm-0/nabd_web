@@ -375,3 +375,8 @@ html{font-synthesis:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}bod
 @media(max-width:760px){.admin-command-bar{align-items:flex-start;flex-direction:column}.admin-command-actions{width:100%;justify-content:stretch}.admin-command-actions>*{flex:1}.admin-workspace-tabs{top:5px}.admin-workspace-priority{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:420px){.admin-command-bar{padding:11px}.admin-command-actions{display:grid;grid-template-columns:1fr 1fr}.admin-command-actions>*{width:100%}.admin-workspace-priority{gap:8px}.admin-priority-card{min-height:96px;padding:11px}}
 @media(prefers-reduced-motion:reduce){.admin-priority-card,.admin-workspace-tabs .admin-tab,.admin-student-card,.admin-request,.admin-post{transition:none}.admin-pane.active{animation:none}}
+
+/* حماية المحتوى من النسخ والسحب مع إبقاء الحقول قابلة للتحرير */
+html.content-protected,html.content-protected body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html.content-protected a,html.content-protected img,html.content-protected button{-webkit-user-drag:none;user-drag:none}
+html.content-protected input,html.content-protected textarea,html.content-protected select,html.content-protected [contenteditable="true"],html.content-protected [contenteditable="plaintext-only"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}

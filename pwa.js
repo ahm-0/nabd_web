@@ -1,6 +1,46 @@
 (() => {
   'use strict';
 
+  const isEditableTarget = target => {
+    if (!(target instanceof Element)) return false;
+    return Boolean(target.closest('input, textarea, select, [contenteditable="true"], [contenteditable="plaintext-only"]'));
+  };
+
+  const installProtectionStyles = () => {
+    if (document.getElementById('nabd-content-protection-style')) return;
+    const style = document.createElement('style');
+    style.id = 'nabd-content-protection-style';
+    style.textContent = 'html.content-protected,html.content-protected body{user-select:none!important;-webkit-user-select:none!important;-webkit-touch-callout:none!important}html.content-protected a,html.content-protected img,html.content-protected button{user-drag:none!important;-webkit-user-drag:none!important}html.content-protected input,html.content-protected textarea,html.content-protected select,html.content-protected [contenteditable="true"],html.content-protected [contenteditable="plaintext-only"]{user-select:text!important;-webkit-user-select:text!important;-webkit-touch-callout:default!important}';
+    (document.head || document.documentElement).append(style);
+  };
+
+  const preventContextAndClipboard = event => {
+    event.preventDefault();
+  };
+
+  const preventSelectionOrDrag = event => {
+    if (!isEditableTarget(event.target)) event.preventDefault();
+  };
+
+  const installInteractionGuards = () => {
+    document.addEventListener('contextmenu', preventContextAndClipboard, { capture: true });
+    document.addEventListener('copy', preventContextAndClipboard, { capture: true });
+    document.addEventListener('cut', preventContextAndClipboard, { capture: true });
+    document.addEventListener('selectstart', preventSelectionOrDrag, { capture: true });
+    document.addEventListener('dragstart', preventSelectionOrDrag, { capture: true });
+    document.addEventListener('dragover', preventSelectionOrDrag, { capture: true });
+    document.addEventListener('drop', preventSelectionOrDrag, { capture: true });
+    document.addEventListener('keydown', event => {
+      if (isEditableTarget(event.target)) return;
+      const key = String(event.key || '').toLowerCase();
+      if ((event.ctrlKey || event.metaKey) && ['a', 'c', 'x'].includes(key)) event.preventDefault();
+    }, { capture: true });
+  };
+
+  document.documentElement.classList.add('content-protected');
+  installProtectionStyles();
+  installInteractionGuards();
+
   if (!('serviceWorker' in navigator)) return;
 
   let reloading = false;
