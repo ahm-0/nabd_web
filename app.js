@@ -392,7 +392,7 @@
   }
 
   async function revealPremiumAdminShortcut() {
-    const shortcuts = $$('#premiumAdminShortcut, #premiumAdminHomeShortcut');
+    const shortcuts = $$('#premiumAdminHomeShortcut');
     if (!shortcuts.length || adminShortcutChecked || !supabaseClient) return;
     adminShortcutChecked = true;
     try {
@@ -416,19 +416,10 @@
           <a class="side-link ${PAGE === 'home' ? 'active' : ''}" href="index.html"><span class="nav-icon home-nav"><i class="fa-solid fa-house"></i></span><span>الرئيسية</span></a>
           <a class="side-link ${PAGE === 'news' ? 'active' : ''}" href="news.html"><span class="nav-icon news-nav"><i class="fa-regular fa-newspaper"></i></span><span>مجتمع الأخبار</span><em>جديد</em></a>
         </nav>
-        <div class="sidebar-label">اختصارات دراسية</div>
-        <nav class="side-nav sidebar-study-nav">
-          <a class="side-link ${PAGE === 'study-schedule' ? 'active' : ''}" href="time-organizer.html"><span class="nav-icon schedule-nav"><i class="fa-solid fa-calendar-days"></i></span><span>الجدول الدراسي</span></a>
-          <a class="side-link ${PAGE === 'grade-calculator' ? 'active' : ''}" href="grade-calculator.html"><span class="nav-icon calculator-nav"><i class="fa-solid fa-calculator"></i></span><span>حاسبة المعدل</span></a>
-          <a class="side-link ${PAGE === 'tests' ? 'active' : ''}" href="tests.html"><span class="nav-icon tests-nav"><i class="fa-solid fa-clipboard-check"></i></span><span>الاختبارات</span></a>
-          <a class="side-link ${PAGE === 'educational-sites' ? 'active' : ''}" href="educational-sites.html"><span class="nav-icon sites-nav"><i class="fa-solid fa-globe"></i></span><span>المواقع التعليمية</span></a>
-        </nav>
         <div class="sidebar-label">التطبيق</div>
         <nav class="side-nav compact sidebar-app-nav">
           <a class="side-link ${PAGE === 'notifications' ? 'active' : ''}" href="notifications.html"><span class="nav-icon notify-nav"><i class="fa-regular fa-bell"></i></span><span>الإشعارات</span></a>
           <a class="side-link ${PAGE === 'about' ? 'active' : ''}" href="about.html"><span class="nav-icon about-nav"><i class="fa-solid fa-circle-info"></i></span><span>عن المنصة</span></a>
-          <a class="side-link ${PAGE === 'supervision' ? 'active' : ''}" href="admin-dashboard.html"><span class="nav-icon shield-nav"><i class="fa-solid fa-shield-halved"></i></span><span>بوابة الإشراف</span></a>
-          <a class="side-link premium-admin-shortcut hidden ${PAGE === 'premium-admin' ? 'active' : ''}" id="premiumAdminShortcut" href="premium-admin.html"><span class="nav-icon shield-nav"><i class="fa-solid fa-crown"></i></span><span>إدارة القسم المميز</span><em>Admin</em></a>
           <a class="side-link ${PAGE === 'privacy' ? 'active' : ''}" href="privacy.html"><span class="nav-icon lock-nav"><i class="fa-solid fa-lock"></i></span><span>الخصوصية والأمان</span></a>
         </nav>
         <a class="sidebar-edit-cta" href="settings.html"><i class="fa-solid fa-gear"></i><span>إعدادات التطبيق</span><i class="fa-solid fa-arrow-left"></i></a>`;
@@ -590,15 +581,13 @@
     const activePlans = Array.isArray(completionPlans) ? completionPlans.filter(plan => completionProgress(plan) < 100).length : 0;
     const savedResources = Array.isArray(personalLibraryResources) ? personalLibraryResources.length : 0;
     const average = Number(gradeCalculator.lastAverage);
-    const taskMetric = $('#homeTaskMetric'); const gradeMetric = $('#homeGradeMetric'); const galleryMetric = $('#homeGalleryMetric');
+    const taskMetric = $('#homeTaskMetric'); const gradeMetric = $('#homeGradeMetric');
     const setServiceStatus = (id, value) => { const element = $('#' + id); if (element) element.textContent = value; };
     if (taskMetric) taskMetric.textContent = activeTasks ? `${activeTasks} مهام` : 'ابدأ خطتك';
     if (gradeMetric) gradeMetric.textContent = Number.isFinite(average) ? `${average.toFixed(1)}%` : 'احسب نتيجتك';
-    if (galleryMetric) galleryMetric.textContent = studyGallery.length ? `${studyGallery.length} صور` : 'أضف أول صورة';
     setServiceStatus('serviceStatusGrade', Number.isFinite(average) ? `آخر معدل ${average.toFixed(1)}%` : 'اختر النظام المناسب');
     setServiceStatus('serviceStatusSchedule', activeTasks ? `${activeTasks} مهام قيد الإنجاز` : 'أضف أول مهمة');
     setServiceStatus('serviceStatusTests', 'نماذج ونتائج مراجعة');
-    setServiceStatus('serviceStatusGallery', studyGallery.length ? `${studyGallery.length} صور محفوظة` : 'أضف أول صورة');
     setServiceStatus('serviceStatusCompletion', activePlans ? `${activePlans} خطط قيد التنفيذ` : 'أنشئ خطة جديدة');
     setServiceStatus('serviceStatusLibrary', savedResources ? `${savedResources} موارد شخصية` : 'أضف موردك الأول');
   }
@@ -722,21 +711,13 @@
     window.setTimeout(() => $('.comment-modal-form input')?.focus(), 80);
   }
 
-  function communityPromoTemplate() {
-    if (!communityPromo.visible) return '';
-    const link = String(communityPromo.link || '').trim();
-    const safeLink = /^https?:\/\//i.test(link) ? link : '';
-    const action = safeLink ? `<a class="community-ad-action" href="${escapeHTML(safeLink)}" target="_blank" rel="noopener noreferrer"><span>${escapeHTML(communityPromo.ctaLabel || 'اكتشف المزيد')}</span><i class="fa-solid fa-arrow-left"></i></a>` : '';
-    return `<aside class="community-ad-slot" aria-label="مساحة إعلانية"><span class="community-ad-label"><i class="fa-solid fa-bullhorn"></i> مساحة إعلانية</span><div class="community-ad-icon"><i class="fa-solid fa-graduation-cap"></i></div><div class="community-ad-copy"><small>إعلان منصة نبض التفوق</small><h3>${escapeHTML(communityPromo.title || defaultCommunityPromo.title)}</h3><p>${escapeHTML(communityPromo.body || defaultCommunityPromo.body)}</p>${action}</div></aside>`;
-  }
-
   function renderFeed() {
     const feed = $('#feed');
     if (!feed) return;
     const entries = [...posts];
     const visible = entries;
     const listing = visible.length ? visible.map(postTemplate).join('') : '<div class="empty-feed"><i class="fa-regular fa-newspaper"></i><b>لا توجد منشورات منشورة حاليًا.</b><span>ستظهر هنا الأخبار التي ينشرها المشرف.</span></div>';
-    feed.innerHTML = `${communityPromoTemplate()}${listing}`;
+    feed.innerHTML = listing;
     const postCount = $('#profilePosts');
     if (postCount) postCount.textContent = posts.filter(post => post.mine).length;
   }
