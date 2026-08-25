@@ -74,7 +74,7 @@ Deno.serve(async (request: Request) => {
       push_sent: false,
       notification,
       code: "ONESIGNAL_NOT_CONFIGURED",
-      error: "تم حفظ الإشعار داخل التطبيق، لكن إعدادات OneSignal غير مكتملة في Edge Function",
+      message: "تم حفظ الإشعار داخل التطبيق، لكن Push الخارجي غير مفعّل حاليًا",
     });
   }
 
@@ -101,12 +101,12 @@ Deno.serve(async (request: Request) => {
       body: JSON.stringify(oneSignalPayload),
     });
   } catch {
-    return responseJson({ saved: true, push_sent: false, notification, error: "تم حفظ الإشعار لكن تعذر الاتصال بخدمة OneSignal" });
+    return responseJson({ saved: true, push_sent: false, notification, message: "تم حفظ الإشعار لكن تعذر الاتصال بخدمة OneSignal" });
   }
 
   const pushResult = await pushResponse.json().catch(() => ({}));
   if (!pushResponse.ok) {
-    return responseJson({ saved: true, push_sent: false, notification, error: "تم حفظ الإشعار لكن رفضت خدمة OneSignal الطلب", details: pushResult });
+    return responseJson({ saved: true, push_sent: false, notification, message: "تم حفظ الإشعار لكن رفضت خدمة OneSignal الطلب", details: pushResult });
   }
 
   return responseJson({ saved: true, push_sent: true, notification, push: pushResult });

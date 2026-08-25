@@ -36,8 +36,8 @@
         </header>
 
         <section class="admin-workspace-welcome">
-          <div class="admin-workspace-welcome-copy"><span class="admin-workspace-kicker"><i class="fa-solid fa-circle-check"></i> لوحة الإدارة جاهزة</span><h3>تابع أهم ما يحتاج انتباهك</h3><p>إدارة منظمة للطلاب والتوثيق والرسائل والمحتوى، مع إرسال إشعارات آمن للمستخدمين.</p></div>
-          <div class="admin-workspace-welcome-mark"><i class="fa-solid fa-shield-heart"></i><small>محلي</small></div>
+          <div class="admin-workspace-welcome-copy"><span class="admin-workspace-kicker"><i class="fa-solid fa-circle-check"></i> لوحة الإدارة جاهزة</span><h3>تابع أهم ما يحتاج انتباهك</h3><p>إدارة منظمة للطلاب والرسائل والمحتوى، مع إرسال إشعارات آمن للمستخدمين.</p></div>
+          <div class="admin-workspace-welcome-mark"><i class="fa-solid fa-shield-heart"></i><small>مؤمّن</small></div>
         </section>
 
         <section class="admin-command-bar" aria-label="أدوات الإدارة السريعة">
@@ -47,7 +47,6 @@
 
         <section class="admin-workspace-priority" aria-label="المتابعة السريعة">
           <button class="admin-priority-card priority-students" type="button" data-admin-tab="students"><span class="admin-priority-icon"><i class="fa-solid fa-users"></i></span><span class="admin-priority-copy"><small>إحصائيات التطبيق</small><b id="adminTotalUsers">0</b><em>جميع المستخدمين</em></span><i class="fa-solid fa-chevron-left"></i></button>
-          <button class="admin-priority-card priority-verification" type="button" data-admin-tab="verification"><span class="admin-priority-icon"><i class="fa-solid fa-certificate"></i></span><span class="admin-priority-copy"><small>طلبات التوثيق</small><b id="adminVerificationCount">0</b><em>طلب للمراجعة</em></span><i class="fa-solid fa-chevron-left"></i></button>
           <button class="admin-priority-card priority-support" type="button" data-admin-tab="support"><span class="admin-priority-icon"><i class="fa-solid fa-headset"></i></span><span class="admin-priority-copy"><small>دعم الطلاب</small><b id="adminSupportCount">0</b><em>محادثة مفتوحة</em></span><i class="fa-solid fa-chevron-left"></i></button>
           <button class="admin-priority-card priority-posts" type="button" data-admin-tab="content"><span class="admin-priority-icon"><i class="fa-regular fa-newspaper"></i></span><span class="admin-priority-copy"><small>مجتمع الأخبار</small><b id="adminPostCount">0</b><em>منشور للمتابعة</em></span><i class="fa-solid fa-chevron-left"></i></button>
         </section>
@@ -55,7 +54,6 @@
         <nav class="admin-tabs admin-workspace-tabs" aria-label="أقسام بوابة المشرفين">
           <button class="admin-tab active" type="button" data-admin-tab="overview"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
           <button class="admin-tab" type="button" data-admin-tab="students"><i class="fa-solid fa-users"></i><span>الطلاب</span></button>
-          <button class="admin-tab" type="button" data-admin-tab="verification"><i class="fa-solid fa-certificate"></i><span>التوثيق</span></button>
           <button class="admin-tab" type="button" data-admin-tab="support"><i class="fa-solid fa-headset"></i><span>الدعم</span></button>
           <button class="admin-tab" type="button" data-admin-tab="content"><i class="fa-solid fa-bullhorn"></i><span>المحتوى</span></button>
           <button class="admin-tab" type="button" data-admin-tab="notifications"><i class="fa-regular fa-bell"></i><span>الإشعارات</span></button>
@@ -68,7 +66,6 @@
 
         <section class="admin-pane" data-admin-pane="students"><article class="panel admin-card admin-workspace-card"><header class="admin-card-head"><div><span class="eyebrow">دليل المنصة</span><h3>بيانات الطلاب</h3><p class="admin-card-note">اطلع على المعلومات المحفوظة وابحث بالاسم أو الرقم أو المنطقة.</p></div><label class="admin-search"><i class="fa-solid fa-magnifying-glass"></i><input id="adminStudentSearch" type="search" placeholder="بحث عن طالب"></label></header><div class="admin-student-directory" id="adminStudentsRows" aria-live="polite"></div></article></section>
 
-        <section class="admin-pane" data-admin-pane="verification"><article class="panel admin-card admin-workspace-card"><header><div><span class="eyebrow">طلبات الشارة</span><h3>مراجعة التوثيق</h3><p class="admin-card-note">اعرض طلبات التوثيق وحدث حالة كل حساب.</p></div><span class="admin-status pending">قيد المراجعة</span></header><div class="admin-request-list" id="adminVerificationRows"></div></article></section>
 
         <section class="admin-pane" data-admin-pane="support"><article class="panel admin-card admin-workspace-card"><header><div><span class="eyebrow">مركز الرسائل</span><h3>دعم الطلاب</h3><p class="admin-card-note">افتح محادثة الطالب للرد والمتابعة من نفس البوابة.</p></div><span class="admin-status open">مفتوحة</span></header><div class="admin-request-list" id="adminSupportRows"></div></article></section>
 

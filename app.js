@@ -422,9 +422,8 @@
 
   function notificationCardMarkup(notification) {
     const unread = !notification.read_at;
-    const imageUrl = safeNotificationUrl(notification.image_url);
     const actionUrl = safeNotificationUrl(notification.action_url);
-    return `<article class="notification-card ${unread ? 'is-unread' : ''}" data-notification-open="${escapeHTML(notification.id)}" tabindex="0"><div class="notification-card-marker" aria-hidden="true"></div>${imageUrl ? `<img class="notification-card-image" loading="lazy" src="${escapeHTML(imageUrl)}" alt="صورة مرفقة بالإشعار">` : ''}<div class="notification-card-content"><div class="notification-card-meta"><span><i class="fa-regular fa-clock"></i> ${escapeHTML(displayAdminDate(notification.created_at))}</span>${unread ? '<b>جديد</b>' : '<span>مقروء</span>'}</div><h3>${escapeHTML(notification.title)}</h3><p>${escapeHTML(notification.body).replace(/\n/g, '<br>')}</p>${actionUrl ? `<a class="notification-card-action" href="${escapeHTML(actionUrl)}" data-external-url="${escapeHTML(actionUrl)}"><i class="fa-solid fa-arrow-up-left-from-circle"></i> فتح الرابط</a>` : ''}<button class="notification-mark-read" type="button" data-notification-read="${escapeHTML(notification.id)}" ${unread ? '' : 'disabled'}>${unread ? '<i class="fa-solid fa-check"></i> تعليم كمقروء' : '<i class="fa-solid fa-check-double"></i> تمت القراءة'}</button></div></article>`;
+    return `<article class="notification-card ${unread ? 'is-unread' : ''}" data-notification-open="${escapeHTML(notification.id)}" tabindex="0"><div class="notification-card-marker" aria-hidden="true"></div><div class="notification-card-content"><div class="notification-card-meta"><span><i class="fa-regular fa-clock"></i> ${escapeHTML(displayAdminDate(notification.created_at))}</span>${unread ? '<b>جديد</b>' : '<span>مقروء</span>'}</div><h3>${escapeHTML(notification.title)}</h3><p>${escapeHTML(notification.body).replace(/\n/g, '<br>')}</p>${actionUrl ? `<a class="notification-card-action" href="${escapeHTML(actionUrl)}" data-external-url="${escapeHTML(actionUrl)}"><i class="fa-solid fa-arrow-up-left-from-circle"></i> فتح الرابط</a>` : ''}<button class="notification-mark-read" type="button" data-notification-read="${escapeHTML(notification.id)}" ${unread ? '' : 'disabled'}>${unread ? '<i class="fa-solid fa-check"></i> تعليم كمقروء' : '<i class="fa-solid fa-check-double"></i> تمت القراءة'}</button></div></article>`;
   }
 
   function renderNotifications() {
@@ -441,6 +440,8 @@
     }
     if (loading) loading.hidden = true;
     list.innerHTML = appNotifications.map(notificationCardMarkup).join('');
+    const count = $('#notificationsCount');
+    if (count) count.textContent = appNotifications.length ? `${appNotifications.length} إشعار` : '';
     if (empty) empty.hidden = appNotifications.length > 0;
     updateNotificationBadges();
   }
@@ -590,9 +591,6 @@
       appGuide: `<div class="modal-head"><h3>شرح استخدام التطبيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-regular fa-circle-play"></i></div><h2>ابدأ بخطوات بسيطة</h2><p>من الرئيسية تابع عدادات الامتحان واستخدم الأدوات الدراسية. اختر «مخصص» لضبط هدفك وموعده.</p><p>في الملف الشخصي عدّل بياناتك وصورتك وإعداداتك، ثم استخدم مجتمع الأخبار لمشاركة الأخبار والصور والتفاعل باحترام.</p></div>`,
       contribute: `<div class="modal-head"><h3>ساهم في التطبيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-solid fa-hand-holding-heart"></i></div><h2>رأيك يصنع فرقًا</h2><p>شارك اقتراحاتك للأقسام والأدوات الدراسية التي ترغب برؤيتها في الإصدارات القادمة.</p></div>`,
       contact: `<div class="modal-head"><h3>تواصل مع الدعم</h3><button class="close-modal" aria-label="إغلاق">×</button></div><form id="supportForm"><div class="info-page"><div class="info-icon"><i class="fa-regular fa-comment-dots"></i></div><h2>كيف يمكننا مساعدتك؟</h2><p>اكتب رسالتك، وستظهر في صندوق الدعم داخل بوابة المشرفين على هذا المتصفح.</p><div class="form-group" style="text-align:right"><label>نوع الرسالة</label><select name="category"><option>مساعدة دراسية</option><option>مشكلة تقنية</option><option>اقتراح تطوير</option><option>استفسار عام</option></select></div><div class="form-group" style="text-align:right;margin-top:11px"><label>رسالتك</label><textarea name="message" required maxlength="700" placeholder="اكتب تفاصيل المساعدة التي تحتاجها..."></textarea></div><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">إرسال للدعم</button></div></div></form>`,
-      verification: student.verificationRequested
-        ? `<div class="modal-head"><h3>طلب شارة التوثيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><div class="info-page"><div class="info-icon"><i class="fa-solid fa-circle-check"></i></div><h2>طلبك قيد المراجعة</h2><p>تم تسجيل طلب شارة التوثيق محليًا. ستظهر حالة الطلب في ملفك الشخصي داخل هذه النسخة التجريبية.</p></div>`
-        : `<div class="modal-head"><h3>طلب شارة التوثيق</h3><button class="close-modal" aria-label="إغلاق">×</button></div><form id="verificationForm"><div class="info-page"><div class="info-icon"><i class="fa-solid fa-certificate"></i></div><h2>عرّف مجتمع نبض بحسابك</h2><p>سنراجع اكتمال بيانات ملفك الشخصي قبل اعتماد الطلب. هذه الواجهة تحفظ حالة الطلب محليًا في النسخة الثابتة.</p><div class="form-actions"><button type="button" class="outline-button close-modal">ليس الآن</button><button class="primary-button" type="submit">إرسال طلب التوثيق</button></div></div></form>`
     };
     openModal(modals[name] || modals.appGuide);
   }
@@ -626,11 +624,6 @@
     if (birth) birth.textContent = student.birth ? new Intl.DateTimeFormat('ar-SY', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(student.birth)) : '—';
     const completion = $('#completeProfile');
     if (completion) completion.classList.toggle('hidden', !profileIncomplete());
-    const verificationState = student.verificationStatus || (student.verificationRequested ? 'pending' : '');
-    const verificationStatus = $('#verificationStatus');
-    if (verificationStatus) { verificationStatus.classList.toggle('hidden', !verificationState); verificationStatus.className = `verification-status ${verificationState || 'hidden'}`; verificationStatus.innerHTML = verificationState === 'approved' ? '<i class="fa-solid fa-circle-check"></i> الحساب موثّق' : verificationState === 'revoked' ? '<i class="fa-solid fa-circle-xmark"></i> تم إلغاء التوثيق' : verificationState === 'rejected' ? '<i class="fa-solid fa-circle-xmark"></i> راجع بيانات التوثيق' : '<i class="fa-solid fa-circle-check"></i> طلب التوثيق قيد المراجعة'; }
-    const verificationButton = $('#verificationRequest');
-    if (verificationButton) { const title = $('.setting-copy strong, b', verificationButton); const detail = $('.setting-copy small, small', verificationButton); verificationButton.disabled = verificationState === 'pending' || verificationState === 'approved'; if (title) title.textContent = verificationState === 'approved' ? 'الحساب موثّق' : verificationState === 'pending' ? 'طلب التوثيق قيد المراجعة' : verificationState === 'revoked' ? 'إعادة طلب شارة التوثيق' : verificationState === 'rejected' ? 'إعادة طلب شارة التوثيق' : 'طلب شارة التوثيق'; if (detail) detail.textContent = verificationState === 'approved' ? 'تم اعتماد الشارة على هذا المتصفح' : verificationState === 'pending' ? 'تم إرسال طلبك وسيبقى ظاهرًا في ملفك' : verificationState === 'revoked' ? 'يمكنك مراجعة البيانات وإرسال طلب جديد' : verificationState === 'rejected' ? 'يمكنك مراجعة البيانات وإرسال طلب جديد' : 'راجع ملفك وأرسل الطلب للمراجعة'; }
     const notificationSwitch = $('#notificationsSwitch');
     if (notificationSwitch) notificationSwitch.checked = Boolean(student.notifications);
     setAvatar('profileAvatar', 'profile-avatar');
@@ -1987,23 +1980,6 @@
     toast('تم حفظ العداد المخصص على جهازك.');
   }
 
-  function submitVerificationRequest() {
-    syncAdminStudent(false);
-    const snapshot = studentSnapshot();
-    const existing = verificationRequests.find(request => request.studentId === snapshot.id && request.status === 'pending');
-    if (!existing) {
-      verificationRequests.unshift({ id: `verification-${Date.now()}`, studentId: snapshot.id, name: snapshot.name, phone: snapshot.phone, city: snapshot.city, gender: snapshot.gender, stage: snapshot.stage, status: 'pending', createdAt: Date.now() });
-      adminLog('verification', `طلب توثيق جديد: ${snapshot.name}`, `${snapshot.city} · ${snapshot.stage}`);
-    }
-    student.verificationRequested = true;
-    student.verificationStatus = 'pending';
-    saveState();
-    saveAdminState();
-    closeModal();
-    updateProfileUI();
-    renderAdminDashboard();
-    toast('تم إرسال طلب شارة التوثيق للمراجعة.');
-  }
 
   function supportThread(ticket) {
     if (!ticket) return [];
@@ -2090,10 +2066,8 @@
 
   function renderAdminDashboard() {
     if (!$('#adminWorkspace')) return;
-    const pending = verificationRequests.filter(request => request.status === 'pending');
     const open = supportTickets.filter(ticket => ticket.status === 'open');
     $('#adminTotalUsers').textContent = String(Number(adminStats.total_users) || 0);
-    $('#adminVerificationCount').textContent = String(pending.length);
     $('#adminSupportCount').textContent = String(open.length);
     $('#adminPostCount').textContent = String(posts.length);
     const promoToggle = $('#adminCommunityPromoToggle'); const promoStatus = $('#adminCommunityPromoStatus'); const promoForm = $('#adminCommunityPromoForm');
@@ -2101,10 +2075,9 @@
     if (promoStatus) { promoStatus.textContent = communityPromo.visible ? 'ظاهرة' : 'مخفية'; promoStatus.className = `admin-status ${communityPromo.visible ? 'open' : 'pending'}`; }
     if (promoForm) { promoForm.elements.title.value = communityPromo.title || ''; promoForm.elements.body.value = communityPromo.body || ''; promoForm.elements.ctaLabel.value = communityPromo.ctaLabel || ''; promoForm.elements.link.value = communityPromo.link || ''; }
     const activities = $('#adminActivityList');
-    if (activities) activities.innerHTML = adminActivity.length ? adminActivity.slice(0, 7).map(item => `<div class="admin-activity"><i class="${item.type === 'verification' ? 'fa-solid fa-certificate' : item.type === 'support' ? 'fa-solid fa-headset' : item.type === 'content' ? 'fa-regular fa-newspaper' : 'fa-solid fa-user-pen'}"></i><div><b>${escapeHTML(item.title)}</b><span>${escapeHTML(item.detail || 'تحديث داخل المنصة')} · ${displayAdminDate(item.createdAt)}</span></div></div>`).join('') : '<div class="admin-empty">لا توجد أحداث إشرافية بعد. ستظهر هنا تحديثات ملفات الطلاب والطلبات والرسائل.</div>';
+    const visibleActivities = adminActivity.filter(item => item.type !== 'verification').slice(0, 7);
+    if (activities) activities.innerHTML = visibleActivities.length ? visibleActivities.map(item => `<div class="admin-activity"><i class="${item.type === 'support' ? 'fa-solid fa-headset' : item.type === 'content' ? 'fa-regular fa-newspaper' : 'fa-solid fa-user-pen'}"></i><div><b>${escapeHTML(item.title)}</b><span>${escapeHTML(item.detail || 'تحديث داخل المنصة')} · ${displayAdminDate(item.createdAt)}</span></div></div>`).join('') : '<div class="admin-empty">لا توجد أحداث إشرافية بعد. ستظهر هنا تحديثات الطلاب والرسائل والمحتوى.</div>';
     renderAdminStudents();
-    const verificationRows = $('#adminVerificationRows');
-    if (verificationRows) verificationRows.innerHTML = verificationRequests.length ? verificationRequests.map(request => `<article class="admin-request"><div class="admin-request-head"><div class="admin-request-person">${adminAvatarMarkup(request)}<div><b>${escapeHTML(request.name)}</b><small>${displayAdminDate(request.createdAt)}</small></div></div>${adminStatusMarkup(request.status)}</div><div class="admin-request-body"><span class="admin-detail-chip"><i class="fa-solid fa-phone"></i> ${escapeHTML(request.phone)}</span><span class="admin-detail-chip"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(request.city)}</span><span class="admin-detail-chip">${escapeHTML(request.gender || 'الجنس غير محدد')}</span><span class="admin-detail-chip">${escapeHTML(request.stage)}</span></div>${request.status === 'pending' ? `<div class="admin-request-actions"><button class="admin-approve" type="button" data-admin-action="verification-approve" data-admin-id="${escapeHTML(request.id)}"><i class="fa-solid fa-check"></i> قبول</button><button class="admin-reject" type="button" data-admin-action="verification-reject" data-admin-id="${escapeHTML(request.id)}"><i class="fa-solid fa-xmark"></i> رفض</button></div>` : ''}</article>`).join('') : '<div class="admin-empty">لا توجد طلبات توثيق حتى الآن.</div>';
     const supportRows = $('#adminSupportRows');
     if (supportRows) supportRows.innerHTML = supportTickets.length ? supportTickets.map(adminSupportTicketMarkup).join('') : '<div class="admin-empty">صندوق الدعم هادئ حاليًا، وستظهر الرسائل الجديدة هنا.</div>';
     const postRows = $('#adminPostRows');
@@ -2116,26 +2089,7 @@
     if (!rows) return;
     const normalized = String(query).trim();
     const visible = adminStudents.filter(entry => `${entry.name} ${entry.phone} ${entry.city} ${entry.studentId || entry.id}`.includes(normalized));
-    rows.innerHTML = visible.length ? visible.map(entry => { const verified = entry.verificationStatus === 'approved' || verificationRequests.some(request => request.studentId === entry.id && request.status === 'approved'); return `<article class="admin-student-card"><header class="admin-student-card-head"><div class="admin-student-cell">${adminAvatarMarkup(entry)}<span><b>${escapeHTML(entry.name)}</b><small>معرّف الطالب: ${escapeHTML(entry.id)}</small></span></div><div class="admin-row-actions"><button class="${verified ? 'admin-unverify' : 'admin-verify'}" type="button" title="${verified ? 'إلغاء توثيق الحساب' : 'توثيق الحساب'}" aria-label="${verified ? 'إلغاء توثيق' : 'توثيق'} ${escapeHTML(entry.name)}" data-admin-action="${verified ? 'student-unverify' : 'student-verify'}" data-admin-id="${escapeHTML(entry.id)}"><i class="fa-solid ${verified ? 'fa-user-xmark' : 'fa-circle-check'}"></i></button><button type="button" title="حذف من السجل المحلي" aria-label="حذف سجل ${escapeHTML(entry.name)}" data-admin-action="student-remove" data-admin-id="${escapeHTML(entry.id)}"><i class="fa-solid fa-trash"></i></button></div></header><div class="admin-student-fields"><div><span><i class="fa-solid fa-phone"></i> الرقم</span><b dir="ltr">${escapeHTML(entry.phone)}</b></div><div><span><i class="fa-solid fa-location-dot"></i> المنطقة</span><b>${escapeHTML(entry.city)}</b></div><div><span><i class="fa-solid fa-user"></i> الجنس</span>${adminGenderMarkup(entry.gender)}</div><div><span><i class="fa-solid fa-graduation-cap"></i> المرحلة</span><b>${escapeHTML(entry.stage)}</b></div></div><footer><span><i class="fa-solid ${verified ? 'fa-circle-check' : 'fa-clock'}"></i> ${verified ? 'حساب موثّق' : 'بانتظار التوثيق'}</span><b>${displayAdminDate(entry.updatedAt)}</b></footer></article>`; }).join('') : '<div class="admin-empty">لا توجد بيانات مطابقة للبحث.</div>';
-  }
-
-  function setStudentVerificationStatus(studentId, status, source = 'admin') {
-    const entry = adminStudents.find(item => item.id === studentId);
-    if (!entry) return null;
-    entry.verificationStatus = status;
-    entry.updatedAt = Date.now();
-    let request = verificationRequests.filter(item => item.studentId === studentId).sort((a, b) => b.createdAt - a.createdAt)[0];
-    if (!request) {
-      request = { id: `verification-${Date.now()}`, studentId, name: entry.name, phone: entry.phone, city: entry.city, gender: entry.gender, stage: entry.stage, status, source, createdAt: Date.now() };
-      verificationRequests.unshift(request);
-    } else request.status = status;
-    if (student.studentId === studentId) {
-      student.verificationStatus = status;
-      student.verificationRequested = status === 'pending';
-      saveState();
-      updateProfileUI();
-    }
-    return entry;
+    rows.innerHTML = visible.length ? visible.map(entry => { return `<article class="admin-student-card"><header class="admin-student-card-head"><div class="admin-student-cell">${adminAvatarMarkup(entry)}<span><b>${escapeHTML(entry.name)}</b><small>معرّف الطالب: ${escapeHTML(entry.id)}</small></span></div><div class="admin-row-actions"><button type="button" title="حذف من السجل المحلي" aria-label="حذف سجل ${escapeHTML(entry.name)}" data-admin-action="student-remove" data-admin-id="${escapeHTML(entry.id)}"><i class="fa-solid fa-trash"></i></button></div></header><div class="admin-student-fields"><div><span><i class="fa-solid fa-phone"></i> الرقم</span><b dir="ltr">${escapeHTML(entry.phone)}</b></div><div><span><i class="fa-solid fa-location-dot"></i> المنطقة</span><b>${escapeHTML(entry.city)}</b></div><div><span><i class="fa-solid fa-user"></i> الجنس</span>${adminGenderMarkup(entry.gender)}</div><div><span><i class="fa-solid fa-graduation-cap"></i> المرحلة</span><b>${escapeHTML(entry.stage)}</b></div></div><footer><span><i class="fa-solid fa-user"></i> سجل الطالب</span><b>${displayAdminDate(entry.updatedAt)}</b></footer></article>`; }).join('') : '<div class="admin-empty">لا توجد بيانات مطابقة للبحث.</div>';
   }
 
   function handleAdminAction(button) {
@@ -2144,26 +2098,6 @@
     if (action === 'logout') return logoutAdmin();
     if (!isAdminAuthenticated()) return toast('افتح بوابة المشرفين أولًا لتنفيذ هذا الإجراء.');
     if (action === 'refresh-ui') { renderAdminDashboard(); return toast('تم تحديث عرض البوابة مع الحفاظ على البيانات.'); }
-    if (action === 'verification-approve' || action === 'verification-reject') {
-      const request = verificationRequests.find(item => item.id === id);
-      if (!request) return;
-      request.status = action === 'verification-approve' ? 'approved' : 'rejected';
-      if (request.studentId === student.studentId) {
-        student.verificationStatus = request.status;
-        student.verificationRequested = request.status === 'pending';
-        saveState();
-        updateProfileUI();
-      }
-      adminLog('verification', `${request.status === 'approved' ? 'قبول' : 'رفض'} طلب توثيق: ${request.name}`, request.city);
-      toast(request.status === 'approved' ? 'تم قبول طلب التوثيق محليًا.' : 'تم رفض طلب التوثيق محليًا.');
-    }
-    if (action === 'student-verify' || action === 'student-unverify') {
-      const status = action === 'student-verify' ? 'approved' : 'revoked';
-      const entry = setStudentVerificationStatus(id, status, 'manual');
-      if (!entry) return;
-      adminLog('verification', `${status === 'approved' ? 'توثيق يدوي' : 'إلغاء توثيق'}: ${entry.name}`, entry.city);
-      toast(status === 'approved' ? 'تم توثيق الحساب يدويًا.' : 'تم إلغاء توثيق الحساب.');
-    }
     if (action === 'support-reply') return openSupportReply(id);
     if (action === 'support-resolve') {
       const ticket = supportTickets.find(item => item.id === id);
@@ -2296,12 +2230,13 @@
     status.innerHTML = message ? `<i class="fa-solid ${tone === 'success' ? 'fa-circle-check' : tone === 'warning' ? 'fa-circle-exclamation' : tone === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info'}"></i><span>${escapeHTML(message)}</span>` : '';
   }
 
-  function clearAdminNotificationImage() {
+  function clearAdminNotificationImage(resetInput = true) {
+    if (adminNotificationImageData.startsWith('blob:')) globalThis.URL?.revokeObjectURL(adminNotificationImageData);
     adminNotificationImageData = '';
     const input = $('#adminNotificationImage');
     const preview = $('#adminNotificationImagePreview');
     const image = $('#adminNotificationImagePreviewImg');
-    if (input) input.value = '';
+    if (resetInput && input) input.value = '';
     if (image) image.removeAttribute('src');
     if (preview) preview.hidden = true;
   }
@@ -2311,15 +2246,22 @@
     if (!file) return clearAdminNotificationImage();
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { clearAdminNotificationImage(); return setAdminNotificationStatus('اختر صورة بصيغة JPG أو PNG أو WebP.', 'error'); }
     if (file.size > 5 * 1024 * 1024) { clearAdminNotificationImage(); return setAdminNotificationStatus('حجم صورة الإشعار يجب ألا يتجاوز 5MB.', 'error'); }
-    const reader = new FileReader();
-    reader.onload = () => {
-      adminNotificationImageData = String(reader.result || '');
-      const image = $('#adminNotificationImagePreviewImg');
-      const preview = $('#adminNotificationImagePreview');
-      if (image) image.src = adminNotificationImageData;
+    clearAdminNotificationImage(false);
+    const image = $('#adminNotificationImagePreviewImg');
+    const preview = $('#adminNotificationImagePreview');
+    const showPreview = source => {
+      adminNotificationImageData = source;
+      if (image) image.src = source;
       if (preview) preview.hidden = false;
       setAdminNotificationStatus('تم تجهيز الصورة للرفع الآمن.', '');
     };
+    if (typeof globalThis.URL?.createObjectURL === 'function') {
+      showPreview(globalThis.URL.createObjectURL(file));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => showPreview(String(reader.result || ''));
+    reader.onerror = () => setAdminNotificationStatus('تعذر تجهيز الصورة للمعاينة.', 'error');
     reader.readAsDataURL(file);
   }
 
@@ -2358,7 +2300,7 @@
       form.reset();
       clearAdminNotificationImage();
       if (result.push_sent) setAdminNotificationStatus('تم حفظ الإشعار وإرساله للمشتركين بنجاح.', 'success');
-      else setAdminNotificationStatus('تم حفظ الإشعار داخل التطبيق. لم يُرسل Push الخارجي لأن إعدادات OneSignal غير مكتملة أو الخدمة رفضت الطلب.', 'warning');
+      else setAdminNotificationStatus('تم نشر الإشعار داخل التطبيق بنجاح.', 'success');
     } catch (error) {
       console.warn('تعذر إرسال الإشعار الإداري', error);
       setAdminNotificationStatus('تعذر إرسال الإشعار الآن. تحقق من الاتصال ثم حاول مجددًا.', 'error');
@@ -2415,7 +2357,6 @@
       const adminButton = event.target.closest('[data-admin-action]');
       if (adminButton) handleAdminAction(adminButton);
       if (event.target.closest('#openEditProfile, #editProfileSmall, #completeProfile, #profileDataUpdate')) openNamedModal('edit');
-      if (event.target.closest('#verificationRequest')) { if (profileIncomplete()) { toast('أكمل بيانات الملف الشخصي قبل طلب التوثيق.'); openNamedModal('edit'); } else openNamedModal('verification'); }
       if (event.target.closest('#sharePlatform')) sharePlatform();
       const nativeChat = event.target.closest('[data-native-chat-url]');
       if (nativeChat) { event.preventDefault(); openNativeChatViewer(nativeChat.dataset.nativeChatUrl, nativeChat.dataset.nativeChatTitle); }
@@ -2480,7 +2421,6 @@
     document.addEventListener('submit', event => {
       if (event.target.id === 'editForm') { event.preventDefault(); handleProfileSave(event.target); }
       if (event.target.id === 'customCountdownForm') { event.preventDefault(); handleCountdownSave(event.target); }
-      if (event.target.id === 'verificationForm') { event.preventDefault(); submitVerificationRequest(); }
       if (event.target.id === 'supportForm') { event.preventDefault(); submitSupportRequest(event.target); }
       if (event.target.id === 'supportChatForm') { event.preventDefault(); sendSupportChatMessage(event.target); }
       if (event.target.matches('.admin-support-reply-form')) { event.preventDefault(); sendAdminSupportReply(event.target); }

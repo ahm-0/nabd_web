@@ -8,7 +8,7 @@
 .admin-command-status-dot{width:10px;height:10px;flex:none;border-radius:50%;background:var(--success);box-shadow:0 0 0 5px rgba(57,217,162,.12)}
 .admin-command-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
 .admin-command-actions .outline-button{min-height:34px;padding:7px 10px;font-size:10px;white-space:nowrap}
-.admin-workspace-priority{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+.admin-workspace-priority{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
 .admin-priority-card{min-height:104px;padding:13px;border-radius:17px;transition:transform .18s var(--ease-out),box-shadow .18s var(--ease-out),border-color .18s var(--ease-out)}
 .admin-priority-card:hover{transform:translateY(-2px);border-color:rgba(var(--primary-rgb),.34);box-shadow:0 13px 25px rgba(0,0,0,.12)}
 .admin-priority-card:active{transform:scale(.98)}
