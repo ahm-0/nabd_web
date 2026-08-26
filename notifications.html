@@ -7,7 +7,7 @@
   <title>نبض التفوق | الإشعارات</title>
   <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script>
   <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=20260825-notifications-v2">
+  <link rel="stylesheet" href="styles.css?v=20260826-social-notifications">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <meta name="mobile-web-app-capable" content="yes">
@@ -19,11 +19,11 @@
   <div class="app">
     <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات" aria-label="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
     <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content notifications-main">
-      <section class="notifications-page-head"><div class="notifications-title"><span class="notifications-title-icon"><i class="fa-regular fa-bell"></i></span><div><h2>الإشعارات</h2><span class="notifications-count" id="notificationsCount">—</span></div></div><button class="outline-button notifications-read-all" type="button" id="markAllNotificationsRead"><i class="fa-solid fa-check-double"></i><span>تعليم الكل كمقروء</span></button></section>
-      <section class="notifications-inbox panel" aria-live="polite"><div class="notifications-list" id="notificationsList"></div><div class="notifications-empty" id="notificationsEmpty" hidden><span><i class="fa-regular fa-bell-slash"></i></span><h3>لا توجد إشعارات</h3></div><div class="notifications-loading" id="notificationsLoading"><i class="fa-solid fa-spinner fa-spin"></i><span>جارٍ التحميل</span></div></section>
+      <section class="social-notifications-header"><div class="social-notifications-title"><span class="social-notifications-icon"><i class="fa-regular fa-bell"></i></span><div><h2>الإشعارات</h2><span id="notificationsCount" class="social-notifications-count">—</span></div></div><button class="social-mark-all" type="button" id="markAllNotificationsRead"><i class="fa-solid fa-check-double"></i><span>تحديد الكل كمقروء</span></button></section>
+      <section class="social-notifications-feed" aria-live="polite"><div class="notifications-list" id="notificationsList"></div><div class="notifications-empty" id="notificationsEmpty" hidden><span><i class="fa-regular fa-bell-slash"></i></span><h3>لا توجد إشعارات</h3></div><div class="notifications-loading" id="notificationsLoading"><i class="fa-solid fa-spinner fa-spin"></i><span>جارٍ التحميل</span></div></section>
     </main></div>
   </div>
   <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div>
-  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260825-notifications-v2"></script><script src="app.js?v=20260825-notifications-v2"></script>
+  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260826-social-notifications"></script><script src="app.js?v=20260826-social-notifications"></script>
 </body>
 </html>

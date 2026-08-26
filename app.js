@@ -423,8 +423,7 @@
 
   function notificationCardMarkup(notification) {
     const unread = !notification.read_at;
-    const actionUrl = safeNotificationUrl(notification.action_url);
-    return `<article class="notification-card ${unread ? 'is-unread' : ''}" data-notification-open="${escapeHTML(notification.id)}" tabindex="0"><div class="notification-card-marker" aria-hidden="true"></div><div class="notification-card-content"><div class="notification-card-meta"><span><i class="fa-regular fa-clock"></i> ${escapeHTML(displayAdminDate(notification.created_at))}</span>${unread ? '<b>جديد</b>' : '<span>مقروء</span>'}</div><h3>${escapeHTML(notification.title)}</h3><p>${escapeHTML(notification.body).replace(/\n/g, '<br>')}</p>${actionUrl ? `<a class="notification-card-action" href="${escapeHTML(actionUrl)}" data-external-url="${escapeHTML(actionUrl)}"><i class="fa-solid fa-arrow-up-left-from-circle"></i> فتح الرابط</a>` : ''}<button class="notification-mark-read" type="button" data-notification-read="${escapeHTML(notification.id)}" ${unread ? '' : 'disabled'}>${unread ? '<i class="fa-solid fa-check"></i> تعليم كمقروء' : '<i class="fa-solid fa-check-double"></i> تمت القراءة'}</button></div></article>`;
+    return `<article class="notification-card ${unread ? 'is-unread' : ''}" data-notification-open="${escapeHTML(notification.id)}" tabindex="0" aria-label="${escapeHTML(notification.title)}"><span class="notification-card-marker" aria-hidden="true"></span><span class="notification-card-avatar" aria-hidden="true"><i class="fa-solid fa-bell"></i></span><div class="notification-card-content"><div class="notification-card-meta"><span>${escapeHTML(displayAdminDate(notification.created_at))}</span>${unread ? '<b class="notification-new-badge">جديد</b>' : '<span class="notification-read-label"><i class="fa-solid fa-check"></i> مقروء</span>'}</div><h3>${escapeHTML(notification.title)}</h3><p>${escapeHTML(notification.body).replace(/\n/g, '<br>')}</p><button class="notification-mark-read" type="button" data-notification-read="${escapeHTML(notification.id)}" ${unread ? '' : 'disabled'}>${unread ? '<i class="fa-solid fa-check"></i> تعليم كمقروء' : '<i class="fa-solid fa-check-double"></i> تمت القراءة'}</button></div></article>`;
   }
 
   function renderNotifications() {
@@ -442,7 +441,7 @@
     if (loading) loading.hidden = true;
     list.innerHTML = appNotifications.map(notificationCardMarkup).join('');
     const count = $('#notificationsCount');
-    if (count) count.textContent = appNotifications.length ? `${appNotifications.length} إشعار` : '';
+    if (count) { const unread = appNotifications.filter(item => !item.read_at).length; count.textContent = appNotifications.length ? `${appNotifications.length} إشعار${unread ? ` · ${unread} جديد` : ''}` : ''; }
     if (empty) empty.hidden = appNotifications.length > 0;
     updateNotificationBadges();
   }
@@ -2036,6 +2035,36 @@
     toast('تم إرسال رسالتك إلى صندوق الدعم.');
   }
 
+  function setAdminNotificationStatus(message = '', tone = '') {
+    const status = $('#adminNotificationStatus');
+    if (!status) return;
+    status.textContent = message;
+    status.className = `admin-internal-notification-status ${tone}`;
+  }
+
+  async function sendAdminNotification(form) {
+    if (!isAdminAuthenticated() || !supabaseClient) return setAdminNotificationStatus('يلزم فتح جلسة مشرف صالحة قبل النشر.', 'error');
+    const data = new FormData(form);
+    const title = String(data.get('title') || '').trim();
+    const body = String(data.get('body') || '').trim();
+    if (title.length < 1 || title.length > 120) return setAdminNotificationStatus('اكتب عنوانًا بين حرف واحد و120 حرفًا.', 'error');
+    if (body.length < 1 || body.length > 2000) return setAdminNotificationStatus('اكتب وصفًا بين حرف واحد و2000 حرف.', 'error');
+    const button = $('#sendAdminNotification');
+    if (button) { button.disabled = true; button.dataset.originalLabel = button.innerHTML; button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>جارٍ النشر</span>'; }
+    setAdminNotificationStatus('جارٍ حفظ الإشعار...', 'loading');
+    try {
+      const { data: result, error } = await supabaseClient.functions.invoke('send-admin-notification', { body: { title, body } });
+      if (error || !result?.saved) throw new Error(result?.error || 'تعذر حفظ الإشعار.');
+      form.reset();
+      setAdminNotificationStatus('تم نشر الإشعار داخل التطبيق بنجاح.', 'success');
+    } catch (error) {
+      console.warn('تعذر نشر الإشعار الداخلي', error);
+      setAdminNotificationStatus('تعذر نشر الإشعار الآن. تحقق من الاتصال ثم حاول مجددًا.', 'error');
+    } finally {
+      if (button) { button.disabled = false; button.innerHTML = button.dataset.originalLabel || '<i class="fa-solid fa-paper-plane"></i><span>نشر الإشعار</span>'; }
+    }
+  }
+
   async function loadAdminUsers() {
     if (!supabaseClient || !remoteAdminVerified || !$('#adminStudentsRows')) return;
     const rows = $('#adminStudentsRows');
@@ -2049,7 +2078,8 @@
     }
     adminUsers = data.users;
     adminUsersLoaded = true;
-    const total = Number(data.total);
+    const { data: stats } = await supabaseClient.rpc('admin_get_dashboard_stats');
+    const total = Number(stats?.total_users ?? data.total);
     adminStats.total_users = Number.isFinite(total) && total >= 0 ? total : adminUsers.length;
     renderAdminDashboard();
   }
@@ -2291,6 +2321,7 @@
     });
 
     document.addEventListener('submit', event => {
+      if (event.target.id === 'adminNotificationForm') { event.preventDefault(); void sendAdminNotification(event.target); }
       if (event.target.id === 'editForm') { event.preventDefault(); handleProfileSave(event.target); }
       if (event.target.id === 'customCountdownForm') { event.preventDefault(); handleCountdownSave(event.target); }
       if (event.target.id === 'supportForm') { event.preventDefault(); submitSupportRequest(event.target); }
