@@ -7,7 +7,8 @@
   <title>نبض التفوق | دعم الطلاب</title>
   <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script>
   <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=20260826-support">
+  <link rel="stylesheet" href="styles.css?v=20260823-support-chat">
+
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <meta name="mobile-web-app-capable" content="yes">
@@ -17,21 +18,17 @@
 </head>
 <body data-page="support-chat">
   <div class="app">
-    <header class="topbar support-topbar"><a class="icon-button support-topbar-back" href="profile.html" title="العودة إلى الملف الشخصي" aria-label="العودة إلى الملف الشخصي"><i class="fa-solid fa-arrow-right"></i></a><div class="support-page-title"><span>نبض التفوق</span><h1>التواصل والدعم</h1></div><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات" aria-label="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
+    <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
     <div class="layout"><main class="main-content">
-      <section class="support-experience">
-        <header class="support-welcome panel"><div class="support-welcome-copy"><span class="eyebrow"><i class="fa-solid fa-headset"></i> مركز المساعدة</span><h2>نحن هنا لنساعدك</h2><p>أرسل سؤالك أو مشكلتك، وسيتابع فريق نبض التفوق رسالتك ويرد عليك داخل هذه المحادثة.</p></div><span class="support-welcome-icon"><i class="fa-solid fa-comments"></i></span></header>
-        <section class="support-topic-grid" aria-label="مواضيع الدعم"><button type="button" class="support-topic-card" data-support-topic="مساعدة دراسية"><span><i class="fa-solid fa-book-open"></i></span><b>مساعدة دراسية</b><small>استفسار عن المراجعة</small></button><button type="button" class="support-topic-card" data-support-topic="مشكلة تقنية"><span><i class="fa-solid fa-wrench"></i></span><b>مشكلة تقنية</b><small>حل مشكلة في التطبيق</small></button><button type="button" class="support-topic-card" data-support-topic="اقتراح تطوير"><span><i class="fa-solid fa-lightbulb"></i></span><b>اقتراح تطوير</b><small>شاركنا فكرتك</small></button></section>
-        <section class="support-chat-shell panel">
-          <header class="support-chat-head"><a href="profile.html" class="support-chat-back" aria-label="العودة إلى الملف الشخصي"><i class="fa-solid fa-chevron-right"></i></a><span class="support-chat-avatar"><i class="fa-solid fa-headset"></i><i class="support-online-dot"></i></span><div><small>فريق نبض التفوق</small><h2>محادثة الدعم</h2><p id="supportChatStatus">الدعم متاح للمتابعة</p></div><span class="support-chat-secure"><i class="fa-solid fa-shield-heart"></i></span></header>
-          <div class="support-chat-notice"><i class="fa-solid fa-circle-info"></i><span>اكتب رسالة واحدة في كل مرة وبأكبر قدر من التفاصيل لنساعدك بشكل أسرع.</span></div>
-          <section class="support-chat-messages" id="supportChatMessages" aria-live="polite"></section>
-          <form class="support-chat-composer" id="supportChatForm"><label class="support-category"><i class="fa-solid fa-tag"></i><span>نوع الطلب</span><select name="category" aria-label="نوع الرسالة"><option>استفسار عام</option><option>مساعدة دراسية</option><option>مشكلة تقنية</option><option>اقتراح تطوير</option></select></label><div class="support-composer-row"><textarea name="message" rows="1" maxlength="700" required placeholder="اكتب رسالتك للدعم..."></textarea><button type="submit" aria-label="إرسال الرسالة" title="إرسال"><i class="fa-solid fa-paper-plane"></i></button></div><small class="support-composer-hint"><i class="fa-solid fa-lock"></i> رسالتك مخصصة لفريق الدعم فقط</small></form>
-        </section>
+      <section class="support-chat-shell">
+        <header class="support-chat-head"><a href="profile.html" class="support-chat-back" aria-label="العودة إلى الملف الشخصي"><i class="fa-solid fa-chevron-right"></i></a><span class="support-chat-avatar"><i class="fa-solid fa-headset"></i></span><div><small>فريق نبض التفوق</small><h2>تواصل مع الدعم</h2><p id="supportChatStatus">الدعم متاح للمتابعة</p></div></header>
+        <div class="support-chat-notice"><i class="fa-solid fa-shield-heart"></i><span>اكتب مشكلتك أو استفسارك بوضوح؛ ستظهر ردود فريق الدعم في هذه المحادثة.</span></div>
+        <section class="support-chat-messages" id="supportChatMessages" aria-live="polite"></section>
+        <form class="support-chat-composer" id="supportChatForm"><label class="support-category"><i class="fa-solid fa-tag"></i><select name="category" aria-label="نوع الرسالة"><option>استفسار عام</option><option>مساعدة دراسية</option><option>مشكلة تقنية</option><option>اقتراح تطوير</option></select></label><div><textarea name="message" rows="1" maxlength="700" required placeholder="اكتب رسالتك للدعم..."></textarea><button type="submit" aria-label="إرسال الرسالة" title="إرسال"><i class="fa-solid fa-paper-plane"></i></button></div></form>
       </section>
     </main></div>
   </div>
   <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div>
-  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="app.js?v=20260826-support"></script>
+  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="app.js?v=20260823-support-chat"></script>
 </body>
 </html>

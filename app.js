@@ -2397,8 +2397,6 @@
         if (tool.dataset.action === 'post-menu') openPostMenu(postId);
       }
 
-      const supportTopic = event.target.closest('[data-support-topic]');
-      if (supportTopic) { const form = $('#supportChatForm'); const select = $('[name="category"]', form); const input = $('[name="message"]', form); if (select) select.value = supportTopic.dataset.supportTopic || 'استفسار عام'; input?.focus(); }
       const suggestion = event.target.closest('.suggestion, .assistant-chip');
       if (suggestion) { const input = $('#chatInput'); if (input) { input.value = suggestion.dataset.prompt || suggestion.textContent; sendChat(); } }
       const history = event.target.closest('[data-chat]');
