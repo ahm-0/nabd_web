@@ -1769,7 +1769,7 @@
   let personalLibraryResources = readStorage('personal_library_resources', []); personalLibraryResources = Array.isArray(personalLibraryResources) ? personalLibraryResources : [];
   let activeLibraryFilter = 'all';
   const savePersonalLibraryResources = () => { try { localStorage.setItem(STORE + 'personal_library_resources', JSON.stringify(personalLibraryResources)); } catch { toast('تعذر حفظ المورد محليًا.'); } };
-  const allLibraryResources = () => [...builtInLibraryResources, ...personalLibraryResources];
+  const allLibraryResources = () => [...builtInLibraryResources];
 
   function renderLibrary() {
     const grid = $('#libraryGrid'); const empty = $('#libraryEmpty'); if (!grid || !empty) return; const query = String($('#librarySearch')?.value || '').trim().toLowerCase();
@@ -1795,7 +1795,7 @@
   }
 
   function initLibrary() {
-    if (!$('#libraryGrid')) return; renderLibrary(); $('#librarySearch')?.addEventListener('input', renderLibrary); $('#addLibraryResource')?.addEventListener('click', openLibraryResourceEditor);
+    if (!$('#libraryGrid')) return; renderLibrary(); $('#librarySearch')?.addEventListener('input', renderLibrary);
     $$('#libraryFilters [data-library-filter]').forEach(button => button.addEventListener('click', () => { activeLibraryFilter = button.dataset.libraryFilter; renderLibrary(); }));
     $('#libraryGrid')?.addEventListener('click', event => { const open = event.target.closest('[data-library-open]'); const remove = event.target.closest('[data-library-delete]'); if (open) openLibraryResource(open.dataset.libraryOpen); if (remove) { personalLibraryResources = personalLibraryResources.filter(resource => resource.id !== remove.dataset.libraryDelete); savePersonalLibraryResources(); renderLibrary(); toast('تم حذف المورد الشخصي.'); } });
   }
@@ -1858,7 +1858,7 @@
       return answer('بوابة المناهج ترتب مواد التاسع والبكالوريا ضمن محاور مراجعة صغيرة. اختر مرحلتك، افتح خطة المادة، ثم انتقل إلى الجدول أو الاختبارات من داخل البطاقة.', [assistantServices.curriculum, assistantServices.schedule, assistantServices.tests]);
     }
     if (/مكتبه|ملخص|مصدر|رابط|كتاب/.test(query)) {
-      return answer('المكتبة تجمع بطاقات مراجعة جاهزة ومواردك الشخصية. يمكنك البحث بالعنوان أو المادة، ثم إضافة مورد خاص مع رابط اختياري وملاحظة محفوظة على جهازك.', [assistantServices.library]);
+      return answer('المكتبة تجمع الموارد التعليمية الرسمية الجاهزة. يمكنك البحث باسم المورد أو المادة وفتح المحتوى المتاح للمراجعة.', [assistantServices.library]);
     }
     if (/توقع|مراجعه مركز|محاور مهم/.test(query)) {
       return answer('محاور المراجعة تقدم أولويات إرشادية وخطوات مراجعة، مع وسم المصدر وتاريخ التحديث. استخدمها لتنظيم وقتك، ولا تجعلها بديلًا عن المنهاج والنماذج أو القرارات الرسمية.', [assistantServices.predictions, assistantServices.schedule]);
@@ -2456,7 +2456,6 @@
       if (event.target.matches('.admin-support-reply-form')) { event.preventDefault(); void sendAdminSupportReply(event.target); }
       if (event.target.id === 'studyTaskForm') { event.preventDefault(); saveStudyTask(event.target); }
       if (event.target.id === 'completionPlanForm') { event.preventDefault(); saveCompletionPlan(event.target); }
-      if (event.target.id === 'libraryResourceForm') { event.preventDefault(); saveLibraryResource(event.target); }
       if (event.target.matches('.comment-form, .comment-modal-form')) { event.preventDefault(); addComment(event.target); }
       if (event.target.id === 'postEditForm') { event.preventDefault(); savePostEdit(event.target); }
     });
