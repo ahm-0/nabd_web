@@ -34,7 +34,7 @@
   async function persistStudentProfile() {
     if (!supabaseClient || !currentAuthUser) return;
     const { error } = await supabaseClient.from('student_profiles').upsert({ user_id: currentAuthUser.id, first_name: student.first, father_name: student.father || '', family_name: student.last, study_stage: student.stage, email: currentAuthUser.email, avatar_url: student.avatar || null, bio: student.bio || '' }, { onConflict: 'user_id' });
-    if (error) console.warn('تعذر مزامنة ملف الطالب مع Supabase', error);
+    if (error) console.warn('تعذر مزامنة ملف الطالب مع الخادم', error);
   }
 
   async function signOutStudent() {
@@ -231,7 +231,7 @@
     remoteAdminVerified = false;
     showAdminWorkspace(false);
     const note = $('.admin-login-note');
-    if (note) note.innerHTML = '<i class="fa-solid fa-lock"></i> تم قفل البوابة. أعد فتحها لإجراء تحقق جديد من حساب Supabase الحالي.';
+    if (note) note.innerHTML = '<i class="fa-solid fa-lock"></i> تم قفل البوابة. أعد فتحها لإجراء تحقق جديد من حسابك.';
     toast('تم قفل بوابة المشرفين.');
   }
 
@@ -887,7 +887,7 @@
       resizeNewsComposer();
       renderFeed();
       updateProfileUI();
-      toast('تم نشر الخبر وحفظ الصور في ImgBB وSupabase.');
+      toast('تم نشر الخبر وحفظ الصور بنجاح.');
     } catch (error) {
       toast(error.message || 'تعذر نشر الخبر.');
     } finally {
@@ -962,7 +962,7 @@
       post.updatedAt = new Date().toISOString();
       closeModal();
       renderFeed();
-      toast('تم تعديل الخبر وحفظه في Supabase.');
+      toast('تم تعديل الخبر وحفظه بنجاح.');
     } catch (error) {
       toast(error.message || 'تعذر تعديل الخبر حاليًا.');
     } finally {
@@ -972,7 +972,7 @@
 
   function deleteNewsPost(postId) {
     const post = posts.find(item => item.id === postId); if (!newsIsAdmin || !post?.remote) return toast('المشرف فقط يستطيع حذف الأخبار.');
-    confirmAction('حذف الخبر؟', 'سيتم حذف الخبر نهائيًا من Supabase، وتبقى الإعجابات والتعليقات مرتبطة به محذوفة تلقائيًا.', async () => {
+    confirmAction('حذف الخبر؟', 'سيتم حذف الخبر نهائيًا من المنصة، وتبقى الإعجابات والتعليقات المرتبطة به محذوفة تلقائيًا.', async () => {
       try {
         const { data, error } = await supabaseClient.rpc('news_admin_delete_post', { p_post_id: postId });
         if (error) throw error;
@@ -1103,7 +1103,7 @@
       // احتفظ بالنسخة المحلية عند بطء الشبكة أو فشل الطلب بدل إفراغ القسم.
       newsIsAdmin = false;
       posts = cachedPosts;
-      console.warn('تعذر تحديث أخبار المشرف من Supabase؛ تم الإبقاء على النسخة المحلية.', error);
+      console.warn('تعذر تحديث أخبار المشرف؛ تم الإبقاء على النسخة المحلية.', error);
     }
     document.body.classList.toggle('news-admin', newsIsAdmin);
     if (dock) dock.hidden = !newsIsAdmin;
@@ -2015,8 +2015,8 @@
 
   function openSupportReply(ticketId) {
     const ticket = adminSupportThreads.find(item => item.id === ticketId) || supportTickets.find(item => item.id === ticketId); if (!ticket) return;
-    const messages = supportThread(ticket).map(message => `<article class="admin-support-message ${message.sender === 'admin' ? 'admin' : 'student'}"><b>${message.sender === 'admin' ? 'المشرف' : escapeHTML(ticket.name)}</b><p>${escapeHTML(message.text)}</p><small>${displayAdminDate(message.createdAt || message.created_at || ticket.createdAt || ticket.created_at)}</small></article>`).join('');
-    openModal(`<div class="modal-head"><div><span class="eyebrow">صندوق الدعم</span><h3>${escapeHTML(ticket.name || 'طالب نبض')}</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><section class="admin-support-thread">${messages || '<p class="sheet-hint">لا توجد رسائل بعد.</p>'}</section><form class="admin-support-reply-form" data-ticket-id="${escapeHTML(ticket.id)}"><div class="form-group"><label>رد المشرف</label><textarea name="reply" required maxlength="700" placeholder="اكتب ردًا واضحًا ومفيدًا للطالب..." autofocus></textarea></div><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button type="submit" class="primary-button"><i class="fa-solid fa-paper-plane"></i> إرسال الرد</button></div></form>`);
+    const messages = supportThread(ticket).map(message => `<article class="admin-support-bubble ${message.sender === 'admin' ? 'admin' : 'student'}"><div><b>${message.sender === 'admin' ? 'فريق نبض التفوق' : escapeHTML(ticket.name || 'الطالب')}</b><p>${escapeHTML(message.text)}</p><small>${displayAdminDate(message.createdAt || message.created_at || ticket.createdAt || ticket.created_at)}</small></div></article>`).join('');
+    openModal(`<div class="admin-support-chat-modal"><header class="modal-head admin-support-chat-modal-head"><div class="admin-support-chat-modal-head"><span class="admin-support-chat-modal-avatar"><i class="fa-solid fa-headset"></i></span><div class="admin-support-chat-modal-copy"><h3>${escapeHTML(ticket.name || 'طالب نبض')}</h3><small><i class="fa-solid fa-circle"></i> محادثة الدعم</small></div></div><button class="close-modal" aria-label="إغلاق">×</button></header><section class="admin-support-thread admin-support-live-chat" aria-live="polite">${messages || '<p class="sheet-hint">لا توجد رسائل بعد.</p>'}</section><form class="admin-support-chat-composer" data-ticket-id="${escapeHTML(ticket.id)}"><div class="admin-support-reply-row"><textarea name="reply" required maxlength="700" placeholder="اكتب ردًا للطالب..." autofocus></textarea><button type="submit" class="admin-support-send" aria-label="إرسال الرد" title="إرسال الرد"><i class="fa-solid fa-paper-plane"></i></button></div><div class="form-actions"><button type="button" class="outline-button close-modal">إغلاق</button><span class="sheet-hint">سيظهر الرد داخل محادثة الطالب.</span></div></form></div>`);
   }
 
   async function sendAdminSupportReply(form) {
@@ -2358,10 +2358,10 @@
     showAdminWorkspace(false);
     const note = $('.admin-login-note');
     if (!currentAuthUser?.id) {
-      if (note) note.innerHTML = '<i class="fa-solid fa-lock"></i> جارٍ التحقق من جلسة Supabase الحالية...';
+      if (note) note.innerHTML = '<i class="fa-solid fa-lock"></i> جارٍ التحقق من جلسة الحساب الحالية...';
       return;
     }
-    if (note) note.innerHTML = '<i class="fa-solid fa-shield-halved"></i> جارٍ التحقق من صلاحية حساب Supabase الحالي...';
+    if (note) note.innerHTML = '<i class="fa-solid fa-shield-halved"></i> جارٍ التحقق من صلاحية الحساب الحالي...';
     try {
       const result = await supabaseClient?.rpc('premium_is_admin');
       remoteAdminVerified = !result?.error && result?.data === true;
@@ -2370,7 +2370,7 @@
       if (note) note.innerHTML = '<i class="fa-solid fa-lock"></i> هذا الحساب غير مخوّل للوصول إلى أدوات المشرفين.';
       return;
     }
-    if (note) note.innerHTML = '<i class="fa-solid fa-circle-check"></i> تم التحقق من الصلاحية عبر Supabase.';
+    if (note) note.innerHTML = '<i class="fa-solid fa-circle-check"></i> تم التحقق من الصلاحية.';
     showAdminWorkspace(true);
     renderAdminDashboard();
     bindAdminDashboardControls();
@@ -2508,7 +2508,7 @@
   }
 
   async function init() {
-    // الخط الأول محلي بالكامل: لا تنتظر Supabase قبل إظهار القائمة أو ربط التفاعلات.
+    // الخط الأول محلي بالكامل: لا تنتظر الخادم قبل إظهار القائمة أو ربط التفاعلات.
     nativeReady();
     enableScreenCapture();
     initMobileViewport();
