@@ -6,7 +6,8 @@
   <meta name="theme-color" content="#080d19">
   <title>نبض التفوق | البكالوريا</title>
   <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name=\"theme-color\"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script><link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=20260823-layout-font">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="curriculum-cards.css?v=20260826-01">
 
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
@@ -20,20 +21,8 @@
     <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
     <div class="layout"><main class="main-content">
       <section class="curriculum-page curriculum-scope-baccalaureate">
-        <header class="curriculum-hero panel"><a class="study-back-link" href="index.html" aria-label="العودة إلى الرئيسية"><i class="fa-solid fa-arrow-right"></i></a><div><span class="eyebrow"><i class="fa-solid fa-graduation-cap"></i> مسارات الدراسة</span><h2>البكالوريا</h2><p>اختر الفرع ثم نوع المورد للوصول إلى المواد والمراجعات والنماذج وحدود النجاح.</p></div></header>
-        <div class="curriculum-stage-tabs curriculum-stage-service-list" id="curriculumStageTabs" aria-label="اختيار فرع البكالوريا">
-          <button type="button" class="active" data-curriculum-stage="science"><span class="curriculum-stage-route-icon"><i class="fa-solid fa-flask"></i></span><span class="curriculum-stage-route-copy"><b>بكالوريا علمي</b><small>كتب وملخصات ونماذج وحدود النجاح للفرع العلمي</small></span><i class="fa-solid fa-chevron-left"></i></button>
-          <button type="button" data-curriculum-stage="literary"><span class="curriculum-stage-route-icon"><i class="fa-solid fa-feather-pointed"></i></span><span class="curriculum-stage-route-copy"><b>بكالوريا أدبي</b><small>كتب وملخصات ونماذج وحدود النجاح للفرع الأدبي</small></span><i class="fa-solid fa-chevron-left"></i></button>
-        </div>
-        <div class="curriculum-stage-summary panel" id="curriculumStageSummary" aria-live="polite"></div>
-        <div class="curriculum-resource-tabs" id="curriculumResourceTabs" aria-label="اختيار نوع المورد">
-          <button type="button" class="active" data-curriculum-resource="books"><i class="fa-solid fa-book"></i> كتب المنهاج</button>
-          <button type="button" data-curriculum-resource="summaries"><i class="fa-solid fa-note-sticky"></i> ملخصات</button>
-          <button type="button" data-curriculum-resource="exams"><i class="fa-solid fa-file-circle-check"></i> أسئلة دورات</button>
-          <button type="button" data-curriculum-resource="success"><i class="fa-solid fa-chart-simple"></i> حدود النجاح</button>
-          <button type="button" data-curriculum-resource="channels"><i class="fa-solid fa-bullhorn"></i> القنوات</button>
-        </div>
-        <section class="curriculum-resource-section panel"><header><div><span class="eyebrow" id="curriculumResourceKicker"></span><h3 id="curriculumResourceTitle">كتب المنهاج</h3><p id="curriculumResourceDescription"></p></div><span class="curriculum-resource-count"><b id="curriculumResourceCount">0</b> موارد</span></header><div class="curriculum-resource-grid" id="curriculumGrid" aria-live="polite"></div></section>
+        <header class="curriculum-hero panel"><a class="study-back-link" href="index.html" aria-label="العودة إلى الرئيسية"><i class="fa-solid fa-arrow-right"></i></a><div><span class="eyebrow"><i class="fa-solid fa-graduation-cap"></i> مسارات الدراسة</span><h2>البكالوريا</h2><p>اختر الفرع الدراسي للوصول إلى صفحته المخصصة وموارده المنظمة.</p></div></header>
+        <section class="curriculum-track-panel" aria-label="اختيار فرع البكالوريا"><header class="curriculum-track-head"><div><span class="eyebrow">خطوتك الأولى</span><h3>اختر فرعك الدراسي</h3><p>اضغط على البطاقة للانتقال مباشرة إلى موارد الفرع.</p></div><span class="curriculum-track-head-icon"><i class="fa-solid fa-route"></i></span></header><div class="study-track-cards"><a class="study-track-card track-science" href="baccalaureate-science.html"><span class="study-track-icon"><i class="fa-solid fa-flask"></i></span><span class="study-track-copy"><small>المسار الأول</small><b>بكالوريا علمي</b><em>كتب وملخصات وأسئلة دورات وحدود النجاح للفرع العلمي</em></span><i class="fa-solid fa-arrow-left study-track-arrow"></i></a><a class="study-track-card track-literary" href="baccalaureate-literary.html"><span class="study-track-icon"><i class="fa-solid fa-feather-pointed"></i></span><span class="study-track-copy"><small>المسار الثاني</small><b>بكالوريا أدبي</b><em>كتب وملخصات وأسئلة دورات وحدود النجاح للفرع الأدبي</em></span><i class="fa-solid fa-arrow-left study-track-arrow"></i></a></div></section>
       </section>
     </main></div>
   </div>

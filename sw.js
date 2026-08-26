@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-08-26-12';
+const CACHE_VERSION = '2026-08-26-13';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -47,6 +47,7 @@ const APP_SHELL = [
   './premium.html',
   './premium-admin.html',
   './styles.css',
+  './curriculum-cards.css',
   './channels.css',
   './notifications.css',
   './admin-ui.css',
