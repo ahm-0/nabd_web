@@ -89,6 +89,7 @@
   let adminStats = { total_users: 0, total_notifications: 0, total_news_posts: 0, total_news_comments: 0, open_support_threads: 0 };
   let adminNotifications = [];
   let activeAdminTab = 'overview';
+  const adminLoadedTabs = new Set();
   let adminNewsActivity = [];
   let adminSupportThreads = [];
   const defaultCustomCountdown = { title: 'هدفي الخاص', target: new Date('2027-01-01T08:00:00').getTime() };
@@ -2082,6 +2083,13 @@
     holder.innerHTML = adminNotifications.map(notification => `<article class="admin-notification-item"><div class="admin-notification-item-main"><span class="admin-notification-item-icon"><i class="fa-regular fa-bell"></i></span><div><div class="admin-notification-item-top"><b>${escapeHTML(notification.title || 'إشعار')}</b><small>${escapeHTML(displayAdminDate(notification.created_at))}</small></div><p>${escapeHTML(notification.body || '')}</p></div></div><button class="danger-button admin-notification-delete" type="button" data-admin-action="delete-notification" data-notification-id="${escapeHTML(notification.id)}" data-notification-title="${escapeHTML(notification.title || 'هذا الإشعار')}" aria-label="حذف الإشعار"><i class="fa-regular fa-trash-can"></i><span>حذف</span></button></article>`).join('');
   }
 
+  async function loadAdminOverview() {
+    if (!supabaseClient || !remoteAdminVerified) return;
+    const { data, error } = await supabaseClient.rpc('admin_get_dashboard_stats');
+    if (error || !data || typeof data !== 'object') { console.warn('تعذر تحميل إحصاءات الإدارة', error); return; }
+    adminStats = { ...adminStats, ...data };
+    renderAdminDashboard();
+  }
   async function loadAdminNotifications() {
     const holder = $('#adminNotificationsRows');
     if (!supabaseClient || !remoteAdminVerified || !holder) return;
@@ -2152,12 +2160,9 @@
     }
     adminUsers = data.users;
     adminUsersLoaded = true;
-    const { data: stats } = await supabaseClient.rpc('admin_get_dashboard_stats');
-    adminStats = { ...adminStats, ...(stats && typeof stats === 'object' ? stats : {}) };
-    const total = Number(adminStats.total_users ?? data.total);
+    const total = Number(data.total);
     adminStats.total_users = Number.isFinite(total) && total >= 0 ? total : adminUsers.length;
     renderAdminDashboard();
-    await Promise.all([loadAdminNotifications(), loadAdminNewsActivity(), loadAdminSupport()]);
   }
 
   function renderAdminDashboard() {
@@ -2166,6 +2171,7 @@
     const count = Number.isFinite(total) && total >= 0 ? total : adminUsers.length;
     const setText = (id, value) => { const element = $('#' + id); if (element) element.textContent = String(Number.isFinite(Number(value)) ? Math.max(0, Number(value)) : 0); };
     setText('adminTotalUsers', count);
+    setText('adminUsersTotal', count);
     setText('adminTotalNewsPosts', adminStats.total_news_posts);
     setText('adminTotalNewsComments', adminStats.total_news_comments);
     setText('adminOpenSupport', adminStats.open_support_threads);
@@ -2307,6 +2313,15 @@
   async function initStudySchedule() { if (!$('#studyTasks')) return; await loadStudyTasks(); const note = $('#studyNativeNote'); if (note) note.innerHTML = isNativeNabd() && capacitorPlugin('LocalNotifications') ? '<i class="fa-solid fa-mobile-screen-button"></i><span>التذكيرات الأصلية متاحة داخل التطبيق.</span>' : '<i class="fa-solid fa-globe"></i><span>يعمل الجدول في المتصفح؛ الإشعار الأصلي يحتاج جسر التطبيق.</span>'; renderStudyTasks(); }
 
   const ADMIN_TABS = new Set(['overview', 'notifications', 'news', 'support', 'users']);
+  const adminTabLoaders = { overview: loadAdminOverview, notifications: loadAdminNotifications, news: loadAdminNewsActivity, support: loadAdminSupport, users: loadAdminUsers };
+  async function loadAdminTabData(tab = activeAdminTab, force = false) {
+    if (!remoteAdminVerified || !supabaseClient) return;
+    if (!force && adminLoadedTabs.has(tab)) return;
+    const loader = adminTabLoaders[tab];
+    if (typeof loader !== 'function') return;
+    adminLoadedTabs.add(tab);
+    try { await loader(); } catch (error) { adminLoadedTabs.delete(tab); console.warn(`تعذر تحميل تبويب الإدارة: ${tab}`, error); }
+  }
   function setAdminTab(tab) {
     activeAdminTab = ADMIN_TABS.has(tab) ? tab : 'overview';
     $$('#adminTabs [data-admin-tab]').forEach(button => {
@@ -2320,6 +2335,7 @@
       panel.classList.toggle('is-active', isActive);
       panel.hidden = !isActive;
     });
+    void loadAdminTabData(activeAdminTab);
   }
   function bindAdminDashboardControls() {
     if (adminControlsBound) return;
@@ -2359,7 +2375,6 @@
     renderAdminDashboard();
     bindAdminDashboardControls();
     setAdminTab(activeAdminTab);
-    void loadAdminUsers();
   }
 
   function bindEvents() {
