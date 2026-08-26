@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080d19">
   <title>نبض التفوق | برنامج الختم</title>
   <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name=\"theme-color\"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script><link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20260826-completion-baccalaureate">
 
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
@@ -19,7 +19,9 @@
   <div class="app">
     <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
     <div class="layout"><main class="main-content">
-      <section class="completion-page"><header class="completion-hero panel"><div><span class="eyebrow"><i class="fa-solid fa-list-check"></i> خططك الدراسية</span><h2>برنامج الختم</h2><p>حوّل أي مادة أو منهج إلى خطة صغيرة واضحة، واعرف ما أنجزته وما تحتاجه اليوم.</p></div><button class="primary-button" id="createCompletionPlan" type="button"><i class="fa-solid fa-plus"></i> إنشاء خطة</button></header>
+      <section class="completion-page"><header class="completion-hero panel"><div><span class="eyebrow"><i class="fa-solid fa-list-check"></i> خططك الدراسية</span><h2>برنامج الختم</h2><p>اختر برنامج البكالوريا المناسب لك، ثم أنشئ خطتك الشخصية لمتابعة التقدم والإنجاز.</p></div><button class="primary-button" id="createCompletionPlan" type="button"><i class="fa-solid fa-plus"></i> إنشاء خطة</button></header>
+      <section class="completion-baccalaureate panel" aria-labelledby="completionBaccalaureateTitle"><header><div><span class="eyebrow"><i class="fa-solid fa-graduation-cap"></i> مسار دراسي يومي</span><h3 id="completionBaccalaureateTitle">برامج البكالوريا</h3><p>اختر الفرع، ثم بدّل بين الجدول الكامل والدوام الصباحي أو المسائي.</p></div><span class="completion-program-chip"><i class="fa-solid fa-calendar-days"></i> 3 برامج</span></header><div class="completion-track-switch" role="tablist" aria-label="اختيار فرع البكالوريا"><button class="completion-track-card active" type="button" role="tab" aria-selected="true" data-completion-track="scientific"><span><i class="fa-solid fa-flask"></i></span><div><b>بكالوريا علمي</b><small>تركيز ومسائل ومراجعة</small></div><i class="fa-solid fa-chevron-left"></i></button><button class="completion-track-card" type="button" role="tab" aria-selected="false" data-completion-track="literary"><span><i class="fa-solid fa-book-open"></i></span><div><b>بكالوريا أدبي</b><small>حفظ وتحليل ومراجعة</small></div><i class="fa-solid fa-chevron-left"></i></button></div><section class="completion-schedule-shell" id="completionSchedule" aria-live="polite"></section></section>
+      <div class="completion-personal-head"><div><span class="eyebrow"><i class="fa-solid fa-chart-line"></i> خطتي الشخصية</span><h3>متابعة خطط الختم</h3></div><button class="outline-button" type="button" id="createCompletionPlanInline"><i class="fa-solid fa-plus"></i> خطة جديدة</button></div>
       <section class="completion-list" id="completionList" aria-live="polite"></section>
       <section class="completion-empty panel hidden" id="completionEmpty"><i class="fa-solid fa-map"></i><h3>أنشئ أول خطة ختم</h3><p>حدد المادة، عدد الصفحات أو الوحدات، وتاريخ النهاية. سنعرض لك المطلوب يوميًا.</p><button class="primary-button" id="createFirstCompletionPlan" type="button"><i class="fa-solid fa-plus"></i> إنشاء خطة جديدة</button></section>
       </section>
@@ -28,6 +30,6 @@
   <nav class="bottom-nav" id="bottomNav"></nav>
   <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div>
   <div class="toast" id="toast"></div>
-  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix?v=20260823-session-fix"></script><script src="app.js?v=20260825-news-replies-share"></script>
+  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="app.js?v=20260826-completion-baccalaureate"></script>
 </body>
 </html>
