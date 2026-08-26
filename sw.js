@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-08-27-01';
+const CACHE_VERSION = '2026-08-27-02';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -178,6 +178,22 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
 
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+
+  if (/\.(?:css|js)$/i.test(url.pathname)) {
+    event.respondWith((async () => {
+      try {
+        const response = await fetch(request, { cache: 'no-store' });
+        if (response.ok && response.type === 'basic') {
+          const cache = await caches.open(RUNTIME_CACHE);
+          await cache.put(request, response.clone());
+        }
+        return response;
+      } catch (error) {
+        return (await caches.match(request, { ignoreSearch: true })) || new Response('لا يتوفر ملف التصميم أو الشيفرة حاليًا.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+      }
+    })());
+    return;
+  }
 
   if (request.mode === 'navigate') {
     const forceRefresh = url.searchParams.has('__sw_refresh');
