@@ -7,8 +7,7 @@
   <title>نبض التفوق | الإعدادات</title>
   <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script>
   <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=20260823-channels-support">
-
+  <link rel="stylesheet" href="styles.css?v=20260827-ui-refresh">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <meta name="mobile-web-app-capable" content="yes">
@@ -19,69 +18,68 @@
 <body data-page="settings">
   <div class="app">
     <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
-    <div class="layout">
+    <div class="layout"><main class="main-content settings-studio-page">
+      <header class="settings-studio-hero">
+        <a class="settings-studio-back" href="profile.html" aria-label="العودة إلى الملف الشخصي"><i class="fa-solid fa-chevron-right"></i></a>
+        <div class="settings-studio-title"><span><i class="fa-solid fa-sliders"></i> مركز التحكم</span><h2>الإعدادات</h2><p>اضبط الحساب والتجربة والتنبيهات من مساحة واحدة مرتبة.</p></div>
+        <span class="settings-studio-orb"><i class="fa-solid fa-sparkles"></i></span>
+      </header>
 
-      <main class="main-content settings-page settings-refresh">
-        <header class="settings-refresh-head">
-          <a class="settings-refresh-back" href="profile.html" aria-label="العودة إلى الملف الشخصي"><i class="fa-solid fa-chevron-right"></i></a>
-          <div><span>مركز التحكم</span><h2>الإعدادات</h2><p>أدر حسابك وتجربتك الدراسية من مكان واحد.</p></div>
-        </header>
+      <section class="settings-profile-strip panel" aria-label="إدارة بيانات الطالب">
+        <span class="settings-profile-strip-icon"><i class="fa-regular fa-user"></i></span>
+        <div><small>مساحتك الدراسية</small><b>بياناتك وتجربتك تحت السيطرة</b><p>يمكنك تحديث معلوماتك واختيار ما يناسب طريقة دراستك.</p></div>
+        <button id="profileDataUpdate" type="button"><i class="fa-solid fa-user-pen"></i><span>تعديل</span></button>
+      </section>
 
-        <section class="settings-refresh-section" aria-labelledby="accountSettingsTitle">
-          <h3 id="accountSettingsTitle"><i class="fa-solid fa-user"></i> إعدادات الملف الشخصي</h3>
-          <article class="settings-refresh-card">
-            <button class="settings-refresh-row" type="button" id="profileDataUpdate"><span class="settings-refresh-icon blue"><i class="fa-solid fa-user-pen"></i></span><span><b>معلومات الطالب</b><small>الاسم والمرحلة والمنطقة والبيانات الشخصية</small></span><i class="fa-solid fa-chevron-left"></i></button>
-            <a class="settings-refresh-row" href="privacy.html"><span class="settings-refresh-icon mint"><i class="fa-solid fa-shield-halved"></i></span><span><b>الخصوصية والأمان</b><small>إدارة بياناتك ومعلومات حسابك</small></span><i class="fa-solid fa-chevron-left"></i></a>
-          </article>
-        </section>
+      <section class="settings-studio-section" aria-labelledby="settingsIdentityTitle">
+        <header><span class="settings-section-symbol identity"><i class="fa-solid fa-user-gear"></i></span><div><span>الحساب</span><h3 id="settingsIdentityTitle">بياناتي وخصوصيتي</h3></div></header>
+        <div class="settings-studio-card panel">
+          <button class="settings-studio-row" type="button" data-profile-edit><span class="settings-row-icon blue"><i class="fa-solid fa-user-pen"></i></span><span><b>معلومات الطالب</b><small>الاسم والمرحلة والمنطقة والبيانات الشخصية</small></span><i class="fa-solid fa-chevron-left"></i></button>
+          <a class="settings-studio-row" href="privacy.html"><span class="settings-row-icon mint"><i class="fa-solid fa-shield-halved"></i></span><span><b>الخصوصية والأمان</b><small>إدارة بياناتك ومعلومات حسابك</small></span><i class="fa-solid fa-chevron-left"></i></a>
+        </div>
+      </section>
 
-        <section class="settings-refresh-section" aria-labelledby="experienceSettingsTitle">
-          <h3 id="experienceSettingsTitle"><i class="fa-solid fa-sliders"></i> تجربة التطبيق</h3>
-          <article class="settings-refresh-card settings-refresh-experience">
-            <div class="settings-refresh-row static-row"><span class="settings-refresh-icon sun"><i class="fa-solid fa-palette"></i></span><span><b>مظهر التطبيق</b><small id="settingsThemeStatus">اختر النمط المريح للقراءة</small></span></div>
-            <div class="settings-theme-options" role="group" aria-label="اختيار مظهر التطبيق">
-              <button class="theme-choice" type="button" data-theme-choice="light"><i class="fa-solid fa-sun"></i><span>فاتح</span></button>
-              <button class="theme-choice" type="button" data-theme-choice="dark"><i class="fa-solid fa-moon"></i><span>داكن</span></button>
-            </div>
-            <label class="settings-refresh-row settings-switch-row"><span class="settings-refresh-icon pink"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span><b>الحركات والتأثيرات</b><small>حركات انتقال لطيفة داخل الواجهة</small></span><input id="motionSwitch" class="switch" type="checkbox"></label>
-          </article>
-        </section>
+      <section class="settings-studio-section" aria-labelledby="settingsAppearanceTitle">
+        <header><span class="settings-section-symbol appearance"><i class="fa-solid fa-wand-magic-sparkles"></i></span><div><span>التجربة</span><h3 id="settingsAppearanceTitle">المظهر والحركة</h3></div></header>
+        <div class="settings-studio-card panel settings-appearance-card">
+          <div class="settings-studio-row no-arrow"><span class="settings-row-icon sun"><i class="fa-solid fa-palette"></i></span><span><b>مظهر التطبيق</b><small id="settingsThemeStatus">اختر النمط المريح للقراءة</small></span></div>
+          <div class="settings-theme-picker" role="group" aria-label="اختيار مظهر التطبيق"><button class="theme-choice" type="button" data-theme-choice="light"><span><i class="fa-solid fa-sun"></i></span><div><b>فاتح</b><small>نقي وواضح</small></div><i class="fa-solid fa-check"></i></button><button class="theme-choice" type="button" data-theme-choice="dark"><span><i class="fa-solid fa-moon"></i></span><div><b>داكن</b><small>مريح للعين</small></div><i class="fa-solid fa-check"></i></button></div>
+          <label class="settings-studio-row settings-switch-row"><span class="settings-row-icon violet"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span><b>الحركات والتأثيرات</b><small>انتقالات بسيطة وحيوية داخل الواجهة</small></span><input id="motionSwitch" class="switch" type="checkbox"></label>
+        </div>
+      </section>
 
-        <section class="settings-refresh-section" aria-labelledby="noticeSettingsTitle">
-          <h3 id="noticeSettingsTitle"><i class="fa-regular fa-bell"></i> الإشعارات والتذكير</h3>
-          <article class="settings-refresh-card">
-            <label class="settings-refresh-row settings-switch-row"><span class="settings-refresh-icon amber"><i class="fa-regular fa-bell"></i></span><span><b>تنبيهات التطبيق</b><small>أخبار الدراسة وتذكيرات المهام</small></span><input id="notificationsSwitch" class="switch" type="checkbox"></label>
-            <a class="settings-refresh-row" href="notifications.html"><span class="settings-refresh-icon blue"><i class="fa-regular fa-clock"></i></span><span><b>إشعاراتي</b><small>عرض جميع التنبيهات المحفوظة</small></span><i class="fa-solid fa-chevron-left"></i></a>
-            <a class="settings-refresh-row" href="time-organizer.html"><span class="settings-refresh-icon mint"><i class="fa-solid fa-calendar-check"></i></span><span><b>تذكيرات الدراسة</b><small>إدارة مواعيد المهام داخل الجدول الدراسي</small></span><i class="fa-solid fa-chevron-left"></i></a>
-          </article>
-        </section>
+      <section class="settings-studio-section" aria-labelledby="settingsNotificationTitle">
+        <header><span class="settings-section-symbol notification"><i class="fa-regular fa-bell"></i></span><div><span>تنظيم اليوم</span><h3 id="settingsNotificationTitle">الإشعارات والتذكير</h3></div></header>
+        <div class="settings-studio-card panel">
+          <label class="settings-studio-row settings-switch-row"><span class="settings-row-icon amber"><i class="fa-regular fa-bell"></i></span><span><b>تنبيهات التطبيق</b><small>أخبار الدراسة وتذكيرات المهام</small></span><input id="notificationsSwitch" class="switch" type="checkbox"></label>
+          <a class="settings-studio-row" href="notifications.html"><span class="settings-row-icon blue"><i class="fa-regular fa-clock"></i></span><span><b>إشعاراتي</b><small>عرض جميع التنبيهات المحفوظة</small></span><i class="fa-solid fa-chevron-left"></i></a>
+          <a class="settings-studio-row" href="time-organizer.html"><span class="settings-row-icon mint"><i class="fa-solid fa-calendar-check"></i></span><span><b>تذكيرات الدراسة</b><small>إدارة مواعيد المهام داخل الجدول الدراسي</small></span><i class="fa-solid fa-chevron-left"></i></a>
+        </div>
+      </section>
 
-        <section class="settings-refresh-section" aria-labelledby="supportSettingsTitle">
-          <h3 id="supportSettingsTitle"><i class="fa-solid fa-headset"></i> الدعم والمساعدة</h3>
-          <article class="settings-refresh-card">
-            <button class="settings-refresh-row" type="button" data-modal="appGuide"><span class="settings-refresh-icon blue"><i class="fa-regular fa-circle-question"></i></span><span><b>مركز المساعدة</b><small>دليل الخدمات والأسئلة الشائعة</small></span><i class="fa-solid fa-chevron-left"></i></button>
-            <button class="settings-refresh-row" type="button" data-modal="contact"><span class="settings-refresh-icon mint"><i class="fa-regular fa-comment-dots"></i></span><span><b>تواصل معنا</b><small>أرسل استفسارك أو ملاحظتك للدعم</small></span><i class="fa-solid fa-chevron-left"></i></button>
-            <button class="settings-refresh-row" type="button" data-modal="contribute"><span class="settings-refresh-icon coral"><i class="fa-solid fa-bug"></i></span><span><b>الإبلاغ عن مشكلة</b><small>ساعدنا على تحسين تجربة التطبيق</small></span><i class="fa-solid fa-chevron-left"></i></button>
-          </article>
-        </section>
+      <section class="settings-studio-section" aria-labelledby="settingsSupportTitle">
+        <header><span class="settings-section-symbol support"><i class="fa-solid fa-headset"></i></span><div><span>نحن معك</span><h3 id="settingsSupportTitle">الدعم والمساعدة</h3></div></header>
+        <div class="settings-studio-card panel">
+          <button class="settings-studio-row" type="button" data-modal="appGuide"><span class="settings-row-icon blue"><i class="fa-regular fa-circle-question"></i></span><span><b>مركز المساعدة</b><small>دليل الخدمات والأسئلة الشائعة</small></span><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="settings-studio-row" type="button" data-modal="contact"><span class="settings-row-icon mint"><i class="fa-regular fa-comment-dots"></i></span><span><b>تواصل مع الدعم</b><small>أرسل استفسارك وتابع الرد داخل المحادثة</small></span><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="settings-studio-row" type="button" data-modal="contribute"><span class="settings-row-icon coral"><i class="fa-solid fa-bug"></i></span><span><b>الإبلاغ عن مشكلة</b><small>ساعدنا على تحسين تجربة التطبيق</small></span><i class="fa-solid fa-chevron-left"></i></button>
+        </div>
+      </section>
 
-        <section class="settings-refresh-section" aria-labelledby="aboutSettingsTitle">
-          <h3 id="aboutSettingsTitle"><i class="fa-solid fa-circle-info"></i> حول التطبيق</h3>
-          <article class="settings-refresh-card">
-            <a class="settings-refresh-row" href="about.html"><span class="settings-refresh-icon slate"><i class="fa-solid fa-mobile-screen-button"></i></span><span><b>معلومات التطبيق</b><small>نبض التفوق · الإصدار 1.0.0</small></span><i class="fa-solid fa-chevron-left"></i></a>
-          </article>
-        </section>
+      <section class="settings-channels-hub panel" aria-labelledby="socialChannelsTitle">
+        <header><span class="settings-channels-hub-icon"><i class="fa-solid fa-satellite-dish"></i></span><div><span>ابقَ قريبًا</span><h3 id="socialChannelsTitle">قنوات نبض التفوق</h3><p>أخبار وتعليم وموارد عبر قنوات المنصة.</p></div></header>
+        <div class="settings-social-grid"><a href="https://whatsapp.com/channel/0029Vb84gXUISTkDgZDFVd2L" target="_blank" rel="noopener noreferrer" class="social-channel social-whatsapp"><span class="social-channel-icon"><i class="fa-brands fa-whatsapp"></i></span><span>واتساب</span><small>قناة المنصة</small></a><button type="button" class="social-channel social-facebook" data-demo="سيُضاف رابط فيسبوك الرسمي عند تزويدنا به."><span class="social-channel-icon"><i class="fa-brands fa-facebook-f"></i></span><span>فيسبوك</span><small>قريبًا</small></button><a href="https://www.instagram.com/b_xl.rs?igsh=YnpncXExeGJmN3c1" target="_blank" rel="noopener noreferrer" class="social-channel social-instagram"><span class="social-channel-icon"><i class="fa-brands fa-instagram"></i></span><span>إنستغرام</span><small>تابعنا</small></a><button type="button" class="social-channel social-telegram" data-demo="سيُضاف رابط تلجرام الرسمي عند تزويدنا به."><span class="social-channel-icon"><i class="fa-brands fa-telegram"></i></span><span>تلجرام</span><small>قريبًا</small></button></div>
+      </section>
 
-        <section class="settings-social-card" aria-labelledby="socialChannelsTitle">
-          <header><span class="settings-social-title-icon"><i class="fa-solid fa-users"></i></span><div><h3 id="socialChannelsTitle">قنوات نبض التفوق</h3><p>تابع التحديثات التعليمية من المنصة</p></div></header>
-          <div class="settings-social-grid"><a href="https://whatsapp.com/channel/0029Vb84gXUISTkDgZDFVd2L" target="_blank" rel="noopener noreferrer" class="social-channel social-whatsapp"><span class="social-channel-icon"><i class="fa-brands fa-whatsapp"></i></span><span>واتساب</span><small>قناة المنصة</small></a><button type="button" class="social-channel social-facebook" data-demo="سيُضاف رابط فيسبوك الرسمي عند تزويدنا به."><span class="social-channel-icon"><i class="fa-brands fa-facebook-f"></i></span><span>فيسبوك</span><small>قريبًا</small></button><a href="https://www.instagram.com/b_xl.rs?igsh=YnpncXExeGJmN3c1" target="_blank" rel="noopener noreferrer" class="social-channel social-instagram"><span class="social-channel-icon"><i class="fa-brands fa-instagram"></i></span><span>إنستغرام</span><small>تابعنا</small></a><button type="button" class="social-channel social-telegram" data-demo="سيُضاف رابط تلجرام الرسمي عند تزويدنا به."><span class="social-channel-icon"><i class="fa-brands fa-telegram"></i></span><span>تلجرام</span><small>قريبًا</small></button></div>
-        </section>
-        <div class="settings-student-id"><span>معرّف الطالب</span><b id="profileStudentId">0000000000</b></div>
-        <div class="developer-credit"><span>تم تطوير التطبيق بواسطة</span><a href="https://www.instagram.com/b_xl.rs?igsh=YnpncXExeGJmN3c1" target="_blank" rel="noopener noreferrer" aria-label="فتح حساب Ali Haj Hussain على إنستغرام"><img src="assets/nabd-logo.jpg" alt="شعار نبض التفوق"><strong>Ali Haj Hussain</strong><i class="fa-brands fa-instagram"></i></a><small>نبض التفوق © 2026 · v1.0.0</small></div>
-      </main>
-    </div>
+      <section class="settings-studio-section" aria-labelledby="settingsAboutTitle">
+        <header><span class="settings-section-symbol about"><i class="fa-solid fa-circle-info"></i></span><div><span>المنصة</span><h3 id="settingsAboutTitle">حول التطبيق</h3></div></header>
+        <div class="settings-studio-card panel"><a class="settings-studio-row" href="about.html"><span class="settings-row-icon slate"><i class="fa-solid fa-mobile-screen-button"></i></span><span><b>معلومات التطبيق</b><small>نبض التفوق · الإصدار 1.0.0</small></span><i class="fa-solid fa-chevron-left"></i></a></div>
+      </section>
+
+      <footer class="settings-studio-footer"><span>معرّف الطالب</span><b id="profileStudentId">0000000000</b><span class="settings-studio-divider"></span><a href="https://www.instagram.com/b_xl.rs?igsh=YnpncXExeGJmN3c1" target="_blank" rel="noopener noreferrer"><img src="assets/nabd-logo.jpg" alt="شعار نبض التفوق"><strong>Ali Haj Hussain</strong><i class="fa-brands fa-instagram"></i></a></footer>
+    </main></div>
   </div>
   <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div>
-  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="app.js?v=20260826-support-chat"></script>
+  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="app.js?v=20260827-ui-refresh"></script>
 </body>
 </html>
