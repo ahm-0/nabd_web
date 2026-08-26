@@ -4,12 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#080d19">
-  <title>نبض التفوق | بوابة المشرفين</title>
+  <title>نبض التفوق | إدارة المستخدمين</title>
   <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script>
   <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=20260823-admin-workspace">
-  <link rel="stylesheet" href="admin-ui.css?v=20260825-admin-ui">
-
+  <link rel="stylesheet" href="styles.css?v=20260826-admin-users">
+  <link rel="stylesheet" href="admin-ui.css?v=20260826-admin-users">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <meta name="mobile-web-app-capable" content="yes">
@@ -18,68 +17,24 @@
   <script src="pwa.js" defer></script>
 </head>
 <body data-page="supervision">
-  <div class="app">
-    <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
-    <div class="layout"><aside class="sidebar panel" id="desktopSidebar"></aside><main class="main-content admin-workspace-main">
-      <section class="admin-login-screen admin-workspace-login panel" id="adminLoginScreen">
-        <div class="admin-workspace-login-top"><span class="admin-workspace-shield"><i class="fa-solid fa-shield-halved"></i></span><span class="admin-workspace-lock-label"><i class="fa-solid fa-lock"></i> وصول محمي</span></div>
-        <div><span class="eyebrow">وصول موثّق</span><h2>بوابة المشرفين</h2><p>مساحة تحكم خاصة لمتابعة طلاب نبض التفوق وإدارة خدمات المجتمع.</p></div>
-        <div class="admin-login-status"><i class="fa-solid fa-shield-halved"></i><span>يتم التحقق من جلسة Supabase الحالية دون عرض بيانات حساب المشرف في الواجهة.</span></div>
+  <div class="app admin-users-app">
+    <header class="topbar"><a class="brand" href="profile.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>إدارة المستخدمين</small></span></a></header>
+    <main class="main-content admin-users-main">
+      <section class="admin-login-screen admin-users-login panel" id="adminLoginScreen">
+        <span class="admin-users-login-icon"><i class="fa-solid fa-users-gear"></i></span>
+        <span class="eyebrow">وصول محمي</span>
+        <h2>إدارة المستخدمين</h2>
         <p class="admin-login-note"><i class="fa-solid fa-lock"></i> جارٍ التحقق من صلاحية الوصول...</p>
       </section>
 
-      <section class="admin-dashboard admin-workspace hidden" id="adminWorkspace">
-        <header class="admin-workspace-bar">
-          <a href="profile.html" class="admin-workspace-icon-button" aria-label="العودة إلى الملف الشخصي"><i class="fa-solid fa-chevron-right"></i></a>
-          <div class="admin-workspace-bar-title"><span>مساحة الإدارة</span><h2>بوابة المشرفين</h2></div>
-          <button class="admin-workspace-lock-button" type="button" data-admin-action="logout"><i class="fa-solid fa-lock"></i><span>قفل</span></button>
-        </header>
-
-        <section class="admin-workspace-welcome">
-          <div class="admin-workspace-welcome-copy"><span class="admin-workspace-kicker"><i class="fa-solid fa-circle-check"></i> لوحة الإدارة جاهزة</span><h3>تابع أهم ما يحتاج انتباهك</h3><p>إدارة منظمة للطلاب والرسائل والمحتوى، مع إرسال إشعارات آمن للمستخدمين.</p></div>
-          <div class="admin-workspace-welcome-mark"><i class="fa-solid fa-shield-heart"></i><small>مؤمّن</small></div>
-        </section>
-
-        <section class="admin-command-bar" aria-label="أدوات الإدارة السريعة">
-          <div class="admin-command-status"><span class="admin-command-status-dot"></span><div><b>مساحة إشراف محمية</b><small>الإشعارات والإحصائيات متصلة بـ Supabase</small></div></div>
-          <div class="admin-command-actions"><a class="outline-button" href="exam-countdown.html"><i class="fa-solid fa-hourglass-half"></i><span>عدادات الامتحانات</span></a><button class="outline-button" type="button" data-admin-action="refresh-ui"><i class="fa-solid fa-arrows-rotate"></i><span>تحديث العرض</span></button></div>
-        </section>
-
-        <section class="admin-workspace-priority" aria-label="المتابعة السريعة">
-          <button class="admin-priority-card priority-students" type="button" data-admin-tab="students"><span class="admin-priority-icon"><i class="fa-solid fa-users"></i></span><span class="admin-priority-copy"><small>إحصائيات التطبيق</small><b id="adminTotalUsers">0</b><em>جميع المستخدمين</em></span><i class="fa-solid fa-chevron-left"></i></button>
-          <button class="admin-priority-card priority-support" type="button" data-admin-tab="support"><span class="admin-priority-icon"><i class="fa-solid fa-headset"></i></span><span class="admin-priority-copy"><small>دعم الطلاب</small><b id="adminSupportCount">0</b><em>محادثة مفتوحة</em></span><i class="fa-solid fa-chevron-left"></i></button>
-          <button class="admin-priority-card priority-posts" type="button" data-admin-tab="content"><span class="admin-priority-icon"><i class="fa-regular fa-newspaper"></i></span><span class="admin-priority-copy"><small>مجتمع الأخبار</small><b id="adminPostCount">0</b><em>منشور للمتابعة</em></span><i class="fa-solid fa-chevron-left"></i></button>
-        </section>
-
-        <nav class="admin-tabs admin-workspace-tabs" aria-label="أقسام بوابة المشرفين">
-          <button class="admin-tab active" type="button" data-admin-tab="overview"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
-          <button class="admin-tab" type="button" data-admin-tab="students"><i class="fa-solid fa-users"></i><span>الطلاب</span></button>
-          <button class="admin-tab" type="button" data-admin-tab="support"><i class="fa-solid fa-headset"></i><span>الدعم</span></button>
-          <button class="admin-tab" type="button" data-admin-tab="content"><i class="fa-solid fa-bullhorn"></i><span>المحتوى</span></button>
-          <button class="admin-tab" type="button" data-admin-tab="notifications"><i class="fa-regular fa-bell"></i><span>الإشعارات</span></button>
-        </nav>
-
-        <section class="admin-pane active" data-admin-pane="overview"><div class="admin-workspace-overview">
-          <article class="panel admin-card admin-workspace-card admin-workspace-activity"><header><div><span class="eyebrow">آخر التحديثات</span><h3>سجل النشاط</h3><p class="admin-card-note">آخر التغييرات التي تمت داخل هذا المتصفح.</p></div><span class="admin-card-symbol"><i class="fa-regular fa-clock"></i></span></header><div class="admin-activity-list" id="adminActivityList"></div></article>
-          <article class="panel admin-card admin-workspace-card admin-workspace-actions"><header><div><span class="eyebrow">أدوات مباشرة</span><h3>تنفيذ سريع</h3><p class="admin-card-note">اختصارات لا تتطلب مغادرة لوحة الإشراف.</p></div><span class="admin-card-symbol"><i class="fa-solid fa-bolt"></i></span></header><div class="admin-quick-actions"><a href="premium-admin.html"><i class="fa-solid fa-crown"></i><span>القسم المميز</span></a><button type="button" data-admin-action="export"><i class="fa-solid fa-file-arrow-down"></i><span>تصدير البيانات</span></button><button type="button" data-admin-action="clear-activity"><i class="fa-solid fa-broom"></i><span>تنظيف السجل</span></button><a href="news.html"><i class="fa-regular fa-newspaper"></i><span>مجتمع الأخبار</span></a></div></article>
-        </div></section>
-
-        <section class="admin-pane" data-admin-pane="students"><article class="panel admin-card admin-workspace-card"><header class="admin-card-head"><div><span class="eyebrow">دليل المنصة</span><h3>بيانات الطلاب</h3><p class="admin-card-note">اطلع على المعلومات المحفوظة وابحث بالاسم أو الرقم أو المنطقة.</p></div><label class="admin-search"><i class="fa-solid fa-magnifying-glass"></i><input id="adminStudentSearch" type="search" placeholder="بحث عن طالب"></label></header><div class="admin-student-directory" id="adminStudentsRows" aria-live="polite"></div></article></section>
-
-
-        <section class="admin-pane" data-admin-pane="support"><article class="panel admin-card admin-workspace-card"><header><div><span class="eyebrow">مركز الرسائل</span><h3>دعم الطلاب</h3><p class="admin-card-note">افتح محادثة الطالب للرد والمتابعة من نفس البوابة.</p></div><span class="admin-status open">مفتوحة</span></header><div class="admin-request-list" id="adminSupportRows"></div></article></section>
-
-        <section class="admin-pane" data-admin-pane="notifications"><article class="panel admin-card admin-workspace-card admin-notification-card"><header><div><span class="eyebrow">تنبيه مباشر</span><h3>إرسال إشعار جديد</h3><p class="admin-card-note">يُحفظ الإشعار داخل التطبيق ويُرسل للمشتركين عبر القناة الآمنة.</p></div><span class="admin-card-symbol"><i class="fa-regular fa-paper-plane"></i></span></header><form id="adminNotificationForm" class="admin-notification-form"><label>عنوان الإشعار<input name="title" type="text" maxlength="120" required placeholder="مثال: موعد اختبار جديد"></label><label>وصف الإشعار<textarea name="body" maxlength="2000" rows="5" required placeholder="اكتب تفاصيل الإشعار للطلاب..."></textarea></label><label>رابط اختياري عند الضغط<input name="action_url" type="url" inputmode="url" maxlength="500" placeholder="https://..."></label><div class="notification-image-field"><div class="notification-field-heading"><span><b>صورة اختيارية</b><small>JPG أو PNG بحد أقصى 5MB</small></span><label class="outline-button file-picker" for="adminNotificationImage"><i class="fa-solid fa-image"></i> اختيار صورة</label><input class="hidden" id="adminNotificationImage" name="image" type="file" accept="image/jpeg,image/png,image/webp"></div><div class="notification-image-preview" id="adminNotificationImagePreview" hidden><img id="adminNotificationImagePreviewImg" alt="معاينة صورة الإشعار"><button class="danger-button" id="removeAdminNotificationImage" type="button"><i class="fa-solid fa-trash"></i> إزالة الصورة</button></div></div><div class="notification-send-status" id="adminNotificationStatus" role="status" aria-live="polite"></div><div class="form-actions"><button class="primary-button" id="sendAdminNotification" type="submit"><i class="fa-solid fa-paper-plane"></i> إرسال الإشعار</button></div></form></article></section>
-
-        <section class="admin-pane" data-admin-pane="content"><div class="admin-workspace-content">
-          <article class="panel admin-card admin-workspace-card admin-community-control-card"><header><div><span class="eyebrow">مساحة الإعلان</span><h3>إعلان مجتمع الأخبار</h3><p class="admin-card-note">تحكم بظهور الإعلان واكتب رسالة واضحة تصل إلى الطلاب.</p></div><span class="admin-status open" id="adminCommunityPromoStatus">ظاهرة</span></header><label class="admin-community-toggle"><span class="admin-community-toggle-icon"><i class="fa-solid fa-bullhorn"></i></span><span><b>عرض المساحة الإعلانية</b><small>لا يؤثر إخفاؤها في المنشورات أو شريط النشر.</small></span><input class="switch" id="adminCommunityPromoToggle" type="checkbox" aria-label="عرض المساحة الإعلانية"></label><form class="admin-promo-form" id="adminCommunityPromoForm"><label>عنوان الإعلان<input name="title" maxlength="80" placeholder="مثال: مساحة طلاب نبض"></label><label>نص الإعلان<textarea name="body" maxlength="220" rows="3" placeholder="اكتب رسالة الإعلان للطلاب"></textarea></label><div><label>نص الزر<input name="ctaLabel" maxlength="32" placeholder="اكتشف المزيد"></label><label>رابط الزر<input name="link" type="url" inputmode="url" placeholder="https://..."></label></div><button class="primary-button" type="submit"><i class="fa-solid fa-paper-plane"></i> حفظ ونشر الإعلان</button></form></article>
-          <article class="panel admin-card admin-workspace-card"><header><div><span class="eyebrow">إشراف المجتمع</span><h3>منشورات الطلاب</h3><p class="admin-card-note">راجع النشاط الأخير ثم افتح المجتمع عند الحاجة.</p></div><a class="outline-button" href="news.html"><i class="fa-solid fa-arrow-left"></i> فتح الأخبار</a></header><div class="admin-post-list" id="adminPostRows"></div></article>
-        </div></section>
-        <p class="admin-disclosure"><i class="fa-solid fa-circle-info"></i> بيانات الإشعارات تُحفظ في Supabase، ولا يمكن إرسالها إلا من خلال Edge Function تتحقق من صلاحية المشرف.</p>
+      <section class="admin-dashboard admin-users-workspace hidden" id="adminWorkspace">
+        <header class="admin-users-header"><div><span class="eyebrow">لوحة مختصرة</span><h2>إدارة المستخدمين</h2><p>عرض المستخدمين وحذف الحسابات غير المطلوبة.</p></div><div class="admin-users-header-actions"><a class="outline-button" href="profile.html"><i class="fa-solid fa-arrow-right"></i> الملف الشخصي</a><button class="outline-button" type="button" data-admin-action="logout"><i class="fa-solid fa-lock"></i> قفل</button></div></header>
+        <section class="admin-users-stat panel"><span class="admin-users-stat-icon"><i class="fa-solid fa-users"></i></span><div><small>إجمالي المستخدمين</small><b id="adminTotalUsers">0</b><span>حساب في المنصة</span></div></section>
+        <section class="admin-users-list-card panel"><header class="admin-users-list-header"><div><span class="eyebrow">دليل الحسابات</span><h3>المستخدمون</h3></div><div class="admin-users-list-actions"><label class="admin-search"><i class="fa-solid fa-magnifying-glass"></i><input id="adminStudentSearch" type="search" placeholder="بحث بالاسم أو البريد" autocomplete="off"></label><button class="outline-button" type="button" data-admin-action="refresh-users" aria-label="تحديث المستخدمين"><i class="fa-solid fa-arrows-rotate"></i><span>تحديث</span></button></div></header><div class="admin-student-directory admin-users-directory" id="adminStudentsRows" aria-live="polite"><div class="admin-users-loading"><i class="fa-solid fa-spinner fa-spin"></i> جارٍ تحميل المستخدمين</div></div></section>
       </section>
-    </main></div>
+    </main>
   </div>
   <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div>
-  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="app.js?v=20260825-notifications"></script>
+  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260826-admin-users"></script><script src="app.js?v=20260826-admin-users"></script>
 </body>
 </html>

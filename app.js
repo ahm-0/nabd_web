@@ -87,13 +87,14 @@
   verificationRequests = Array.isArray(verificationRequests) ? verificationRequests : [];
   supportTickets = Array.isArray(supportTickets) ? supportTickets : [];
   adminActivity = Array.isArray(adminActivity) ? adminActivity : [];
+  let adminUsers = [];
+  let adminUsersLoaded = false;
   let adminControlsBound = false;
   let remoteAdminVerified = false;
   let adminShortcutChecked = false;
   let appNotifications = [];
   let notificationsLoaded = false;
   let notificationsEventsBound = false;
-  let adminNotificationImageData = '';
   let adminStats = { total_users: 0, total_notifications: 0 };
   const defaultCustomCountdown = { title: 'هدفي الخاص', target: new Date('2027-01-01T08:00:00').getTime() };
   const storedCustomCountdown = readStorage('custom_countdown', defaultCustomCountdown);
@@ -2035,102 +2036,67 @@
     toast('تم إرسال رسالتك إلى صندوق الدعم.');
   }
 
-  function adminAvatarMarkup(entry) {
-    if (entry.avatar) return `<img class="avatar" src="${escapeHTML(entry.avatar)}" alt="صورة ${escapeHTML(entry.name)}">`;
-    return `<span class="avatar">${escapeHTML(String(entry.name || 'ط').split(/\s+/).map(word => word[0]).join('').slice(0, 2))}</span>`;
-  }
-
-  function adminGenderMarkup(gender) {
-    if (gender === 'ذكر') return '<span class="admin-gender male"><i class="fa-solid fa-mars"></i> ذكر</span>';
-    if (gender === 'أنثى') return '<span class="admin-gender female"><i class="fa-solid fa-venus"></i> أنثى</span>';
-    return '<span class="admin-gender unspecified">غير محدد</span>';
-  }
-
-  function adminStatusMarkup(status) {
-    const labels = { pending: 'قيد المراجعة', approved: 'تم القبول', rejected: 'مرفوض', revoked: 'أُلغي التوثيق', open: 'مفتوحة', resolved: 'تمت المعالجة' };
-    return `<span class="admin-status ${escapeHTML(status)}">${labels[status] || 'غير محدد'}</span>`;
-  }
-
-  function adminSupportTicketMarkup(ticket) {
-    const thread = supportThread(ticket); const latest = thread[thread.length - 1]; const replyCount = thread.filter(message => message.sender === 'admin').length;
-    return `<article class="admin-request admin-support-ticket"><div class="admin-request-head"><div class="admin-request-person">${adminAvatarMarkup(ticket)}<div><b>${escapeHTML(ticket.name)}</b><small>${escapeHTML(ticket.category)} · ${displayAdminDate(ticket.updatedAt || ticket.createdAt)}</small></div></div>${adminStatusMarkup(ticket.status)}</div><div class="admin-request-body"><span class="admin-detail-chip"><i class="fa-solid fa-phone"></i> ${escapeHTML(ticket.phone)}</span><span class="admin-detail-chip"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(ticket.city)}</span><span class="admin-detail-chip"><i class="fa-regular fa-comments"></i> ${thread.length} رسالة</span></div><p class="admin-request-message">${escapeHTML(latest?.text || ticket.message || '')}</p><div class="admin-request-actions"><button class="admin-resolve" type="button" data-admin-action="support-reply" data-admin-id="${escapeHTML(ticket.id)}"><i class="fa-solid fa-reply"></i> ${replyCount ? 'متابعة المحادثة' : 'الرد على الطالب'}</button>${ticket.status === 'open' ? `<button class="admin-resolve secondary" type="button" data-admin-action="support-resolve" data-admin-id="${escapeHTML(ticket.id)}"><i class="fa-solid fa-check"></i> إغلاق</button>` : ''}</div></article>`;
-  }
-
-  async function loadAdminDashboardStats() {
-    if (!supabaseClient || !remoteAdminVerified || !$('#adminTotalUsers')) return;
-    const { data, error } = await supabaseClient.rpc('admin_get_dashboard_stats');
-    if (error || !data) { console.warn('تعذر تحميل إحصائيات الإدارة', error); return; }
-    adminStats = { ...adminStats, ...data };
+  async function loadAdminUsers() {
+    if (!supabaseClient || !remoteAdminVerified || !$('#adminStudentsRows')) return;
+    const rows = $('#adminStudentsRows');
+    rows.innerHTML = '<div class="admin-users-loading"><i class="fa-solid fa-spinner fa-spin"></i> جارٍ تحميل المستخدمين</div>';
+    const { data, error } = await supabaseClient.functions.invoke('admin-manage-users', { body: { action: 'list', page: 1, per_page: 100 } });
+    if (error || !Array.isArray(data?.users)) {
+      adminUsersLoaded = false;
+      rows.innerHTML = '<div class="admin-empty">تعذر تحميل المستخدمين. حاول تحديث القائمة.</div>';
+      console.warn('تعذر تحميل المستخدمين', error || data?.error);
+      return;
+    }
+    adminUsers = data.users;
+    adminUsersLoaded = true;
+    const total = Number(data.total);
+    adminStats.total_users = Number.isFinite(total) && total >= 0 ? total : adminUsers.length;
     renderAdminDashboard();
   }
 
   function renderAdminDashboard() {
     if (!$('#adminWorkspace')) return;
-    const open = supportTickets.filter(ticket => ticket.status === 'open');
-    $('#adminTotalUsers').textContent = String(Number(adminStats.total_users) || 0);
-    $('#adminSupportCount').textContent = String(open.length);
-    $('#adminPostCount').textContent = String(posts.length);
-    const promoToggle = $('#adminCommunityPromoToggle'); const promoStatus = $('#adminCommunityPromoStatus'); const promoForm = $('#adminCommunityPromoForm');
-    if (promoToggle) promoToggle.checked = communityPromo.visible;
-    if (promoStatus) { promoStatus.textContent = communityPromo.visible ? 'ظاهرة' : 'مخفية'; promoStatus.className = `admin-status ${communityPromo.visible ? 'open' : 'pending'}`; }
-    if (promoForm) { promoForm.elements.title.value = communityPromo.title || ''; promoForm.elements.body.value = communityPromo.body || ''; promoForm.elements.ctaLabel.value = communityPromo.ctaLabel || ''; promoForm.elements.link.value = communityPromo.link || ''; }
-    const activities = $('#adminActivityList');
-    const visibleActivities = adminActivity.filter(item => item.type !== 'verification').slice(0, 7);
-    if (activities) activities.innerHTML = visibleActivities.length ? visibleActivities.map(item => `<div class="admin-activity"><i class="${item.type === 'support' ? 'fa-solid fa-headset' : item.type === 'content' ? 'fa-regular fa-newspaper' : 'fa-solid fa-user-pen'}"></i><div><b>${escapeHTML(item.title)}</b><span>${escapeHTML(item.detail || 'تحديث داخل المنصة')} · ${displayAdminDate(item.createdAt)}</span></div></div>`).join('') : '<div class="admin-empty">لا توجد أحداث إشرافية بعد. ستظهر هنا تحديثات الطلاب والرسائل والمحتوى.</div>';
-    renderAdminStudents();
-    const supportRows = $('#adminSupportRows');
-    if (supportRows) supportRows.innerHTML = supportTickets.length ? supportTickets.map(adminSupportTicketMarkup).join('') : '<div class="admin-empty">صندوق الدعم هادئ حاليًا، وستظهر الرسائل الجديدة هنا.</div>';
-    const postRows = $('#adminPostRows');
-    if (postRows) postRows.innerHTML = posts.length ? posts.map(post => `<article class="admin-post"><header><div><b>${escapeHTML(post.name || 'طالب')}</b><small>${escapeHTML(post.meta || 'منشور دراسي')} · ${displayAdminDate(post.createdAt || Date.now())}</small></div>${post.mine ? '<span class="admin-status open">منشور الطالب</span>' : ''}</header><p>${escapeHTML(post.text || 'منشور مرفق بصور دراسية')}</p><button type="button" data-admin-action="post-remove" data-admin-id="${escapeHTML(post.id)}"><i class="fa-solid fa-trash"></i> إزالة من العرض المحلي</button></article>`).join('') : '<div class="admin-empty">لا توجد منشورات محلية يحتاج المشرف إلى مراجعتها.</div>';
+    const total = Number(adminStats.total_users);
+    const count = Number.isFinite(total) && total >= 0 ? total : adminUsers.length;
+    const totalElement = $('#adminTotalUsers');
+    if (totalElement) totalElement.textContent = String(count);
+    renderAdminStudents($('#adminStudentSearch')?.value || '');
   }
 
   function renderAdminStudents(query = '') {
     const rows = $('#adminStudentsRows');
     if (!rows) return;
-    const normalized = String(query).trim();
-    const visible = adminStudents.filter(entry => `${entry.name} ${entry.phone} ${entry.city} ${entry.studentId || entry.id}`.includes(normalized));
-    rows.innerHTML = visible.length ? visible.map(entry => { return `<article class="admin-student-card"><header class="admin-student-card-head"><div class="admin-student-cell">${adminAvatarMarkup(entry)}<span><b>${escapeHTML(entry.name)}</b><small>معرّف الطالب: ${escapeHTML(entry.id)}</small></span></div><div class="admin-row-actions"><button type="button" title="حذف من السجل المحلي" aria-label="حذف سجل ${escapeHTML(entry.name)}" data-admin-action="student-remove" data-admin-id="${escapeHTML(entry.id)}"><i class="fa-solid fa-trash"></i></button></div></header><div class="admin-student-fields"><div><span><i class="fa-solid fa-phone"></i> الرقم</span><b dir="ltr">${escapeHTML(entry.phone)}</b></div><div><span><i class="fa-solid fa-location-dot"></i> المنطقة</span><b>${escapeHTML(entry.city)}</b></div><div><span><i class="fa-solid fa-user"></i> الجنس</span>${adminGenderMarkup(entry.gender)}</div><div><span><i class="fa-solid fa-graduation-cap"></i> المرحلة</span><b>${escapeHTML(entry.stage)}</b></div></div><footer><span><i class="fa-solid fa-user"></i> سجل الطالب</span><b>${displayAdminDate(entry.updatedAt)}</b></footer></article>`; }).join('') : '<div class="admin-empty">لا توجد بيانات مطابقة للبحث.</div>';
+    if (!adminUsersLoaded) return;
+    const normalized = String(query).trim().toLocaleLowerCase('ar');
+    const visible = adminUsers.filter(user => `${user.name || ''} ${user.email || ''} ${user.stage || ''}`.toLocaleLowerCase('ar').includes(normalized));
+    rows.innerHTML = visible.length ? visible.map(user => {
+      const name = user.name || user.email || 'مستخدم';
+      const avatar = user.avatar_url ? `<img class="admin-user-avatar" src="${escapeHTML(user.avatar_url)}" alt="">` : `<span class="admin-user-avatar">${escapeHTML(name.slice(0, 1))}</span>`;
+      return `<article class="admin-user-card"><div class="admin-user-card-main">${avatar}<div class="admin-user-copy"><b>${escapeHTML(name)}</b><span dir="ltr">${escapeHTML(user.email || 'بدون بريد')}</span><small>${escapeHTML(user.stage || '—')} · انضم ${escapeHTML(displayAdminDate(user.created_at))}</small></div></div><button class="danger-button admin-user-delete" type="button" data-admin-action="user-delete" data-admin-id="${escapeHTML(user.id)}" data-admin-name="${escapeHTML(name)}"><i class="fa-solid fa-trash"></i><span>حذف</span></button></article>`;
+    }).join('') : '<div class="admin-empty">لا توجد حسابات مطابقة للبحث.</div>';
+  }
+
+  async function deleteAdminUser(userId, userName) {
+    if (!isAdminAuthenticated() || !userId) return;
+    confirmAction('حذف المستخدم؟', `سيُحذف حساب ${userName || 'هذا المستخدم'} نهائيًا من المنصة ولا يمكن التراجع عن العملية.`, async () => {
+      const { data, error } = await supabaseClient.functions.invoke('admin-manage-users', { body: { action: 'delete', user_id: userId } });
+      if (error || !data?.deleted) {
+        toast(data?.error || 'تعذر حذف المستخدم.');
+        return;
+      }
+      adminUsers = adminUsers.filter(user => user.id !== userId);
+      adminStats.total_users = Math.max(0, Number(adminStats.total_users || adminUsers.length + 1) - 1);
+      renderAdminDashboard();
+      toast('تم حذف المستخدم نهائيًا.');
+    }, 'حذف نهائي');
   }
 
   function handleAdminAction(button) {
     const action = button.dataset.adminAction;
-    const id = button.dataset.adminId;
     if (action === 'logout') return logoutAdmin();
     if (!isAdminAuthenticated()) return toast('افتح بوابة المشرفين أولًا لتنفيذ هذا الإجراء.');
-    if (action === 'refresh-ui') { renderAdminDashboard(); return toast('تم تحديث عرض البوابة مع الحفاظ على البيانات.'); }
-    if (action === 'support-reply') return openSupportReply(id);
-    if (action === 'support-resolve') {
-      const ticket = supportTickets.find(item => item.id === id);
-      if (!ticket) return;
-      ticket.status = 'resolved'; ticket.updatedAt = Date.now();
-      adminLog('support', `إغلاق رسالة دعم: ${ticket.name}`, ticket.category);
-      toast('تم وضع رسالة الدعم كمعالجة.');
-    }
-    if (action === 'post-remove') {
-      const index = posts.findIndex(post => post.id === id);
-      if (index < 0) return;
-      const [removed] = posts.splice(index, 1);
-      saveState();
-      adminLog('content', `إزالة منشور: ${removed.name || 'طالب'}`, 'إزالة محلية من لوحة الإشراف');
-      toast('تمت إزالة المنشور من العرض المحلي.');
-    }
-    if (action === 'student-remove') {
-      adminStudents = adminStudents.filter(entry => entry.id !== id);
-      verificationRequests = verificationRequests.filter(request => request.studentId !== id);
-      supportTickets = supportTickets.filter(ticket => ticket.studentId !== id);
-      adminLog('student', 'إزالة سجل طالب', 'تم حذف السجل من بوابة هذا المتصفح فقط.');
-      toast('تمت إزالة سجل الطالب المحلي.');
-    }
-    if (action === 'clear-activity') { adminActivity = []; saveAdminState(); toast('تم تنظيف سجل النشاط.'); }
-    if (action === 'export') {
-      const report = { generatedAt: new Date().toISOString(), students: adminStudents, verificationRequests, supportTickets, posts, communityPromo };
-      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'nabd-supervision-export.json'; anchor.click(); URL.revokeObjectURL(url);
-      toast('تم تصدير ملخص الإشراف بصيغة JSON.');
-    }
-    saveAdminState();
-    renderAdminDashboard();
+    if (action === 'refresh-users') return void loadAdminUsers();
+    if (action === 'user-delete') return void deleteAdminUser(button.dataset.adminId, button.dataset.adminName);
   }
 
   const capacitorPlugin = name => window.Capacitor?.Plugins?.[name] || null;
@@ -2223,103 +2189,10 @@
 
   async function initStudySchedule() { if (!$('#studyTasks')) return; await loadStudyTasks(); const note = $('#studyNativeNote'); if (note) note.innerHTML = isNativeNabd() && capacitorPlugin('LocalNotifications') ? '<i class="fa-solid fa-mobile-screen-button"></i><span>التذكيرات الأصلية متاحة داخل التطبيق.</span>' : '<i class="fa-solid fa-globe"></i><span>يعمل الجدول في المتصفح؛ الإشعار الأصلي يحتاج جسر التطبيق.</span>'; renderStudyTasks(); }
 
-  function setAdminNotificationStatus(message = '', tone = '') {
-    const status = $('#adminNotificationStatus');
-    if (!status) return;
-    status.className = `notification-send-status ${tone}`;
-    status.innerHTML = message ? `<i class="fa-solid ${tone === 'success' ? 'fa-circle-check' : tone === 'warning' ? 'fa-circle-exclamation' : tone === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info'}"></i><span>${escapeHTML(message)}</span>` : '';
-  }
-
-  function clearAdminNotificationImage(resetInput = true) {
-    if (adminNotificationImageData.startsWith('blob:')) globalThis.URL?.revokeObjectURL(adminNotificationImageData);
-    adminNotificationImageData = '';
-    const input = $('#adminNotificationImage');
-    const preview = $('#adminNotificationImagePreview');
-    const image = $('#adminNotificationImagePreviewImg');
-    if (resetInput && input) input.value = '';
-    if (image) image.removeAttribute('src');
-    if (preview) preview.hidden = true;
-  }
-
-  function previewAdminNotificationImage(event) {
-    const file = event.target.files?.[0];
-    if (!file) return clearAdminNotificationImage();
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { clearAdminNotificationImage(); return setAdminNotificationStatus('اختر صورة بصيغة JPG أو PNG أو WebP.', 'error'); }
-    if (file.size > 5 * 1024 * 1024) { clearAdminNotificationImage(); return setAdminNotificationStatus('حجم صورة الإشعار يجب ألا يتجاوز 5MB.', 'error'); }
-    clearAdminNotificationImage(false);
-    const image = $('#adminNotificationImagePreviewImg');
-    const preview = $('#adminNotificationImagePreview');
-    const showPreview = source => {
-      adminNotificationImageData = source;
-      if (image) image.src = source;
-      if (preview) preview.hidden = false;
-      setAdminNotificationStatus('تم تجهيز الصورة للرفع الآمن.', '');
-    };
-    if (typeof globalThis.URL?.createObjectURL === 'function') {
-      showPreview(globalThis.URL.createObjectURL(file));
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => showPreview(String(reader.result || ''));
-    reader.onerror = () => setAdminNotificationStatus('تعذر تجهيز الصورة للمعاينة.', 'error');
-    reader.readAsDataURL(file);
-  }
-
-  async function uploadAdminNotificationImage(file) {
-    if (!file || !supabaseClient || !currentAuthUser) return null;
-    const extension = file.type.split('/')[1] || 'bin';
-    const path = `${currentAuthUser.id}/${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${extension}`;
-    const { error } = await supabaseClient.storage.from('notification-assets').upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type });
-    if (error) throw error;
-    const { data } = supabaseClient.storage.from('notification-assets').getPublicUrl(path);
-    return data?.publicUrl || null;
-  }
-
-  async function sendAdminNotification(form) {
-    if (!remoteAdminVerified || !currentAuthUser) return toast('يلزم فتح جلسة مشرف صالحة قبل إرسال الإشعار.');
-    const data = new FormData(form);
-    const title = String(data.get('title') || '').trim();
-    const body = String(data.get('body') || '').trim();
-    const actionUrl = String(data.get('action_url') || '').trim();
-    const file = $('#adminNotificationImage')?.files?.[0] || null;
-    if (!title || title.length > 120) return setAdminNotificationStatus('اكتب عنوانًا بين حرف واحد و120 حرفًا.', 'error');
-    if (!body || body.length > 2000) return setAdminNotificationStatus('اكتب وصفًا بين حرف واحد و2000 حرف.', 'error');
-    if (actionUrl && !/^https?:\/\//i.test(actionUrl)) return setAdminNotificationStatus('رابط الإجراء يجب أن يبدأ بـ https:// أو http://.', 'error');
-    const button = $('#sendAdminNotification');
-    if (button) { button.disabled = true; button.dataset.originalLabel = button.innerHTML; button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جارٍ الإرسال'; }
-    try {
-      let imageUrl = null;
-      if (file) { setAdminNotificationStatus('جارٍ رفع الصورة إلى مساحة آمنة...', ''); imageUrl = await uploadAdminNotificationImage(file); }
-      setAdminNotificationStatus('جارٍ حفظ الإشعار والتحقق من الإرسال...', '');
-      const { data: result, error } = await supabaseClient.functions.invoke('send-admin-notification', { body: { title, body, image_url: imageUrl, action_url: actionUrl || null } });
-      if (error) throw error;
-      if (!result?.saved) throw new Error(result?.error || 'تعذر حفظ الإشعار.');
-      adminLog('content', `إرسال إشعار: ${title}`, result.push_sent ? 'حُفظ وأُرسل للمشتركين' : 'حُفظ داخل التطبيق');
-      saveAdminState();
-      renderAdminDashboard();
-      form.reset();
-      clearAdminNotificationImage();
-      if (result.push_sent) setAdminNotificationStatus('تم حفظ الإشعار وإرساله للمشتركين بنجاح.', 'success');
-      else setAdminNotificationStatus('تم نشر الإشعار داخل التطبيق بنجاح.', 'success');
-    } catch (error) {
-      console.warn('تعذر إرسال الإشعار الإداري', error);
-      setAdminNotificationStatus('تعذر إرسال الإشعار الآن. تحقق من الاتصال ثم حاول مجددًا.', 'error');
-    } finally {
-      if (button) { button.disabled = false; button.innerHTML = button.dataset.originalLabel || '<i class="fa-solid fa-paper-plane"></i> إرسال الإشعار'; }
-    }
-  }
-
   function bindAdminDashboardControls() {
     if (adminControlsBound) return;
     adminControlsBound = true;
-    const activateAdminTab = tabId => { const target = $(`.admin-tab[data-admin-tab="${tabId}"]`); if (!target) return; $$('.admin-tab').forEach(item => item.classList.toggle('active', item === target)); $$('.admin-pane').forEach(pane => pane.classList.toggle('active', pane.dataset.adminPane === tabId)); target.scrollIntoView?.({ block: 'nearest', inline: 'center', behavior: 'smooth' }); };
-    $$('.admin-tab').forEach(tab => tab.addEventListener('click', () => activateAdminTab(tab.dataset.adminTab)));
-    $$('.admin-priority-card[data-admin-tab]').forEach(card => card.addEventListener('click', () => activateAdminTab(card.dataset.adminTab)));
     $('#adminStudentSearch')?.addEventListener('input', event => renderAdminStudents(event.target.value));
-    $('#adminCommunityPromoToggle')?.addEventListener('change', event => { communityPromo.visible = event.target.checked; if (!saveCommunityPromo()) return; adminLog('content', communityPromo.visible ? 'إظهار الإعلان: مساحة طلاب نبض' : 'إخفاء الإعلان: مساحة طلاب نبض', 'إعداد مجتمع الأخبار'); renderAdminDashboard(); toast(communityPromo.visible ? 'سيظهر الإعلان في الأخبار.' : 'تم إخفاء الإعلان من الأخبار.'); });
-    $('#adminCommunityPromoForm')?.addEventListener('submit', event => { event.preventDefault(); const data = new FormData(event.currentTarget); const link = String(data.get('link') || '').trim(); if (link && !/^https?:\/\//i.test(link)) return toast('أدخل رابطًا يبدأ بـ https:// أو اترك الحقل فارغًا.'); communityPromo = { ...communityPromo, title: String(data.get('title') || '').trim() || defaultCommunityPromo.title, body: String(data.get('body') || '').trim() || defaultCommunityPromo.body, ctaLabel: String(data.get('ctaLabel') || '').trim() || defaultCommunityPromo.ctaLabel, link }; if (!saveCommunityPromo()) return; adminLog('content', 'نشر أو تحديث إعلان مجتمع الأخبار', communityPromo.title); renderAdminDashboard(); toast('تم نشر الإعلان وتحديثه في مجتمع الأخبار.'); });
-    $('#adminNotificationImage')?.addEventListener('change', previewAdminNotificationImage);
-    $('#removeAdminNotificationImage')?.addEventListener('click', () => { clearAdminNotificationImage(); setAdminNotificationStatus('', ''); });
   }
 
   async function initAdminDashboard() {
@@ -2341,10 +2214,9 @@
     }
     if (note) note.innerHTML = '<i class="fa-solid fa-circle-check"></i> تم التحقق من الصلاحية عبر Supabase.';
     showAdminWorkspace(true);
-    syncAdminStudent(false);
     renderAdminDashboard();
     bindAdminDashboardControls();
-    void loadAdminDashboardStats();
+    void loadAdminUsers();
   }
 
   function bindEvents() {
@@ -2424,7 +2296,6 @@
       if (event.target.id === 'supportForm') { event.preventDefault(); submitSupportRequest(event.target); }
       if (event.target.id === 'supportChatForm') { event.preventDefault(); sendSupportChatMessage(event.target); }
       if (event.target.matches('.admin-support-reply-form')) { event.preventDefault(); sendAdminSupportReply(event.target); }
-      if (event.target.id === 'adminNotificationForm') { event.preventDefault(); sendAdminNotification(event.target); }
       if (event.target.id === 'studyTaskForm') { event.preventDefault(); saveStudyTask(event.target); }
       if (event.target.id === 'completionPlanForm') { event.preventDefault(); saveCompletionPlan(event.target); }
       if (event.target.id === 'libraryResourceForm') { event.preventDefault(); saveLibraryResource(event.target); }
