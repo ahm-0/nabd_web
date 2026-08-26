@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#080d19">
-  <title>نبض التفوق | إدارة المستخدمين والإشعارات</title>
+  <title>نبض التفوق | لوحة الإشراف</title>
   <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script>
   <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=20260826-internal-notifications">
-  <link rel="stylesheet" href="admin-ui.css?v=20260826-internal-notifications">
+  <link rel="stylesheet" href="styles.css?v=20260826-admin">
+  <link rel="stylesheet" href="admin-ui.css?v=20260826-admin">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <meta name="mobile-web-app-capable" content="yes">
@@ -18,24 +18,26 @@
 </head>
 <body data-page="supervision">
   <div class="app admin-users-app">
-    <header class="topbar"><a class="brand" href="profile.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>إدارة المستخدمين</small></span></a></header>
+    <header class="topbar"><a class="brand" href="profile.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>لوحة الإشراف</small></span></a><div class="top-actions"><a class="icon-button" href="profile.html" title="الملف الشخصي" aria-label="الملف الشخصي"><i class="fa-regular fa-user"></i></a></div></header>
     <main class="main-content admin-users-main">
-      <section class="admin-login-screen admin-users-login panel" id="adminLoginScreen">
-        <span class="admin-users-login-icon"><i class="fa-solid fa-users-gear"></i></span>
-        <span class="eyebrow">وصول محمي</span>
-        <h2>إدارة المستخدمين</h2>
-        <p class="admin-login-note"><i class="fa-solid fa-lock"></i> جارٍ التحقق من صلاحية الوصول...</p>
-      </section>
+      <section class="admin-login-screen admin-users-login panel" id="adminLoginScreen"><span class="admin-users-login-icon"><i class="fa-solid fa-shield-halved"></i></span><span class="eyebrow">وصول محمي</span><h2>لوحة الإشراف</h2><p class="admin-login-note"><i class="fa-solid fa-lock"></i> جارٍ التحقق من صلاحية الوصول...</p></section>
 
       <section class="admin-dashboard admin-users-workspace hidden" id="adminWorkspace">
-        <header class="admin-users-header"><div><span class="eyebrow">لوحة الإدارة</span><h2>المستخدمون والإشعارات</h2><p>أرسل تنبيهًا داخل التطبيق وأدر حسابات المستخدمين.</p></div><div class="admin-users-header-actions"><a class="outline-button" href="profile.html"><i class="fa-solid fa-arrow-right"></i> الملف الشخصي</a><button class="outline-button" type="button" data-admin-action="logout"><i class="fa-solid fa-lock"></i> قفل</button></div></header>
-        <section class="admin-users-stat panel"><span class="admin-users-stat-icon"><i class="fa-solid fa-users"></i></span><div><small>إجمالي المستخدمين</small><b id="adminTotalUsers">0</b><span>حساب في المنصة</span></div></section>
+        <header class="admin-users-header"><div><span class="eyebrow">مساحة الإدارة</span><h2>لوحة الإشراف</h2><p>تابع حركة المنصة، راجع مجتمع الأخبار، وأجب عن رسائل الطلاب من مكان واحد.</p></div><div class="admin-users-header-actions"><a class="outline-button" href="profile.html"><i class="fa-solid fa-arrow-right"></i> الملف الشخصي</a><button class="outline-button" type="button" data-admin-action="logout"><i class="fa-solid fa-lock"></i> قفل البوابة</button></div></header>
+
+        <section class="admin-overview-grid" aria-label="إحصاءات المنصة"><article class="admin-overview-card overview-users panel"><span><i class="fa-solid fa-users"></i></span><div><small>إجمالي المستخدمين</small><b id="adminTotalUsers">0</b><em>حساب</em></div></article><article class="admin-overview-card overview-posts panel"><span><i class="fa-regular fa-newspaper"></i></span><div><small>منشورات الأخبار</small><b id="adminTotalNewsPosts">0</b><em>منشور</em></div></article><article class="admin-overview-card overview-comments panel"><span><i class="fa-regular fa-comments"></i></span><div><small>رسائل الأخبار</small><b id="adminTotalNewsComments">0</b><em>تعليق ورد</em></div></article><article class="admin-overview-card overview-support panel"><span><i class="fa-solid fa-headset"></i></span><div><small>دعم بانتظار المتابعة</small><b id="adminOpenSupport">0</b><em>محادثة مفتوحة</em></div></article></section>
+
         <section class="admin-internal-notification panel"><header class="admin-internal-notification-head"><div><span class="eyebrow">رسالة داخلية</span><h3>إشعار جديد</h3><p>يظهر الإشعار مباشرة داخل صندوق الوارد لجميع المستخدمين.</p></div><span class="admin-internal-notification-icon"><i class="fa-regular fa-bell"></i></span></header><form id="adminNotificationForm" class="admin-internal-notification-form"><label>العنوان<input name="title" type="text" maxlength="120" required placeholder="عنوان الإشعار"></label><label>الوصف<textarea name="body" rows="4" maxlength="2000" required placeholder="اكتب نص الإشعار..."></textarea></label><div class="admin-internal-notification-footer"><span id="adminNotificationStatus" role="status" aria-live="polite"></span><button class="primary-button" id="sendAdminNotification" type="submit"><i class="fa-solid fa-paper-plane"></i><span>نشر الإشعار</span></button></div></form></section>
+
+        <section class="admin-workspace-section panel" id="adminNewsSection"><header class="admin-section-header"><div><span class="eyebrow">مجتمع الأخبار</span><h3>نشاط الأخبار</h3><p>آخر المنشورات والتعليقات التي تحتاج إلى متابعة.</p></div><button class="outline-button" type="button" data-admin-action="refresh-news"><i class="fa-solid fa-arrows-rotate"></i><span>تحديث</span></button></header><div class="admin-news-activity-list" id="adminNewsActivityRows" aria-live="polite"><div class="admin-users-loading"><i class="fa-solid fa-spinner fa-spin"></i> جارٍ تحميل نشاط الأخبار</div></div></section>
+
+        <section class="admin-workspace-section panel" id="adminSupportSection"><header class="admin-section-header"><div><span class="eyebrow">مساعدة الطلاب</span><h3>صندوق الدعم</h3><p>اقرأ رسائل المستخدمين وأرسل ردًا مباشرًا من البوابة.</p></div><button class="outline-button" type="button" data-admin-action="refresh-support"><i class="fa-solid fa-arrows-rotate"></i><span>تحديث</span></button></header><div class="admin-support-list" id="adminSupportRows" aria-live="polite"><div class="admin-users-loading"><i class="fa-solid fa-spinner fa-spin"></i> جارٍ تحميل رسائل الدعم</div></div></section>
+
         <section class="admin-users-list-card panel"><header class="admin-users-list-header"><div><span class="eyebrow">دليل الحسابات</span><h3>المستخدمون</h3></div><div class="admin-users-list-actions"><label class="admin-search"><i class="fa-solid fa-magnifying-glass"></i><input id="adminStudentSearch" type="search" placeholder="بحث بالاسم أو البريد" autocomplete="off"></label><button class="outline-button" type="button" data-admin-action="refresh-users" aria-label="تحديث المستخدمين"><i class="fa-solid fa-arrows-rotate"></i><span>تحديث</span></button></div></header><div class="admin-student-directory admin-users-directory" id="adminStudentsRows" aria-live="polite"><div class="admin-users-loading"><i class="fa-solid fa-spinner fa-spin"></i> جارٍ تحميل المستخدمين</div></div></section>
       </section>
     </main>
   </div>
   <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div>
-  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260826-internal-notifications"></script><script src="app.js?v=20260826-internal-notifications"></script>
+  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="app.js?v=20260826-admin"></script>
 </body>
 </html>

@@ -86,7 +86,9 @@
   let appNotifications = [];
   let notificationsLoaded = false;
   let notificationsEventsBound = false;
-  let adminStats = { total_users: 0, total_notifications: 0 };
+  let adminStats = { total_users: 0, total_notifications: 0, total_news_posts: 0, total_news_comments: 0, open_support_threads: 0 };
+  let adminNewsActivity = [];
+  let adminSupportThreads = [];
   const defaultCustomCountdown = { title: 'هدفي الخاص', target: new Date('2027-01-01T08:00:00').getTime() };
   const storedCustomCountdown = readStorage('custom_countdown', defaultCustomCountdown);
   let customCountdown = {
@@ -1942,20 +1944,47 @@
 
   function mySupportTicket() {
     ensureStudentId();
-    return supportTickets.filter(ticket => ticket.studentId === student.studentId).sort((a, b) => Number(b.updatedAt || b.createdAt || 0) - Number(a.updatedAt || a.createdAt || 0))[0] || null;
+    const ownerId = currentAuthUser?.id || student.studentId;
+    return supportTickets.filter(ticket => ticket.studentId === ownerId || (!currentAuthUser?.id && ticket.studentId === student.studentId)).sort((a, b) => Number(b.updatedAt || b.createdAt || 0) - Number(a.updatedAt || a.createdAt || 0))[0] || null;
+  }
+
+  function remoteSupportTicket(payload) {
+    if (!payload?.id) return null;
+    return { id: payload.id, studentId: currentAuthUser?.id || student.studentId, name: fullName(), category: payload.category || 'استفسار عام', status: payload.status || 'open', createdAt: payload.created_at || Date.now(), updatedAt: payload.updated_at || payload.created_at || Date.now(), messages: Array.isArray(payload.messages) ? payload.messages.map(message => ({ id: message.id, sender: message.sender, text: message.text, createdAt: message.created_at || Date.now() })) : [] };
+  }
+
+  async function loadMySupportThread() {
+    if (!supabaseClient || !currentAuthUser?.id || !$('#supportChatMessages')) { renderSupportChat(); return false; }
+    const { data, error } = await supabaseClient.rpc('support_get_my_thread');
+    if (error) { console.warn('تعذر تحميل محادثة الدعم', error); renderSupportChat(); return false; }
+    const remote = remoteSupportTicket(data);
+    if (remote) supportTickets = [remote, ...supportTickets.filter(ticket => ticket.id !== remote.id)];
+    renderSupportChat();
+    return true;
   }
 
   function renderSupportChat() {
     const holder = $('#supportChatMessages'); if (!holder) return;
     const ticket = mySupportTicket(); const messages = supportThread(ticket);
     const status = $('#supportChatStatus'); if (status) status.textContent = ticket?.status === 'resolved' ? 'تمت المعالجة' : ticket ? 'الدعم متاح للمتابعة' : 'ابدأ محادثة جديدة';
-    holder.innerHTML = messages.length ? messages.map(message => `<article class="support-message ${message.sender === 'admin' ? 'admin' : 'student'}"><span class="support-message-avatar"><i class="fa-solid ${message.sender === 'admin' ? 'fa-headset' : 'fa-user'}"></i></span><div><p>${escapeHTML(message.text)}</p><small>${message.sender === 'admin' ? 'دعم نبض التفوق' : 'أنت'} · ${displayAdminDate(message.createdAt || Date.now())}</small></div></article>`).join('') : '<div class="support-chat-empty"><i class="fa-regular fa-comments"></i><b>كيف يمكننا مساعدتك؟</b><span>اكتب رسالتك وسيتابعها المشرف من بوابة الدعم.</span></div>';
+    holder.innerHTML = messages.length ? messages.map(message => `<article class="support-message ${message.sender === 'admin' ? 'admin' : 'student'}"><span class="support-message-avatar"><i class="fa-solid ${message.sender === 'admin' ? 'fa-headset' : 'fa-user'}"></i></span><div><p>${escapeHTML(message.text)}</p><small>${message.sender === 'admin' ? 'دعم نبض التفوق' : 'أنت'} · ${displayAdminDate(message.createdAt || message.created_at || Date.now())}</small></div></article>`).join('') : '<div class="support-chat-empty"><i class="fa-regular fa-comments"></i><b>كيف يمكننا مساعدتك؟</b><span>اكتب رسالتك وسيتابعها المشرف من بوابة الدعم.</span></div>';
     holder.scrollTop = holder.scrollHeight;
   }
 
-  function sendSupportChatMessage(form) {
+  async function initSupportChat() {
+    if (!$('#supportChatMessages')) return;
+    renderSupportChat();
+    if (currentAuthUser?.id) await loadMySupportThread();
+  }
+
+  async function sendSupportChatMessage(form) {
     const input = $('[name="message"]', form); const text = String(input?.value || '').trim(); const category = String($('[name="category"]', form)?.value || 'استفسار عام');
     if (!text) return;
+    if (supabaseClient && currentAuthUser?.id) {
+      const { error } = await supabaseClient.rpc('support_send_message', { p_category: category, p_body: text });
+      if (error) { console.warn('تعذر إرسال رسالة الدعم', error); toast('تعذر إرسال الرسالة الآن. حاول مجددًا.'); return; }
+      input.value = ''; await loadMySupportThread(); toast('تم إرسال رسالتك إلى الدعم.'); return;
+    }
     ensureStudentId(); const now = Date.now(); let ticket = mySupportTicket();
     const entry = { id: `support-message-${now}-${Math.random().toString(16).slice(2)}`, sender: 'student', text, createdAt: now };
     if (!ticket) { const snapshot = studentSnapshot(); ticket = { id: `support-${now}`, studentId: snapshot.id, name: snapshot.name, phone: snapshot.phone, city: snapshot.city, gender: snapshot.gender, category, message: text, messages: [entry], status: 'open', createdAt: now, updatedAt: now }; supportTickets.unshift(ticket); }
@@ -1964,28 +1993,35 @@
   }
 
   function openSupportReply(ticketId) {
-    const ticket = supportTickets.find(item => item.id === ticketId); if (!ticket) return;
-    const messages = supportThread(ticket).map(message => `<article class="admin-support-message ${message.sender === 'admin' ? 'admin' : 'student'}"><b>${message.sender === 'admin' ? 'المشرف' : escapeHTML(ticket.name)}</b><p>${escapeHTML(message.text)}</p><small>${displayAdminDate(message.createdAt || ticket.createdAt)}</small></article>`).join('');
-    openModal(`<div class="modal-head"><div><span class="eyebrow">صندوق الدعم</span><h3>${escapeHTML(ticket.name)}</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><section class="admin-support-thread">${messages || '<p class="sheet-hint">لا توجد رسائل بعد.</p>'}</section><form class="admin-support-reply-form" data-ticket-id="${escapeHTML(ticket.id)}"><div class="form-group"><label>رد المشرف</label><textarea name="reply" required maxlength="700" placeholder="اكتب ردًا واضحًا ومفيدًا للطالب..." autofocus></textarea></div><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button type="submit" class="primary-button"><i class="fa-solid fa-paper-plane"></i> إرسال الرد</button></div></form>`);
+    const ticket = adminSupportThreads.find(item => item.id === ticketId) || supportTickets.find(item => item.id === ticketId); if (!ticket) return;
+    const messages = supportThread(ticket).map(message => `<article class="admin-support-message ${message.sender === 'admin' ? 'admin' : 'student'}"><b>${message.sender === 'admin' ? 'المشرف' : escapeHTML(ticket.name)}</b><p>${escapeHTML(message.text)}</p><small>${displayAdminDate(message.createdAt || message.created_at || ticket.createdAt || ticket.created_at)}</small></article>`).join('');
+    openModal(`<div class="modal-head"><div><span class="eyebrow">صندوق الدعم</span><h3>${escapeHTML(ticket.name || 'طالب نبض')}</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><section class="admin-support-thread">${messages || '<p class="sheet-hint">لا توجد رسائل بعد.</p>'}</section><form class="admin-support-reply-form" data-ticket-id="${escapeHTML(ticket.id)}"><div class="form-group"><label>رد المشرف</label><textarea name="reply" required maxlength="700" placeholder="اكتب ردًا واضحًا ومفيدًا للطالب..." autofocus></textarea></div><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button type="submit" class="primary-button"><i class="fa-solid fa-paper-plane"></i> إرسال الرد</button></div></form>`);
   }
 
-  function sendAdminSupportReply(form) {
-    const ticket = supportTickets.find(item => item.id === form.dataset.ticketId); const text = String($('[name="reply"]', form)?.value || '').trim(); if (!ticket || !text) return;
+  async function sendAdminSupportReply(form) {
+    const ticket = adminSupportThreads.find(item => item.id === form.dataset.ticketId) || supportTickets.find(item => item.id === form.dataset.ticketId); const text = String($('[name="reply"]', form)?.value || '').trim(); if (!ticket || !text) return;
+    if (supabaseClient && currentAuthUser?.id && adminSupportThreads.some(item => item.id === form.dataset.ticketId)) {
+      const { error } = await supabaseClient.rpc('support_admin_reply', { p_thread_id: form.dataset.ticketId, p_body: text });
+      if (error) { console.warn('تعذر إرسال رد الدعم', error); toast('تعذر إرسال الرد الآن. حاول مجددًا.'); return; }
+      closeModal(); await loadAdminSupport(); const { data: stats } = await supabaseClient.rpc('admin_get_dashboard_stats'); if (stats) adminStats = { ...adminStats, ...stats }; renderAdminDashboard(); toast('تم إرسال الرد للطالب وحفظ المحادثة.'); return;
+    }
     const now = Date.now(); ticket.messages = [...supportThread(ticket), { id: `support-reply-${now}`, sender: 'admin', text, createdAt: now }]; ticket.status = 'resolved'; ticket.updatedAt = now; saveAdminState(); adminLog('support', `رد على رسالة الدعم: ${ticket.name}`, ticket.category); closeModal(); renderAdminDashboard(); toast('تم إرسال الرد للطالب وحفظ المحادثة.');
   }
 
-  function submitSupportRequest(form) {
+  async function submitSupportRequest(form) {
     const data = Object.fromEntries(new FormData(form).entries());
     const message = String(data.message || '').trim();
     if (!message) return toast('اكتب رسالتك قبل الإرسال.');
+    if (supabaseClient && currentAuthUser?.id) {
+      const { error } = await supabaseClient.rpc('support_send_message', { p_category: String(data.category || 'استفسار عام'), p_body: message });
+      if (error) { console.warn('تعذر إرسال طلب الدعم', error); toast('تعذر إرسال الرسالة الآن. حاول مجددًا.'); return; }
+      closeModal(); toast('تم إرسال رسالتك إلى صندوق الدعم.'); return;
+    }
     syncAdminStudent(false);
     const snapshot = studentSnapshot();
     supportTickets.unshift({ id: `support-${Date.now()}`, studentId: snapshot.id, name: snapshot.name, phone: snapshot.phone, city: snapshot.city, gender: snapshot.gender, category: String(data.category || 'استفسار عام'), message, status: 'open', createdAt: Date.now() });
     adminLog('support', `رسالة دعم من ${snapshot.name}`, String(data.category || 'استفسار عام'));
-    saveAdminState();
-    closeModal();
-    renderAdminDashboard();
-    toast('تم إرسال رسالتك إلى صندوق الدعم.');
+    saveAdminState(); closeModal(); renderAdminDashboard(); toast('تم إرسال رسالتك إلى صندوق الدعم.');
   }
 
   function setAdminNotificationStatus(message = '', tone = '') {
@@ -2018,6 +2054,40 @@
     }
   }
 
+  function renderAdminNewsActivity() {
+    const holder = $('#adminNewsActivityRows');
+    if (!holder) return;
+    if (!adminNewsActivity.length) { holder.innerHTML = '<div class="admin-empty">لا يوجد نشاط أخبار حتى الآن.</div>'; return; }
+    holder.innerHTML = adminNewsActivity.map(item => `<article class="admin-activity-item ${item.kind === 'comment' ? 'is-comment' : 'is-post'}"><span class="admin-activity-icon"><i class="fa-solid ${item.kind === 'comment' ? 'fa-comment' : 'fa-newspaper'}"></i></span><div class="admin-activity-copy"><div><b>${item.kind === 'comment' ? 'تعليق جديد' : 'منشور جديد'}</b><small>${escapeHTML(item.author_name || 'مستخدم')} · ${escapeHTML(displayAdminDate(item.created_at))}</small></div><p>${escapeHTML(item.body || '')}</p>${item.kind === 'comment' && item.post_body ? `<small class="admin-activity-context">على منشور: ${escapeHTML(String(item.post_body).slice(0, 100))}${String(item.post_body).length > 100 ? '…' : ''}</small>` : ''}</div></article>`).join('');
+  }
+
+  async function loadAdminNewsActivity() {
+    const holder = $('#adminNewsActivityRows');
+    if (!supabaseClient || !remoteAdminVerified || !holder) return;
+    holder.innerHTML = '<div class="admin-users-loading"><i class="fa-solid fa-spinner fa-spin"></i> جارٍ تحميل نشاط الأخبار</div>';
+    const { data, error } = await supabaseClient.rpc('admin_list_news_activity', { p_limit: 60 });
+    if (error || !Array.isArray(data)) { adminNewsActivity = []; holder.innerHTML = '<div class="admin-empty">تعذر تحميل نشاط الأخبار.</div>'; console.warn('تعذر تحميل نشاط الأخبار', error); return; }
+    adminNewsActivity = data;
+    renderAdminNewsActivity();
+  }
+
+  function renderAdminSupport() {
+    const holder = $('#adminSupportRows');
+    if (!holder) return;
+    if (!adminSupportThreads.length) { holder.innerHTML = '<div class="admin-empty">لا توجد رسائل دعم حتى الآن.</div>'; return; }
+    holder.innerHTML = adminSupportThreads.map(thread => { const messages = supportThread(thread); const last = messages[messages.length - 1]; const isOpen = thread.status !== 'resolved'; return `<article class="admin-support-card ${isOpen ? 'is-open' : 'is-resolved'}"><div class="admin-support-card-main"><span class="admin-support-avatar"><i class="fa-solid ${isOpen ? 'fa-headset' : 'fa-circle-check'}"></i></span><div class="admin-support-copy"><div class="admin-support-title"><b>${escapeHTML(thread.name || 'طالب نبض')}</b><span class="admin-support-status">${isOpen ? 'بانتظار الرد' : 'تمت المتابعة'}</span></div><small>${escapeHTML(thread.category || 'استفسار عام')} · ${escapeHTML(displayAdminDate(thread.updated_at || thread.created_at))}</small><p>${escapeHTML(last?.text || 'لا توجد رسالة')}</p></div></div><button class="outline-button admin-support-reply" type="button" data-admin-action="support-reply" data-support-id="${escapeHTML(thread.id)}"><i class="fa-regular fa-comment-dots"></i><span>${isOpen ? 'قراءة والرد' : 'فتح المحادثة'}</span></button></article>`; }).join('');
+  }
+
+  async function loadAdminSupport() {
+    const holder = $('#adminSupportRows');
+    if (!supabaseClient || !remoteAdminVerified || !holder) return;
+    holder.innerHTML = '<div class="admin-users-loading"><i class="fa-solid fa-spinner fa-spin"></i> جارٍ تحميل رسائل الدعم</div>';
+    const { data, error } = await supabaseClient.rpc('admin_list_support_threads', { p_limit: 100 });
+    if (error || !Array.isArray(data)) { adminSupportThreads = []; holder.innerHTML = '<div class="admin-empty">تعذر تحميل رسائل الدعم.</div>'; console.warn('تعذر تحميل رسائل الدعم', error); return; }
+    adminSupportThreads = data;
+    renderAdminSupport();
+  }
+
   async function loadAdminUsers() {
     if (!supabaseClient || !remoteAdminVerified || !$('#adminStudentsRows')) return;
     const rows = $('#adminStudentsRows');
@@ -2032,18 +2102,25 @@
     adminUsers = data.users;
     adminUsersLoaded = true;
     const { data: stats } = await supabaseClient.rpc('admin_get_dashboard_stats');
-    const total = Number(stats?.total_users ?? data.total);
+    adminStats = { ...adminStats, ...(stats && typeof stats === 'object' ? stats : {}) };
+    const total = Number(adminStats.total_users ?? data.total);
     adminStats.total_users = Number.isFinite(total) && total >= 0 ? total : adminUsers.length;
     renderAdminDashboard();
+    await Promise.all([loadAdminNewsActivity(), loadAdminSupport()]);
   }
 
   function renderAdminDashboard() {
     if (!$('#adminWorkspace')) return;
     const total = Number(adminStats.total_users);
     const count = Number.isFinite(total) && total >= 0 ? total : adminUsers.length;
-    const totalElement = $('#adminTotalUsers');
-    if (totalElement) totalElement.textContent = String(count);
+    const setText = (id, value) => { const element = $('#' + id); if (element) element.textContent = String(Number.isFinite(Number(value)) ? Math.max(0, Number(value)) : 0); };
+    setText('adminTotalUsers', count);
+    setText('adminTotalNewsPosts', adminStats.total_news_posts);
+    setText('adminTotalNewsComments', adminStats.total_news_comments);
+    setText('adminOpenSupport', adminStats.open_support_threads);
     renderAdminStudents($('#adminStudentSearch')?.value || '');
+    renderAdminNewsActivity();
+    renderAdminSupport();
   }
 
   function renderAdminStudents(query = '') {
@@ -2079,6 +2156,9 @@
     if (action === 'logout') return logoutAdmin();
     if (!isAdminAuthenticated()) return toast('افتح بوابة المشرفين أولًا لتنفيذ هذا الإجراء.');
     if (action === 'refresh-users') return void loadAdminUsers();
+    if (action === 'refresh-news') return void loadAdminNewsActivity();
+    if (action === 'refresh-support') return void loadAdminSupport();
+    if (action === 'support-reply') return void openSupportReply(button.dataset.supportId);
     if (action === 'user-delete') return void deleteAdminUser(button.dataset.adminId, button.dataset.adminName);
   }
 
@@ -2274,9 +2354,9 @@
       if (event.target.id === 'adminNotificationForm') { event.preventDefault(); void sendAdminNotification(event.target); }
       if (event.target.id === 'editForm') { event.preventDefault(); handleProfileSave(event.target); }
       if (event.target.id === 'customCountdownForm') { event.preventDefault(); handleCountdownSave(event.target); }
-      if (event.target.id === 'supportForm') { event.preventDefault(); submitSupportRequest(event.target); }
-      if (event.target.id === 'supportChatForm') { event.preventDefault(); sendSupportChatMessage(event.target); }
-      if (event.target.matches('.admin-support-reply-form')) { event.preventDefault(); sendAdminSupportReply(event.target); }
+      if (event.target.id === 'supportForm') { event.preventDefault(); void submitSupportRequest(event.target); }
+      if (event.target.id === 'supportChatForm') { event.preventDefault(); void sendSupportChatMessage(event.target); }
+      if (event.target.matches('.admin-support-reply-form')) { event.preventDefault(); void sendAdminSupportReply(event.target); }
       if (event.target.id === 'studyTaskForm') { event.preventDefault(); saveStudyTask(event.target); }
       if (event.target.id === 'completionPlanForm') { event.preventDefault(); saveCompletionPlan(event.target); }
       if (event.target.id === 'libraryResourceForm') { event.preventDefault(); saveLibraryResource(event.target); }
@@ -2359,7 +2439,7 @@
       library: initLibrary,
       'study-schedule': initStudySchedule,
       ai: initChat,
-      'support-chat': renderSupportChat,
+      'support-chat': initSupportChat,
       notifications: initNotifications,
       supervision: initAdminDashboard,
       countdown: initHome
@@ -2377,6 +2457,7 @@
       updateNotificationBadges();
       if (PAGE === 'notifications') initNotifications();
       else void loadAppNotifications();
+      if (PAGE === 'support-chat') void loadMySupportThread();
       if (PAGE === 'supervision') void initAdminDashboard();
       refreshNewsOwnership();
     }).catch(error => console.warn('تعذر مزامنة جلسة الطالب في الخلفية:', error)), 0);
