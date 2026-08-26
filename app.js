@@ -87,6 +87,7 @@
   let notificationsLoaded = false;
   let notificationsEventsBound = false;
   let adminStats = { total_users: 0, total_notifications: 0, total_news_posts: 0, total_news_comments: 0, open_support_threads: 0 };
+  let adminNotifications = [];
   let adminNewsActivity = [];
   let adminSupportThreads = [];
   const defaultCustomCountdown = { title: 'هدفي الخاص', target: new Date('2027-01-01T08:00:00').getTime() };
@@ -2064,12 +2065,43 @@
       if (error || !result?.saved) throw new Error(result?.error || 'تعذر حفظ الإشعار.');
       form.reset();
       setAdminNotificationStatus('تم نشر الإشعار داخل التطبيق بنجاح.', 'success');
+      void loadAdminNotifications();
     } catch (error) {
       console.warn('تعذر نشر الإشعار الداخلي', error);
       setAdminNotificationStatus('تعذر نشر الإشعار الآن. تحقق من الاتصال ثم حاول مجددًا.', 'error');
     } finally {
       if (button) { button.disabled = false; button.innerHTML = button.dataset.originalLabel || '<i class="fa-solid fa-paper-plane"></i><span>نشر الإشعار</span>'; }
     }
+  }
+
+  function renderAdminNotifications() {
+    const holder = $('#adminNotificationsRows');
+    if (!holder) return;
+    if (!adminNotifications.length) { holder.innerHTML = '<div class="admin-empty">لا توجد إشعارات منشورة حاليًا.</div>'; return; }
+    holder.innerHTML = adminNotifications.map(notification => `<article class="admin-notification-item"><div class="admin-notification-item-main"><span class="admin-notification-item-icon"><i class="fa-regular fa-bell"></i></span><div><div class="admin-notification-item-top"><b>${escapeHTML(notification.title || 'إشعار')}</b><small>${escapeHTML(displayAdminDate(notification.created_at))}</small></div><p>${escapeHTML(notification.body || '')}</p></div></div><button class="danger-button admin-notification-delete" type="button" data-admin-action="delete-notification" data-notification-id="${escapeHTML(notification.id)}" data-notification-title="${escapeHTML(notification.title || 'هذا الإشعار')}" aria-label="حذف الإشعار"><i class="fa-regular fa-trash-can"></i><span>حذف</span></button></article>`).join('');
+  }
+
+  async function loadAdminNotifications() {
+    const holder = $('#adminNotificationsRows');
+    if (!supabaseClient || !remoteAdminVerified || !holder) return;
+    holder.innerHTML = '<div class="admin-users-loading"><i class="fa-solid fa-spinner fa-spin"></i> جارٍ تحميل الإشعارات</div>';
+    const { data, error } = await supabaseClient.rpc('admin_list_notifications', { p_limit: 100 });
+    if (error || !Array.isArray(data)) { adminNotifications = []; holder.innerHTML = '<div class="admin-empty">تعذر تحميل الإشعارات.</div>'; console.warn('تعذر تحميل الإشعارات الإدارية', error); return; }
+    adminNotifications = data;
+    adminStats.total_notifications = data.length;
+    renderAdminNotifications();
+  }
+
+  async function deleteAdminNotification(notificationId, notificationTitle) {
+    if (!isAdminAuthenticated() || !notificationId) return;
+    confirmAction('حذف الإشعار؟', `سيختفي «${notificationTitle || 'هذا الإشعار'}» من صناديق جميع المستخدمين ولن يظهر مجددًا.`, async () => {
+      const { data, error } = await supabaseClient.rpc('admin_delete_notification', { p_notification_id: notificationId });
+      if (error || data !== true) { toast(error?.message || 'تعذر حذف الإشعار.'); return; }
+      adminNotifications = adminNotifications.filter(item => item.id !== notificationId);
+      adminStats.total_notifications = Math.max(0, Number(adminStats.total_notifications || 1) - 1);
+      renderAdminNotifications(); renderAdminDashboard();
+      toast('تم حذف الإشعار.');
+    }, 'حذف الإشعار');
   }
 
   function renderAdminNewsActivity() {
@@ -2124,7 +2156,7 @@
     const total = Number(adminStats.total_users ?? data.total);
     adminStats.total_users = Number.isFinite(total) && total >= 0 ? total : adminUsers.length;
     renderAdminDashboard();
-    await Promise.all([loadAdminNewsActivity(), loadAdminSupport()]);
+    await Promise.all([loadAdminNotifications(), loadAdminNewsActivity(), loadAdminSupport()]);
   }
 
   function renderAdminDashboard() {
@@ -2137,6 +2169,7 @@
     setText('adminTotalNewsComments', adminStats.total_news_comments);
     setText('adminOpenSupport', adminStats.open_support_threads);
     renderAdminStudents($('#adminStudentSearch')?.value || '');
+    renderAdminNotifications();
     renderAdminNewsActivity();
     renderAdminSupport();
   }
@@ -2174,6 +2207,8 @@
     if (action === 'logout') return logoutAdmin();
     if (!isAdminAuthenticated()) return toast('افتح بوابة المشرفين أولًا لتنفيذ هذا الإجراء.');
     if (action === 'refresh-users') return void loadAdminUsers();
+    if (action === 'refresh-notifications') return void loadAdminNotifications();
+    if (action === 'delete-notification') return void deleteAdminNotification(button.dataset.notificationId, button.dataset.notificationTitle);
     if (action === 'refresh-news') return void loadAdminNewsActivity();
     if (action === 'refresh-support') return void loadAdminSupport();
     if (action === 'support-reply') return void openSupportReply(button.dataset.supportId);
@@ -2362,6 +2397,8 @@
         if (tool.dataset.action === 'post-menu') openPostMenu(postId);
       }
 
+      const supportTopic = event.target.closest('[data-support-topic]');
+      if (supportTopic) { const form = $('#supportChatForm'); const select = $('[name="category"]', form); const input = $('[name="message"]', form); if (select) select.value = supportTopic.dataset.supportTopic || 'استفسار عام'; input?.focus(); }
       const suggestion = event.target.closest('.suggestion, .assistant-chip');
       if (suggestion) { const input = $('#chatInput'); if (input) { input.value = suggestion.dataset.prompt || suggestion.textContent; sendChat(); } }
       const history = event.target.closest('[data-chat]');
