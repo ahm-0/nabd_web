@@ -378,9 +378,20 @@
 
   function notificationCardMarkup(notification) {
     const unread = !notification.read_at;
-    return `<article class="notification-card ${unread ? 'is-unread' : ''}" data-notification-open="${escapeHTML(notification.id)}" tabindex="0" aria-label="${escapeHTML(notification.title)}"><span class="notification-card-marker" aria-hidden="true"></span><span class="notification-card-avatar" aria-hidden="true"><i class="fa-solid fa-bell"></i></span><div class="notification-card-content"><div class="notification-card-meta"><span>${escapeHTML(displayAdminDate(notification.created_at))}</span>${unread ? '<b class="notification-new-badge">جديد</b>' : '<span class="notification-read-label"><i class="fa-solid fa-check"></i> مقروء</span>'}</div><h3>${escapeHTML(notification.title)}</h3><p>${escapeHTML(notification.body).replace(/\n/g, '<br>')}</p><button class="notification-mark-read" type="button" data-notification-read="${escapeHTML(notification.id)}" ${unread ? '' : 'disabled'}>${unread ? '<i class="fa-solid fa-check"></i> تعليم كمقروء' : '<i class="fa-solid fa-check-double"></i> تمت القراءة'}</button></div></article>`;
+    return `<article class="notification-card ${unread ? 'is-unread' : ''}" data-notification-open="${escapeHTML(notification.id)}" tabindex="0" aria-label="${escapeHTML(notification.title)}"><span class="notification-card-marker" aria-hidden="true"></span><span class="notification-card-avatar" aria-hidden="true"><i class="fa-solid fa-bell"></i></span><div class="notification-card-content"><div class="notification-card-topline"><b>${unread ? 'إشعار جديد' : 'إشعار'}</b><time datetime="${escapeHTML(notification.created_at || '')}">${escapeHTML(displayAdminDate(notification.created_at))}</time></div><h3>${escapeHTML(notification.title)}</h3><p>${escapeHTML(notification.body).replace(/\n/g, '<br>')}</p></div><button class="notification-mark-read" type="button" data-notification-read="${escapeHTML(notification.id)}" ${unread ? '' : 'disabled'} aria-label="${unread ? 'تعليم الإشعار كمقروء' : 'تمت قراءة الإشعار'}">${unread ? '<i class="fa-solid fa-check"></i><span>تعليم كمقروء</span>' : '<i class="fa-solid fa-check-double"></i><span>مقروء</span>'}</button></article>`;
   }
 
+  function notificationGroupLabel(notification, index) {
+    if (index === 0) return 'أبرز الإشعارات';
+    const date = new Date(notification.created_at || Date.now());
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const target = new Date(date); target.setHours(0, 0, 0, 0);
+    const dayDiff = Math.max(0, Math.round((today - target) / 86400000));
+    if (dayDiff === 0) return 'اليوم';
+    if (dayDiff === 1) return 'أمس';
+    if (dayDiff < 7) return 'آخر 7 أيام';
+    return 'أقدم';
+  }
   function renderNotifications() {
     const list = $('#notificationsList');
     const empty = $('#notificationsEmpty');
@@ -394,7 +405,14 @@
       return;
     }
     if (loading) loading.hidden = true;
-    list.innerHTML = appNotifications.map(notificationCardMarkup).join('');
+    const groups = [];
+    const grouped = new Map();
+    appNotifications.forEach((notification, index) => {
+      const label = notificationGroupLabel(notification, index);
+      if (!grouped.has(label)) { grouped.set(label, []); groups.push(label); }
+      grouped.get(label).push(notification);
+    });
+    list.innerHTML = groups.map(label => `<section class="notification-group" aria-label="${label}"><h3 class="notification-group-title">${label}<span>${grouped.get(label).length}</span></h3><div class="notification-group-items">${grouped.get(label).map(notificationCardMarkup).join('')}</div></section>`).join('');
     const count = $('#notificationsCount');
     if (count) { const unread = appNotifications.filter(item => !item.read_at).length; count.textContent = appNotifications.length ? `${appNotifications.length} إشعار${unread ? ` · ${unread} جديد` : ''}` : ''; }
     if (empty) empty.hidden = appNotifications.length > 0;
