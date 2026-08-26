@@ -2453,7 +2453,7 @@
       if (event.target.id === 'customCountdownForm') { event.preventDefault(); handleCountdownSave(event.target); }
       if (event.target.id === 'supportForm') { event.preventDefault(); void submitSupportRequest(event.target); }
       if (event.target.id === 'supportChatForm') { event.preventDefault(); void sendSupportChatMessage(event.target); }
-      if (event.target.matches('.admin-support-reply-form')) { event.preventDefault(); void sendAdminSupportReply(event.target); }
+      if (event.target.matches('.admin-support-reply-form, .admin-support-chat-composer')) { event.preventDefault(); void sendAdminSupportReply(event.target); }
       if (event.target.id === 'studyTaskForm') { event.preventDefault(); saveStudyTask(event.target); }
       if (event.target.id === 'completionPlanForm') { event.preventDefault(); saveCompletionPlan(event.target); }
       if (event.target.matches('.comment-form, .comment-modal-form')) { event.preventDefault(); addComment(event.target); }
