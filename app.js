@@ -627,6 +627,35 @@
     parts.forEach(([id, value, length]) => { const element = $('#' + id); if (element) element.textContent = String(value).padStart(length, '0'); });
   }
 
+  function updateCountdownShareButton() {
+    const button = $('#shareCountdownImage'); const exam = homeExams[activeExam];
+    if (!button || !exam) return;
+    button.dataset.examKey = activeExam;
+    const label = $('span', button); if (label) label.textContent = `مشاركة صورة ${exam.title}`;
+  }
+  async function shareExamCountdownImage() {
+    const target = $('#examCountdown'); const exam = homeExams[activeExam]; const button = $('#shareCountdownImage');
+    if (!target || !exam) return;
+    if (typeof window.html2canvas !== 'function') return toast('تعذر تجهيز صورة العداد الآن.');
+    const originalLabel = button?.querySelector('span')?.textContent || 'مشاركة صورة العداد';
+    if (button) { button.disabled = true; button.classList.add('is-loading'); const label = button.querySelector('span'); if (label) label.textContent = 'جارٍ تجهيز الصورة...'; }
+    try {
+      const canvas = await window.html2canvas(target, { backgroundColor: getComputedStyle(target).backgroundColor || '#0b1220', scale: Math.min(2, Math.max(1, window.devicePixelRatio || 1)), useCORS: true, logging: false });
+      const dataUrl = canvas.toDataURL('image/png');
+      const response = await fetch(dataUrl); const blob = await response.blob(); const file = new File([blob], 'nabd-countdown.png', { type: 'image/png' });
+      const title = `عداد ${exam.title}`; const text = `أستعد لـ ${exam.title} في منصة نبض التفوق. ${exam.note}`;
+      const nativeShare = capacitorPlugin('Share'); const filesystem = capacitorPlugin('Filesystem');
+      if (isNativeNabd() && nativeShare?.share && filesystem?.writeFile) {
+        const saved = await filesystem.writeFile({ path: `nabd-countdown-${Date.now()}.png`, data: dataUrl.split(',')[1], directory: 'CACHE', recursive: true });
+        if (saved?.uri) { await nativeShare.share({ title, text, files: [saved.uri], dialogTitle: 'مشاركة صورة العداد' }); return; }
+      }
+      if (navigator.canShare?.({ files: [file] }) && navigator.share) { await navigator.share({ title, text, files: [file] }); return; }
+      if (navigator.share) { await navigator.share({ title, text }); return; }
+      const download = document.createElement('a'); download.href = dataUrl; download.download = 'nabd-countdown.png'; download.click(); await navigator.clipboard?.writeText(text); toast('تم تنزيل صورة PNG ونسخ النص للمشاركة.');
+    } catch (error) { if (error?.name !== 'AbortError') toast('تعذر مشاركة صورة العداد حاليًا.'); }
+    finally { if (button) { button.disabled = false; button.classList.remove('is-loading'); const label = button.querySelector('span'); if (label) label.textContent = originalLabel; updateCountdownShareButton(); } }
+  }
+
   function setExam(key) {
     const exam = homeExams[key];
     if (!exam) return;
@@ -640,6 +669,7 @@
     $('#customCountdownButton')?.classList.toggle('hidden', key !== 'custom');
     $$('.exam-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.exam === key));
     updateCountdown();
+    updateCountdownShareButton();
   }
 
   function setExamCountdownCollapsed(collapsed, persist = true) {
@@ -674,6 +704,7 @@
     if (!$('#homeExamTitle')) return;
     $$('.exam-tab').forEach(tab => tab.addEventListener('click', () => setExam(tab.dataset.exam)));
     $('#customCountdownButton')?.addEventListener('click', () => openNamedModal('customCountdown'));
+    $('#shareCountdownImage')?.addEventListener('click', () => { void shareExamCountdownImage(); });
     const storedCollapsed = readStorage('exam_countdown_collapsed_v2', true);
     setExamCountdownCollapsed(Boolean(storedCollapsed), false);
     $('#examCountdownToggle')?.addEventListener('click', () => setExamCountdownCollapsed(!$('#examCountdownWrap')?.classList.contains('is-collapsed')));
