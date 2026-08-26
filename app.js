@@ -88,6 +88,7 @@
   let notificationsEventsBound = false;
   let adminStats = { total_users: 0, total_notifications: 0, total_news_posts: 0, total_news_comments: 0, open_support_threads: 0 };
   let adminNotifications = [];
+  let activeAdminTab = 'overview';
   let adminNewsActivity = [];
   let adminSupportThreads = [];
   const defaultCustomCountdown = { title: 'هدفي الخاص', target: new Date('2027-01-01T08:00:00').getTime() };
@@ -2305,10 +2306,35 @@
 
   async function initStudySchedule() { if (!$('#studyTasks')) return; await loadStudyTasks(); const note = $('#studyNativeNote'); if (note) note.innerHTML = isNativeNabd() && capacitorPlugin('LocalNotifications') ? '<i class="fa-solid fa-mobile-screen-button"></i><span>التذكيرات الأصلية متاحة داخل التطبيق.</span>' : '<i class="fa-solid fa-globe"></i><span>يعمل الجدول في المتصفح؛ الإشعار الأصلي يحتاج جسر التطبيق.</span>'; renderStudyTasks(); }
 
+  const ADMIN_TABS = new Set(['overview', 'notifications', 'news', 'support', 'users']);
+  function setAdminTab(tab) {
+    activeAdminTab = ADMIN_TABS.has(tab) ? tab : 'overview';
+    $$('#adminTabs [data-admin-tab]').forEach(button => {
+      const isActive = button.dataset.adminTab === activeAdminTab;
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-selected', String(isActive));
+      button.tabIndex = isActive ? 0 : -1;
+    });
+    $$('#adminWorkspace [data-admin-panel]').forEach(panel => {
+      const isActive = panel.dataset.adminPanel === activeAdminTab;
+      panel.classList.toggle('is-active', isActive);
+      panel.hidden = !isActive;
+    });
+  }
   function bindAdminDashboardControls() {
     if (adminControlsBound) return;
     adminControlsBound = true;
     $('#adminStudentSearch')?.addEventListener('input', event => renderAdminStudents(event.target.value));
+    $('#adminTabs')?.addEventListener('keydown', event => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      const tabs = [...$$('#adminTabs [data-admin-tab]')];
+      const current = tabs.indexOf(event.target.closest('[data-admin-tab]'));
+      if (current < 0) return;
+      event.preventDefault();
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowLeft' ? -1 : 1) + tabs.length) % tabs.length;
+      tabs[next]?.focus();
+      setAdminTab(tabs[next]?.dataset.adminTab);
+    });
   }
 
   async function initAdminDashboard() {
@@ -2332,11 +2358,14 @@
     showAdminWorkspace(true);
     renderAdminDashboard();
     bindAdminDashboardControls();
+    setAdminTab(activeAdminTab);
     void loadAdminUsers();
   }
 
   function bindEvents() {
     document.addEventListener('click', event => {
+      const adminTab = event.target.closest('[data-admin-tab]');
+      if (adminTab) { event.preventDefault(); setAdminTab(adminTab.dataset.adminTab); return; }
       if (event.target.closest('.close-modal') || event.target.id === 'modalBackdrop') closeModal();
       const modalButton = event.target.closest('[data-modal]');
       if (modalButton) openNamedModal(modalButton.dataset.modal);
