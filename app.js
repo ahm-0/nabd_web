@@ -2051,13 +2051,14 @@
   }
 
   async function sendAdminSupportReply(form) {
-    const ticket = adminSupportThreads.find(item => item.id === form.dataset.ticketId) || supportTickets.find(item => item.id === form.dataset.ticketId); const text = String($('[name="reply"]', form)?.value || '').trim(); if (!ticket || !text) return;
-    if (supabaseClient && currentAuthUser?.id && adminSupportThreads.some(item => item.id === form.dataset.ticketId)) {
-      const { error } = await supabaseClient.rpc('support_admin_reply', { p_thread_id: form.dataset.ticketId, p_body: text });
-      if (error) { console.warn('تعذر إرسال رد الدعم', error); toast('تعذر إرسال الرد الآن. حاول مجددًا.'); return; }
-      closeModal(); await loadAdminSupport(); const { data: stats } = await supabaseClient.rpc('admin_get_dashboard_stats'); if (stats) adminStats = { ...adminStats, ...stats }; renderAdminDashboard(); toast('تم إرسال الرد للطالب وحفظ المحادثة.'); return;
+    const ticketId = form.dataset.ticketId; const ticket = adminSupportThreads.find(item => item.id === ticketId) || supportTickets.find(item => item.id === ticketId); const text = String($('[name="reply"]', form)?.value || '').trim(); if (!ticket || !text) return;
+    const sendButton = $('button[type="submit"]', form); if (sendButton) sendButton.disabled = true;
+    if (supabaseClient && currentAuthUser?.id && adminSupportThreads.some(item => item.id === ticketId)) {
+      const { error } = await supabaseClient.rpc('support_admin_reply', { p_thread_id: ticketId, p_body: text });
+      if (error) { if (sendButton) sendButton.disabled = false; console.warn('تعذر إرسال رد الدعم', error); toast('تعذر إرسال الرد الآن. حاول مجددًا.'); return; }
+      await loadAdminSupport(); openSupportReply(ticketId); toast('تم إرسال الرد وحفظ المحادثة.'); return;
     }
-    const now = Date.now(); ticket.messages = [...supportThread(ticket), { id: `support-reply-${now}`, sender: 'admin', text, createdAt: now }]; ticket.status = 'resolved'; ticket.updatedAt = now; saveAdminState(); adminLog('support', `رد على رسالة الدعم: ${ticket.name}`, ticket.category); closeModal(); renderAdminDashboard(); toast('تم إرسال الرد للطالب وحفظ المحادثة.');
+    const now = Date.now(); ticket.messages = [...supportThread(ticket), { id: `support-reply-${now}`, sender: 'admin', text, createdAt: now }]; ticket.status = 'resolved'; ticket.updatedAt = now; saveAdminState(); adminLog('support', `رد على رسالة الدعم: ${ticket.name}`, ticket.category); openSupportReply(ticketId); toast('تم إرسال الرد وحفظ المحادثة.');
   }
 
   async function submitSupportRequest(form) {
