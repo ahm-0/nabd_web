@@ -42,15 +42,6 @@
     window.location.replace('auth.html');
   }
 
-  function addAuthControls() {
-    const host = $('.top-actions');
-    if (!host || $('#studentLogout')) return;
-    const button = document.createElement('button');
-    button.className = 'icon-button'; button.id = 'studentLogout'; button.title = 'تسجيل الخروج'; button.setAttribute('aria-label', 'تسجيل الخروج');
-    button.innerHTML = '<i class="fa-solid fa-arrow-right-from-bracket"></i>';
-    button.addEventListener('click', signOutStudent); host.appendChild(button);
-  }
-
 
   const defaultStudent = {
     first: '', father: '', last: '', phone: '', birth: '', city: 'دمشق', stage: 'بكالوريا علمي',
@@ -300,24 +291,8 @@
 
   function renderTopActions() {
     const actions = $('.top-actions');
-    if (!actions) return;
-    if (!$('#sidebarScrim')) document.body.insertAdjacentHTML('beforeend', '<button class="sidebar-scrim" id="sidebarScrim" type="button" aria-label="إغلاق القائمة الرئيسية" tabindex="-1"></button>');
-    if ($('#sharePlatform')) return;
-    actions.insertAdjacentHTML('afterbegin', '<button class="icon-button sidebar-toggle" id="sidebarToggle" type="button" title="القائمة الرئيسية" aria-label="فتح القائمة الرئيسية" aria-expanded="false"><i class="fa-solid fa-bars-staggered"></i></button><button class="icon-button share-platform" id="sharePlatform" type="button" title="مشاركة المنصة" aria-label="مشاركة المنصة"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>');
-  }
-
-  function toggleSidebar(force) {
-    const toggle = $('#sidebarToggle');
-    const mobile = window.matchMedia('(max-width: 980px)').matches;
-    if (mobile) {
-      const shouldOpen = typeof force === 'boolean' ? force : !document.body.classList.contains('sidebar-open');
-      document.body.classList.toggle('sidebar-open', shouldOpen);
-      if (toggle) { toggle.setAttribute('aria-expanded', String(shouldOpen)); toggle.setAttribute('aria-label', shouldOpen ? 'إغلاق القائمة الرئيسية' : 'فتح القائمة الرئيسية'); }
-      return;
-    }
-    const shouldCollapse = typeof force === 'boolean' ? !force : !document.body.classList.contains('sidebar-collapsed');
-    document.body.classList.toggle('sidebar-collapsed', shouldCollapse);
-    if (toggle) { toggle.setAttribute('aria-expanded', String(!shouldCollapse)); toggle.setAttribute('aria-label', shouldCollapse ? 'إظهار القائمة الجانبية' : 'إخفاء القائمة الجانبية'); }
+    if (!actions || $('#sharePlatform')) return;
+    actions.insertAdjacentHTML('afterbegin', '<button class="icon-button share-platform" id="sharePlatform" type="button" title="مشاركة المنصة" aria-label="مشاركة المنصة"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>');
   }
 
   async function sharePlatform() {
@@ -371,28 +346,6 @@
   }
 
   function renderShell() {
-    const sidebar = $('#desktopSidebar');
-    if (sidebar) {
-      const studentSubtitle = profileIncomplete()
-        ? 'أكمل بياناتك لتخصيص تجربتك'
-        : `${escapeHTML(student.stage)} · ${escapeHTML(student.city)}`;
-      sidebar.innerHTML = `
-        <div class="sidebar-brand"><img src="assets/nabd-logo.jpg" alt="شعار نبض التفوق" decoding="async"><div><b>نبض التفوق</b><span>مساحتك الدراسية اليومية</span></div></div>
-        <a class="sidebar-student sidebar-profile-panel" href="profile.html"><div class="sidebar-avatar-wrap">${avatarMarkup('sidebar-avatar')}<span class="online-ring"></span></div><div><strong>${escapeHTML(fullName())}${verifiedBadgeMarkup(student.verificationStatus === 'approved')}</strong><span>${studentSubtitle}</span></div><i class="fa-solid fa-chevron-left"></i></a>
-        <div class="sidebar-overview"><div><span>جاهزية الملف</span><b>${profileIncomplete() ? 'أكمل بياناتك' : 'جاهز للانطلاق'}</b></div><div class="sidebar-meter"><i style="width:${profileIncomplete() ? '38' : '82'}%"></i></div><small>${profileIncomplete() ? 'أكمل بيانات الملف لتخصيص تجربتك' : 'تم إعداد ملفك الدراسي'}</small></div>
-        <div class="sidebar-label">التنقل</div>
-        <nav class="side-nav sidebar-main-nav">
-          <a class="side-link ${PAGE === 'home' ? 'active' : ''}" href="index.html"><span class="nav-icon home-nav"><i class="fa-solid fa-house"></i></span><span>الرئيسية</span></a>
-          <a class="side-link ${PAGE === 'news' ? 'active' : ''}" href="news.html"><span class="nav-icon news-nav"><i class="fa-regular fa-newspaper"></i></span><span>مجتمع الأخبار</span><em>جديد</em></a>
-        </nav>
-        <div class="sidebar-label">التطبيق</div>
-        <nav class="side-nav compact sidebar-app-nav">
-          <a class="side-link ${PAGE === 'notifications' ? 'active' : ''}" href="notifications.html"><span class="nav-icon notify-nav"><i class="fa-regular fa-bell"></i></span><span>الإشعارات</span></a>
-          <a class="side-link ${PAGE === 'about' ? 'active' : ''}" href="about.html"><span class="nav-icon about-nav"><i class="fa-solid fa-circle-info"></i></span><span>عن المنصة</span></a>
-          <a class="side-link ${PAGE === 'privacy' ? 'active' : ''}" href="privacy.html"><span class="nav-icon lock-nav"><i class="fa-solid fa-lock"></i></span><span>الخصوصية والأمان</span></a>
-        </nav>
-        <a class="sidebar-edit-cta" href="settings.html"><i class="fa-solid fa-gear"></i><span>إعدادات التطبيق</span><i class="fa-solid fa-arrow-left"></i></a>`;
-    }
 
     const bottomNav = $('#bottomNav');
     if (bottomNav) {
@@ -2262,10 +2215,7 @@
       if (event.target.closest('#sharePlatform')) sharePlatform();
       const nativeChat = event.target.closest('[data-native-chat-url]');
       if (nativeChat) { event.preventDefault(); openNativeChatViewer(nativeChat.dataset.nativeChatUrl, nativeChat.dataset.nativeChatTitle); }
-      if (event.target.closest('#sidebarToggle')) toggleSidebar();
-      if (event.target.closest('#sidebarScrim')) toggleSidebar(false);
-      if (document.body.classList.contains('sidebar-open') && event.target.closest('.side-link, .sidebar-edit-cta')) toggleSidebar(false);
-      if (document.body.classList.contains('sidebar-open') && !event.target.closest('#desktopSidebar, #sidebarToggle')) toggleSidebar(false);
+      if (event.target.closest('#studentLogout')) { event.preventDefault(); void signOutStudent(); return; }
       if (event.target.closest('#profileThemeButton')) applyTheme(student.theme === 'dark' ? 'light' : 'dark');
       const themeChoice = event.target.closest('[data-theme-choice]');
       if (themeChoice) applyTheme(themeChoice.dataset.themeChoice);
@@ -2382,7 +2332,6 @@
 
   async function init() {
     // الخط الأول محلي بالكامل: لا تنتظر Supabase قبل إظهار القائمة أو ربط التفاعلات.
-    addAuthControls();
     nativeReady();
     enableScreenCapture();
     initMobileViewport();
@@ -2423,7 +2372,6 @@
     // الجلسة والملف الشخصي مزامنة خلفية؛ عند اكتمالها نحدّث العناصر دون إعادة حجب الصفحة.
     window.setTimeout(() => Promise.resolve().then(() => requireStudentSession()).then(ready => {
       if (!ready) return;
-      addAuthControls();
       updateProfileUI();
       syncAdminStudent(false);
       updateNotificationBadges();
