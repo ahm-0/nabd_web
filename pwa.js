@@ -5,12 +5,24 @@
   // يعمل قبل تهيئة التطبيق حتى لا تمنع نسخة HTML مخزنة التفاعل أو التمرير.
   const removeLegacyStartupLock = () => {
     document.getElementById('startupScreen')?.remove();
-    document.body?.classList.remove('startup-pending', 'sheet-open', 'sidebar-open');
+    document.body?.classList.remove('startup-pending');
     document.documentElement.classList.remove('startup-pending');
-    document.querySelectorAll('#modalBackdrop.show, .modal-backdrop.show').forEach(backdrop => backdrop.classList.remove('show'));
+    const visibleModal = document.querySelector('.modal-backdrop.show');
+    if (!visibleModal) document.body?.classList.remove('sheet-open');
   };
-  removeLegacyStartupLock();
-  window.addEventListener('DOMContentLoaded', removeLegacyStartupLock, { once: true });
+
+  const recoverInitialScrollState = () => {
+    const body = document.body;
+    if (!body) return;
+    removeLegacyStartupLock();
+    // تنظيف حالة قديمة محفوظة فقط عند بدء الصفحة أو استعادتها من bfcache.
+    body.classList.remove('sidebar-open');
+    if (!document.querySelector('.modal-backdrop.show')) body.classList.remove('sheet-open');
+  };
+
+  recoverInitialScrollState();
+  window.addEventListener('DOMContentLoaded', recoverInitialScrollState, { once: true });
+  window.addEventListener('pageshow', recoverInitialScrollState);
 
   const isEditableTarget = target => {
     if (!(target instanceof Element)) return false;
