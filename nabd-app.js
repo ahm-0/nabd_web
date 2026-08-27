@@ -2605,17 +2605,6 @@
     updateKeyboardOffset();
   }
 
-  function runStartupScreen() {
-    if (PAGE !== 'home') return;
-    const screen = $('#startupScreen'); if (!screen) return;
-    const bar = $('#startupProgressBar'); const value = $('#startupProgressValue'); const status = $('#startupStatus'); const steps = $$('.startup-loader-steps span', screen);
-    const states = [['جارٍ تجهيز مساحتك الدراسية', 12], ['نرتّب أدواتك', 45], ['نجهّز خطة الإنجاز', 76], ['كل شيء جاهز للانطلاق', 100]]; let progress = 12; let stateIndex = 0;
-    const paint = () => { if (bar) bar.style.width = `${progress}%`; if (value) value.textContent = `${progress}%`; steps.forEach((step, index) => step.classList.toggle('active', index <= Math.min(2, Math.floor(progress / 34)))); };
-    const timer = window.setInterval(() => { progress = Math.min(92, progress + (progress < 42 ? 7 : progress < 72 ? 5 : 3)); while (stateIndex < states.length - 1 && progress >= states[stateIndex + 1][1]) stateIndex += 1; if (status) status.textContent = states[stateIndex][0]; paint(); }, 115);
-    paint();
-    window.setTimeout(() => { window.clearInterval(timer); progress = 100; stateIndex = states.length - 1; if (status) status.textContent = states[stateIndex][0]; paint(); screen.classList.add('is-leaving'); document.body.classList.remove('startup-pending'); window.setTimeout(() => screen.remove(), 360); }, 1280);
-  }
-
   async function init() {
     // الخط الأول محلي بالكامل: لا تنتظر الخادم قبل إظهار القائمة أو ربط التفاعلات.
     nativeReady();
@@ -2628,7 +2617,6 @@
     updateProfileUI();
     syncAdminStudent(false);
     bindEvents();
-    runStartupScreen();
 
     const pageInitializers = {
       home: initHome,
