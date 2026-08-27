@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-08-27-02';
+const CACHE_VERSION = '2026-08-27-03';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -47,15 +47,15 @@ const APP_SHELL = [
   './university-majors.html',
   './premium.html',
   './premium-admin.html',
-  './styles.css',
+  './nabd-ui.css',
   './exam-countdown-share.css',
   './vendor/html2canvas/html2canvas.min.js',
   './curriculum-cards.css',
   './channels.css',
   './notifications.css',
-  './admin-ui.css',
+  './nabd-admin-ui.css',
   './premium.css',
-  './app.js',
+  './nabd-app.js',
   './auth.js',
   './premium.js',
   './premium-admin.js',
