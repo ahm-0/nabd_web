@@ -1,6 +1,17 @@
 (() => {
   'use strict';
 
+  // تنظيف توافقـي مبكر لإصدارات قديمة من شاشة الترحيب وقفل التمرير.
+  // يعمل قبل تهيئة التطبيق حتى لا تمنع نسخة HTML مخزنة التفاعل أو التمرير.
+  const removeLegacyStartupLock = () => {
+    document.getElementById('startupScreen')?.remove();
+    document.body?.classList.remove('startup-pending', 'sheet-open', 'sidebar-open');
+    document.documentElement.classList.remove('startup-pending');
+    document.querySelectorAll('#modalBackdrop.show, .modal-backdrop.show').forEach(backdrop => backdrop.classList.remove('show'));
+  };
+  removeLegacyStartupLock();
+  window.addEventListener('DOMContentLoaded', removeLegacyStartupLock, { once: true });
+
   const isEditableTarget = target => {
     if (!(target instanceof Element)) return false;
     return Boolean(target.closest('input, textarea, select, [contenteditable="true"], [contenteditable="plaintext-only"]'));
