@@ -23,21 +23,43 @@
     </header>
 
     <div class="layout"><main class="main-content">
-      <div class="profile-social">
-        <header class="profile-appbar"><div><span class="eyebrow"><i class="fa-regular fa-user"></i> حسابي</span><h2>ملفي الشخصي</h2><p>مساحتك الخاصة في نبض التفوق</p></div><div class="profile-appbar-actions"><button class="icon-button" id="openEditProfile" title="تعديل الملف" aria-label="تعديل الملف"><i class="fa-solid fa-pen"></i></button></div></header>
+      <div class="profile-social profile-mobile-shell">
+        <header class="profile-appbar profile-mobile-appbar"><div class="profile-appbar-copy"><span class="eyebrow"><i class="fa-regular fa-user"></i> مساحتي</span><h2>ملفي الشخصي</h2><p>كل ما يخص رحلتك الدراسية في مكان واحد</p></div><div class="profile-appbar-actions"><a class="icon-button profile-home-button" href="index.html" title="الرئيسية" aria-label="العودة إلى الرئيسية"><i class="fa-solid fa-house"></i></a><button class="icon-button" id="openEditProfile" title="تعديل الملف" aria-label="تعديل الملف"><i class="fa-solid fa-pen"></i></button></div></header>
 
-        <section class="profile-card panel">
-          <div class="profile-card-glow"></div>
-          <div class="profile-identity"><div class="avatar-wrap"><div class="profile-avatar" id="profileAvatar">ن</div><label for="avatarInput" class="avatar-edit" title="تعديل الصورة"><i class="fa-solid fa-camera"></i></label><input class="hidden" id="avatarInput" type="file" accept="image/*"></div><div class="profile-title"><span class="profile-status"><i class="fa-solid fa-circle"></i> حسابك الدراسي</span><h2 id="profileName">الطالب</h2><p id="profileHandle">@nabd_student</p><span class="profile-stage" id="profileStage"><i class="fa-solid fa-graduation-cap"></i> المرحلة الدراسية</span></div></div>
-          <div class="profile-stats"><a href="news.html"><b id="profilePosts">0</b><span>منشورات</span></a><a href="time-organizer.html"><b id="profileActiveTasks">0</b><span>مهام نشطة</span></a><a href="grade-calculator.html"><b id="profileStudyAverage">—</b><span>معدلي</span></a></div>
+        <section class="profile-card panel profile-hero-card">
+          <span class="profile-hero-orbit orbit-one"></span><span class="profile-hero-orbit orbit-two"></span>
+          <div class="profile-hero-topline"><span class="profile-live-pill"><i class="fa-solid fa-circle"></i> حساب نشط</span><span class="profile-hero-label"><i class="fa-solid fa-sparkles"></i> نبض التفوق</span></div>
+          <div class="profile-identity">
+            <div class="avatar-wrap profile-avatar-wrap"><div class="profile-avatar" id="profileAvatar">ن</div><label for="avatarInput" class="avatar-edit" title="تعديل الصورة"><i class="fa-solid fa-camera"></i></label><input class="hidden" id="avatarInput" type="file" accept="image/*"></div>
+            <div class="profile-title"><span class="profile-status"><i class="fa-solid fa-graduation-cap"></i> رحلتك التعليمية</span><h2 id="profileName">الطالب</h2><p id="profileHandle">@nabd_student</p><span class="profile-stage" id="profileStage"><i class="fa-solid fa-book-open"></i> المرحلة الدراسية</span></div>
+          </div>
           <p class="profile-bio" id="profileBio">أضف نبذة بسيطة لتظهر في مجتمع الأخبار.</p>
           <button class="profile-completion hidden" id="completeProfile"><i class="fa-solid fa-sparkles"></i><span><b>أكمل بيانات ملفك الشخصي</b><small>أضف الاسم ورقم الهاتف والمعلومات الأساسية لتخصيص التطبيق.</small></span><i class="fa-solid fa-arrow-left"></i></button>
-          <div class="profile-actions"><button class="primary-button" id="editProfileSmall"><i class="fa-solid fa-pen"></i> تعديل الملف</button><a class="outline-button" href="settings.html"><i class="fa-solid fa-gear"></i> الإعدادات</a><a class="outline-button profile-support-chat" href="support-chat.html"><i class="fa-regular fa-comment-dots"></i> تواصل مع الدعم</a><button class="outline-button profile-logout-button" id="studentLogout" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج</button><a class="outline-button admin-portal-shortcut hidden" id="adminPortalShortcut" href="admin-dashboard.html"><i class="fa-solid fa-shield-halved"></i> بوابة الإشراف</a></div>
+          <div class="profile-hero-actions"><button class="primary-button" id="editProfileSmall"><i class="fa-solid fa-pen"></i> تعديل الملف</button><a class="profile-ghost-button" href="settings.html"><i class="fa-solid fa-gear"></i><span>الإعدادات</span><i class="fa-solid fa-chevron-left"></i></a></div>
         </section>
 
-        <section class="profile-data panel"><header class="profile-section-head"><div><span class="eyebrow">بيانات الحساب</span><h3 class="section-title"><i class="fa-regular fa-id-card"></i> معلومات الطالب</h3></div><button class="icon-button" id="profileDataUpdate" type="button" title="تعديل البيانات" aria-label="تعديل البيانات"><i class="fa-solid fa-pen"></i></button></header><div class="info-row"><span><i class="fa-solid fa-user"></i> الاسم الكامل</span><b id="profileNameData">—</b></div><div class="info-row"><span><i class="fa-solid fa-user-tie"></i> اسم الأب</span><b id="profileFather">—</b></div><div class="info-row"><span><i class="fa-solid fa-graduation-cap"></i> المرحلة الدراسية</span><b id="profileStageData">—</b></div><div class="info-row"><span><i class="fa-solid fa-envelope"></i> البريد الإلكتروني</span><b id="profileEmail">—</b></div><div class="info-row"><span><i class="fa-solid fa-phone"></i> رقم الهاتف</span><b id="profilePhone">—</b></div><div class="info-row"><span><i class="fa-solid fa-location-dot"></i> المنطقة</span><b id="profileCity">—</b></div><div class="info-row"><span><i class="fa-solid fa-cake-candles"></i> تاريخ الميلاد</span><b id="profileBirth">—</b></div></section>
+        <section class="profile-stats profile-stat-cards" aria-label="ملخص النشاط الدراسي">
+          <a class="profile-stat-card stat-news" href="news.html"><span class="profile-stat-icon"><i class="fa-regular fa-newspaper"></i></span><span><b id="profilePosts">0</b><small>منشوراتي</small></span><i class="fa-solid fa-arrow-left"></i></a>
+          <a class="profile-stat-card stat-tasks" href="time-organizer.html"><span class="profile-stat-icon"><i class="fa-solid fa-list-check"></i></span><span><b id="profileActiveTasks">0</b><small>مهام نشطة</small></span><i class="fa-solid fa-arrow-left"></i></a>
+          <a class="profile-stat-card stat-grade" href="grade-calculator.html"><span class="profile-stat-icon"><i class="fa-solid fa-chart-line"></i></span><span><b id="profileStudyAverage">—</b><small>متوسط الدرجات</small></span><i class="fa-solid fa-arrow-left"></i></a>
+        </section>
 
-        <section class="profile-settings-shortcut panel"><a href="settings.html"><span class="setting-icon"><i class="fa-solid fa-gear"></i></span><span><b>الإعدادات والخصوصية</b><small>المظهر والإشعارات والخصوصية والدعم</small></span><i class="fa-solid fa-angle-left"></i></a></section>
+        <section class="profile-quick-actions" aria-labelledby="profileQuickTitle">
+          <header class="profile-section-heading"><div><span>وصول سريع</span><h3 id="profileQuickTitle">ماذا تريد أن تفعل؟</h3></div><i class="fa-solid fa-wand-magic-sparkles"></i></header>
+          <div class="profile-quick-grid">
+            <a class="profile-quick-card quick-schedule" href="time-organizer.html"><span><i class="fa-solid fa-calendar-days"></i></span><b>نظّم يومك</b><small>خطط لمهامك</small></a>
+            <a class="profile-quick-card quick-library" href="library.html"><span><i class="fa-solid fa-book-open"></i></span><b>المكتبة</b><small>مواردك الدراسية</small></a>
+            <a class="profile-quick-card quick-exams" href="tests.html"><span><i class="fa-solid fa-clipboard-check"></i></span><b>اختبر نفسك</b><small>تدرب وتقدم</small></a>
+            <a class="profile-quick-card quick-saved" href="saved-items.html"><span><i class="fa-solid fa-bookmark"></i></span><b>المحفوظات</b><small>عد إلى ما حفظت</small></a>
+          </div>
+        </section>
+
+        <section class="profile-data panel profile-details-card">
+          <header class="profile-section-head profile-section-heading"><div><span>بيانات الحساب</span><h3 class="section-title"><i class="fa-regular fa-id-card"></i> معلومات الطالب</h3></div><div class="profile-details-tools"><button class="profile-details-toggle" id="profileDetailsToggle" type="button" aria-expanded="false"><span>عرض</span><i class="fa-solid fa-chevron-down"></i></button><button class="icon-button" id="profileDataUpdate" type="button" title="تعديل البيانات" aria-label="تعديل البيانات"><i class="fa-solid fa-pen"></i></button></div></header>
+          <div class="profile-details-body" id="profileDetailsBody"><div class="info-row"><span><i class="fa-solid fa-user"></i> الاسم الكامل</span><b id="profileNameData">—</b></div><div class="info-row"><span><i class="fa-solid fa-user-tie"></i> اسم الأب</span><b id="profileFather">—</b></div><div class="info-row"><span><i class="fa-solid fa-graduation-cap"></i> المرحلة الدراسية</span><b id="profileStageData">—</b></div><div class="info-row"><span><i class="fa-solid fa-envelope"></i> البريد الإلكتروني</span><b id="profileEmail">—</b></div><div class="info-row"><span><i class="fa-solid fa-phone"></i> رقم الهاتف</span><b id="profilePhone">—</b></div><div class="info-row"><span><i class="fa-solid fa-location-dot"></i> المنطقة</span><b id="profileCity">—</b></div><div class="info-row"><span><i class="fa-solid fa-cake-candles"></i> تاريخ الميلاد</span><b id="profileBirth">—</b></div></div>
+        </section>
+
+        <a class="profile-settings-shortcut panel" href="settings.html"><span class="setting-icon"><i class="fa-solid fa-sliders"></i></span><span><b>إعدادات الحساب والتجربة</b><small>المظهر والإشعارات والخصوصية والدعم</small></span><i class="fa-solid fa-angle-left"></i></a>
       </div>
     </main></div>
   </div>

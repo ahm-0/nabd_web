@@ -2568,6 +2568,15 @@
       reader.onload = () => { student.avatar = reader.result; saveState(); syncAdminStudent(true); updateProfileUI(); renderAdminDashboard(); toast('تم تحديث صورة الملف الشخصي.'); };
       reader.readAsDataURL(file);
     });
+    $('#profileDetailsToggle')?.addEventListener('click', event => {
+      const button = event.currentTarget;
+      const body = $('#profileDetailsBody');
+      const expanded = button.getAttribute('aria-expanded') === 'true';
+      button.setAttribute('aria-expanded', String(!expanded));
+      body?.classList.toggle('is-open', !expanded);
+      const label = $('span', button);
+      if (label) label.textContent = expanded ? 'عرض' : 'إخفاء';
+    });
     $('#themeSwitch')?.addEventListener('change', event => applyTheme(event.target.checked ? 'dark' : 'light'));
     $('#motionSwitch')?.addEventListener('change', event => { applyMotion(event.target.checked); toast(event.target.checked ? 'تم تفعيل الحركات الخفيفة.' : 'تم تقليل الحركات والتأثيرات.'); });
     $('#notificationsSwitch')?.addEventListener('change', event => { student.notifications = event.target.checked; saveState(); toast(event.target.checked ? 'تم تفعيل الإشعارات.' : 'تم إيقاف الإشعارات.'); });
