@@ -2282,6 +2282,27 @@
     renderAdminNotifications();
     renderAdminNewsActivity();
     renderAdminSupport();
+    renderAdminAnalytics();
+  }
+
+  function renderAdminAnalytics() {
+    const users = Array.isArray(adminUsers) ? adminUsers : [];
+    const buckets = (values, fallback = 'غير محدد') => { const map = new Map(); values.forEach(value => { const key = String(value || fallback).trim() || fallback; map.set(key, (map.get(key) || 0) + 1); }); return [...map.entries()].sort((a, b) => b[1] - a[1]); };
+    const field = (user, keys) => keys.map(key => user?.[key]).find(value => value !== undefined && value !== null && String(value).trim() !== '');
+    const gender = value => { const text = String(value || '').toLocaleLowerCase('ar'); if (/ذكر|male|man|boy/.test(text)) return 'ذكور'; if (/أنثى|انثى|female|woman|girl/.test(text)) return 'إناث'; return 'غير محدد'; };
+    const stage = value => { const text = String(value || '').trim(); if (/بكالوريا|بكلوريا|ثانوي|علمي|أدبي|ادبي/i.test(text)) return text.includes('أدبي') || text.includes('ادبي') ? 'بكالوريا أدبي' : text.includes('علمي') ? 'بكالوريا علمي' : 'بكالوريا'; if (/تاسع|أساسي|اساسي|إعدادي|اعدادي/i.test(text)) return 'التاسع'; if (/جامعة|جامع/i.test(text)) return 'جامعة'; if (/معهد/i.test(text)) return 'معهد'; return text || 'غير محدد'; };
+    const groups = {
+      gender: buckets(users.map(user => gender(field(user, ['gender', 'sex', 'gender_label'])))),
+      regions: buckets(users.map(user => field(user, ['governorate', 'province', 'city', 'region', 'area', 'location']))).slice(0, 8),
+      stages: buckets(users.map(user => stage(field(user, ['stage', 'education_stage', 'study_stage', 'school_stage']))))
+    };
+    const usageValues = users.map(user => Number(field(user, ['daily_usage_hours', 'usage_hours', 'app_usage_hours', 'dailyHours']))).filter(Number.isFinite);
+    if (usageValues.length) groups.usage = buckets(usageValues.map(hours => hours < 1 ? 'أقل من ساعة' : hours < 2 ? '1–2 ساعة' : hours < 4 ? '2–4 ساعات' : 'أكثر من 4 ساعات'));
+    const render = (id, entries, empty = 'لا تتوفر بيانات كافية') => { const holder = $('#' + id); if (!holder) return; if (!entries?.length || (entries.length === 1 && entries[0][0] === 'غير محدد')) { holder.innerHTML = `<p class="admin-analytics-empty">${empty}</p>`; return; } const max = Math.max(...entries.map(item => item[1]), 1); const total = entries.reduce((sum, item) => sum + item[1], 0); holder.innerHTML = entries.map(([label, count]) => { const percent = Math.round((count / total) * 100); const width = Math.max(8, Math.round((count / max) * 100)); return `<div class="admin-bar-row"><div class="admin-bar-label"><span>${escapeHTML(label)}</span><b>${count} <small>${percent}%</small></b></div><div class="admin-bar-track"><i style="--bar-width:${width}%"></i></div></div>`; }).join(''); };
+    render('adminAnalyticsGender', groups.gender);
+    render('adminAnalyticsRegions', groups.regions);
+    render('adminAnalyticsStages', groups.stages);
+    render('adminAnalyticsUsage', groups.usage, 'لا تصل مدة الاستخدام اليومية من مصدر بيانات المستخدمين الحالي.');
   }
 
   function renderAdminStudents(query = '') {
