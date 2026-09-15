@@ -7,7 +7,7 @@
   <title>نبض التفوق | الإعدادات</title>
   <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script>
   <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="nabd-ui.css?v=20260827-scroll-fix">
+  <link rel="stylesheet" href="nabd-ui.css?v=20260915-profile-refresh">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <meta name="mobile-web-app-capable" content="yes">
@@ -52,17 +52,13 @@
         <header><span class="settings-section-symbol notification"><i class="fa-regular fa-bell"></i></span><div><span>تنظيم اليوم</span><h3 id="settingsNotificationTitle">الإشعارات والتذكير</h3></div></header>
         <div class="settings-studio-card panel">
           <label class="settings-studio-row settings-switch-row"><span class="settings-row-icon amber"><i class="fa-regular fa-bell"></i></span><span><b>تنبيهات التطبيق</b><small>أخبار الدراسة وتذكيرات المهام</small></span><input id="notificationsSwitch" class="switch" type="checkbox"></label>
-          <a class="settings-studio-row" href="notifications.html"><span class="settings-row-icon blue"><i class="fa-regular fa-clock"></i></span><span><b>إشعاراتي</b><small>عرض جميع التنبيهات المحفوظة</small></span><i class="fa-solid fa-chevron-left"></i></a>
-          <a class="settings-studio-row" href="time-organizer.html"><span class="settings-row-icon mint"><i class="fa-solid fa-calendar-check"></i></span><span><b>تذكيرات الدراسة</b><small>إدارة مواعيد المهام داخل الجدول الدراسي</small></span><i class="fa-solid fa-chevron-left"></i></a>
         </div>
       </section>
 
       <section class="settings-studio-section" aria-labelledby="settingsSupportTitle">
         <header><span class="settings-section-symbol support"><i class="fa-solid fa-headset"></i></span><div><span>نحن معك</span><h3 id="settingsSupportTitle">الدعم والمساعدة</h3></div></header>
         <div class="settings-studio-card panel">
-          <button class="settings-studio-row" type="button" data-modal="appGuide"><span class="settings-row-icon blue"><i class="fa-regular fa-circle-question"></i></span><span><b>مركز المساعدة</b><small>دليل الخدمات والأسئلة الشائعة</small></span><i class="fa-solid fa-chevron-left"></i></button>
           <a class="settings-studio-row" href="support-chat.html"><span class="settings-row-icon mint"><i class="fa-regular fa-comment-dots"></i></span><span><b>تواصل مع الدعم</b><small>أرسل استفسارك وتابع الرد داخل المحادثة</small></span><i class="fa-solid fa-chevron-left"></i></a>
-          <button class="settings-studio-row" type="button" data-modal="contribute"><span class="settings-row-icon coral"><i class="fa-solid fa-bug"></i></span><span><b>الإبلاغ عن مشكلة</b><small>ساعدنا على تحسين تجربة التطبيق</small></span><i class="fa-solid fa-chevron-left"></i></button>
         </div>
       </section>
 
@@ -88,6 +84,6 @@
     </main></div>
   </div>
   <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div>
-  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="nabd-app.js?v=20260827-scroll-fix"></script>
+  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="nabd-app.js?v=20260915-profile-refresh"></script>
 </body>
 </html>

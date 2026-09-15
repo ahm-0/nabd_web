@@ -7,7 +7,7 @@
   <title>نبض التفوق | ملفي الشخصي</title>
   <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script>
   <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="nabd-ui.css?v=20260827-scroll-fix">
+  <link rel="stylesheet" href="nabd-ui.css?v=20260915-profile-refresh">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <meta name="mobile-web-app-capable" content="yes">
@@ -44,16 +44,6 @@
           <a class="profile-stat-card stat-grade" href="grade-calculator.html"><span class="profile-stat-icon"><i class="fa-solid fa-chart-line"></i></span><span><b id="profileStudyAverage">—</b><small>متوسط الدرجات</small></span><i class="fa-solid fa-arrow-left"></i></a>
         </section>
 
-        <section class="profile-quick-actions" aria-labelledby="profileQuickTitle">
-          <header class="profile-section-heading"><div><span>وصول سريع</span><h3 id="profileQuickTitle">ماذا تريد أن تفعل؟</h3></div><i class="fa-solid fa-wand-magic-sparkles"></i></header>
-          <div class="profile-quick-grid">
-            <a class="profile-quick-card quick-schedule" href="time-organizer.html"><span><i class="fa-solid fa-calendar-days"></i></span><b>نظّم يومك</b><small>خطط لمهامك</small></a>
-            <a class="profile-quick-card quick-library" href="library.html"><span><i class="fa-solid fa-book-open"></i></span><b>المكتبة</b><small>مواردك الدراسية</small></a>
-            <a class="profile-quick-card quick-exams" href="tests.html"><span><i class="fa-solid fa-clipboard-check"></i></span><b>اختبر نفسك</b><small>تدرب وتقدم</small></a>
-            <a class="profile-quick-card quick-saved" href="saved-items.html"><span><i class="fa-solid fa-bookmark"></i></span><b>المحفوظات</b><small>عد إلى ما حفظت</small></a>
-          </div>
-        </section>
-
         <section class="profile-data panel profile-details-card">
           <header class="profile-section-head profile-section-heading"><div><span>بيانات الحساب</span><h3 class="section-title"><i class="fa-regular fa-id-card"></i> معلومات الطالب</h3></div><div class="profile-details-tools"><button class="profile-details-toggle" id="profileDetailsToggle" type="button" aria-expanded="false"><span>عرض</span><i class="fa-solid fa-chevron-down"></i></button><button class="icon-button" id="profileDataUpdate" type="button" title="تعديل البيانات" aria-label="تعديل البيانات"><i class="fa-solid fa-pen"></i></button></div></header>
           <div class="profile-details-body" id="profileDetailsBody"><div class="info-row"><span><i class="fa-solid fa-user"></i> الاسم الكامل</span><b id="profileNameData">—</b></div><div class="info-row"><span><i class="fa-solid fa-user-tie"></i> اسم الأب</span><b id="profileFather">—</b></div><div class="info-row"><span><i class="fa-solid fa-graduation-cap"></i> المرحلة الدراسية</span><b id="profileStageData">—</b></div><div class="info-row"><span><i class="fa-solid fa-envelope"></i> البريد الإلكتروني</span><b id="profileEmail">—</b></div><div class="info-row"><span><i class="fa-solid fa-phone"></i> رقم الهاتف</span><b id="profilePhone">—</b></div><div class="info-row"><span><i class="fa-solid fa-location-dot"></i> المنطقة</span><b id="profileCity">—</b></div><div class="info-row"><span><i class="fa-solid fa-cake-candles"></i> تاريخ الميلاد</span><b id="profileBirth">—</b></div></div>
@@ -66,6 +56,6 @@
   <nav class="bottom-nav" id="bottomNav"></nav>
   <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div>
   <div class="toast" id="toast"></div>
-  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="nabd-app.js?v=20260827-scroll-fix"></script>
+  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="nabd-app.js?v=20260915-profile-refresh"></script>
 </body>
 </html>
