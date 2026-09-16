@@ -23,9 +23,11 @@
     }
     if (lastError || !session) { window.location.replace('auth.html'); return false; }
     currentAuthUser = session.user;
-    const { data: profile, error: profileError } = await supabaseClient.from('student_profiles').select('user_id,first_name,father_name,family_name,study_stage,email,avatar_url,bio').eq('user_id', currentAuthUser.id).maybeSingle();
+    const expandedSelect = 'user_id,first_name,father_name,family_name,study_stage,province,governorate,email,avatar_url,bio,daily_usage_minutes,usage_day,last_usage_at';
+    let { data: profile, error: profileError } = await supabaseClient.from('student_profiles').select(expandedSelect).eq('user_id', currentAuthUser.id).maybeSingle();
+    if (profileError) ({ data: profile, error: profileError } = await supabaseClient.from('student_profiles').select('user_id,first_name,father_name,family_name,study_stage,email,avatar_url,bio').eq('user_id', currentAuthUser.id).maybeSingle());
     if (!profileError && profile) {
-      student = { ...student, first: profile.first_name || student.first, father: profile.father_name || student.father, last: profile.family_name || student.last, stage: profile.study_stage || student.stage, bio: profile.bio || student.bio, avatar: profile.avatar_url || student.avatar };
+      student = { ...student, first: profile.first_name || student.first, father: profile.father_name || student.father, last: profile.family_name || student.last, stage: profile.study_stage || student.stage, province: profile.province || profile.governorate || student.province, bio: profile.bio || student.bio, avatar: profile.avatar_url || student.avatar, dailyUsageMinutes: Number.isFinite(Number(profile.daily_usage_minutes)) ? Number(profile.daily_usage_minutes) : student.dailyUsageMinutes, usageDay: profile.usage_day || student.usageDay, lastUsageAt: profile.last_usage_at || student.lastUsageAt };
       saveState();
     }
     return true;
@@ -33,7 +35,12 @@
 
   async function persistStudentProfile() {
     if (!supabaseClient || !currentAuthUser) return;
-    const { error } = await supabaseClient.from('student_profiles').upsert({ user_id: currentAuthUser.id, first_name: student.first, father_name: student.father || '', family_name: student.last, study_stage: student.stage, email: currentAuthUser.email, avatar_url: student.avatar || null, bio: student.bio || '' }, { onConflict: 'user_id' });
+    const profile = { user_id: currentAuthUser.id, first_name: student.first, father_name: student.father || '', family_name: student.last, study_stage: student.stage, province: student.province || '', email: currentAuthUser.email, avatar_url: student.avatar || null, bio: student.bio || '', daily_usage_minutes: Number(student.dailyUsageMinutes || 0), usage_day: student.usageDay || localUsageDay(), last_usage_at: student.lastUsageAt || new Date().toISOString() };
+    let { error } = await supabaseClient.from('student_profiles').upsert(profile, { onConflict: 'user_id' });
+    if (error) {
+      const legacy = { user_id: currentAuthUser.id, first_name: student.first, father_name: student.father || '', family_name: student.last, study_stage: student.stage, email: currentAuthUser.email, avatar_url: student.avatar || null, bio: student.bio || '' };
+      ({ error } = await supabaseClient.from('student_profiles').upsert(legacy, { onConflict: 'user_id' }));
+    }
     if (error) console.warn('تعذر مزامنة ملف الطالب مع الخادم', error);
   }
 
@@ -44,10 +51,33 @@
 
 
   const defaultStudent = {
-    first: '', father: '', last: '', phone: '', birth: '', city: 'دمشق', stage: 'بكالوريا علمي',
+    first: '', father: '', last: '', phone: '', birth: '', city: 'دمشق', province: 'دمشق', stage: 'بكالوريا علمي',
     bio: 'طالب في منصة نبض التفوق، أعمل على تنظيم رحلتي الدراسية والوصول إلى أهدافي.',
-    avatar: '', notifications: true, theme: 'dark', motion: true, studentId: '', gender: '', verificationRequested: false, verificationStatus: ''
+    avatar: '', notifications: true, theme: 'dark', motion: true, studentId: '', gender: '', verificationRequested: false, verificationStatus: '', dailyUsageMinutes: 0, usageDay: '', lastUsageAt: ''
   };
+
+  function localUsageDay(date = new Date()) { return date.toISOString().slice(0, 10); }
+  let usageTimer = null;
+  let usagePersistCounter = 0;
+  function recordUsagePulse(force = false) {
+    if (!currentAuthUser) return;
+    const today = localUsageDay();
+    if (student.usageDay !== today) { student.usageDay = today; student.dailyUsageMinutes = 0; }
+    const now = Date.now();
+    const previous = Number(student.lastUsageAt ? new Date(student.lastUsageAt).getTime() : now);
+    const elapsed = Math.max(0, Math.min(5, (now - previous) / 60000));
+    if (elapsed >= 0.5 || force) { student.dailyUsageMinutes = Math.max(0, Number(student.dailyUsageMinutes || 0) + (elapsed >= 0.5 ? elapsed : 0)); student.lastUsageAt = new Date(now).toISOString(); saveState(); }
+    usagePersistCounter += 1;
+    if (force || usagePersistCounter >= 5) { usagePersistCounter = 0; void persistStudentProfile(); }
+  }
+  function startUsageTracking() {
+    if (usageTimer) return;
+    student.usageDay = student.usageDay || localUsageDay();
+    student.lastUsageAt = student.lastUsageAt || new Date().toISOString();
+    usageTimer = window.setInterval(() => { if (document.visibilityState === 'visible') recordUsagePulse(false); }, 60000);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') recordUsagePulse(true); });
+    window.addEventListener('pagehide', () => recordUsagePulse(true), { once: true });
+  }
 
   function readStorage(key, fallback) {
     const raw = localStorage.getItem(STORE + key) ?? localStorage.getItem(LEGACY_STORE + key);
@@ -217,10 +247,14 @@
       name: fullName(),
       phone: student.phone || '—',
       city: student.city || '—',
+      province: student.province || student.city || '—',
       gender: student.gender || '',
       stage: student.stage || '—',
       birth: student.birth || '',
       avatar: student.avatar || '',
+      daily_usage_minutes: Number(student.dailyUsageMinutes || 0),
+      usage_day: student.usageDay || localUsageDay(),
+      last_usage_at: student.lastUsageAt || '',
       verificationStatus: student.verificationStatus || '',
       updatedAt: Date.now()
     };
@@ -601,8 +635,9 @@
           <div class="form-group"><label>رقم الهاتف</label><input name="phone" type="tel" inputmode="tel" maxlength="20" value="${escapeHTML(student.phone)}"></div>
           <div class="form-group"><label>تاريخ الميلاد</label><input name="birth" type="date" value="${escapeHTML(student.birth)}"></div>
           <div class="form-group"><label>المنطقة</label><input name="city" maxlength="40" value="${escapeHTML(student.city)}"></div>
+          <div class="form-group"><label>المحافظة</label><select name="province"><option value="">اختر المحافظة</option>${['دمشق','ريف دمشق','حلب','حمص','حماة','اللاذقية','طرطوس','إدلب','الرقة','دير الزور','الحسكة','درعا','السويداء','القنيطرة'].map(province => `<option value="${escapeHTML(province)}" ${student.province === province ? 'selected' : ''}>${escapeHTML(province)}</option>`).join('')}</select></div>
           <div class="form-group"><label>الجنس</label><select name="gender"><option value="" ${!student.gender ? 'selected' : ''}>أفضل عدم التحديد</option><option value="ذكر" ${student.gender === 'ذكر' ? 'selected' : ''}>ذكر</option><option value="أنثى" ${student.gender === 'أنثى' ? 'selected' : ''}>أنثى</option></select></div>
-          <div class="form-group"><label>المرحلة الدراسية</label><select name="stage"><option ${student.stage === 'بكالوريا علمي' ? 'selected' : ''}>بكالوريا علمي</option><option ${student.stage === 'بكالوريا أدبي' ? 'selected' : ''}>بكالوريا أدبي</option><option ${student.stage === 'التاسع' || student.stage === 'التاسع الأساسي' ? 'selected' : ''}>التاسع</option><option ${student.stage === 'ثانوي' ? 'selected' : ''}>ثانوي</option><option ${student.stage === 'جامعة' || student.stage === 'مرحلة جامعية' ? 'selected' : ''}>مرحلة جامعية</option><option ${student.stage === 'معهد' ? 'selected' : ''}>معهد</option></select></div>
+          <div class="form-group"><label>المرحلة الدراسية</label><select name="stage"><option value="بكالوريا علمي" ${student.stage === 'بكالوريا علمي' ? 'selected' : ''}>بكالوريا علمي</option><option value="بكالوريا أدبي" ${student.stage === 'بكالوريا أدبي' ? 'selected' : ''}>بكالوريا أدبي</option><option value="التاسع" ${student.stage === 'التاسع' || student.stage === 'التاسع الأساسي' ? 'selected' : ''}>التاسع</option><option value="ثانوي" ${student.stage === 'ثانوي' ? 'selected' : ''}>ثانوي</option><option value="جامعة" ${student.stage === 'جامعة' || student.stage === 'مرحلة جامعية' ? 'selected' : ''}>جامعة</option><option value="معهد" ${student.stage === 'معهد' ? 'selected' : ''}>معهد</option></select></div>
           <div class="form-group full"><label>السيرة الذاتية</label><textarea name="bio" maxlength="240">${escapeHTML(student.bio)}</textarea></div>
         </div><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">حفظ التغييرات</button></div></form>`,
       customCountdown: `<div class="modal-head"><h3>ضبط العداد المخصص</h3><button class="close-modal" aria-label="إغلاق">×</button></div>
@@ -2028,7 +2063,7 @@
 
   async function handleProfileSave(form) {
     const data = Object.fromEntries(new FormData(form).entries());
-    student = { ...student, ...data, first: String(data.first || '').trim(), father: String(data.father || '').trim(), last: String(data.last || '').trim(), phone: String(data.phone || '').trim(), city: String(data.city || '').trim(), bio: String(data.bio || '').trim() || defaultStudent.bio };
+    student = { ...student, ...data, first: String(data.first || '').trim(), father: String(data.father || '').trim(), last: String(data.last || '').trim(), phone: String(data.phone || '').trim(), city: String(data.city || '').trim(), province: String(data.province || '').trim() || student.province || 'دمشق', stage: String(data.stage || '').trim() || defaultStudent.stage, bio: String(data.bio || '').trim() || defaultStudent.bio };
     saveState();
     await persistStudentProfile();
     syncAdminStudent(true);
@@ -2254,7 +2289,7 @@
     if (!supabaseClient || !remoteAdminVerified || !$('#adminStudentsRows')) return;
     const rows = $('#adminStudentsRows');
     rows.innerHTML = '<div class="admin-users-loading"><i class="fa-solid fa-spinner fa-spin"></i> جارٍ تحميل المستخدمين</div>';
-    const { data, error } = await supabaseClient.functions.invoke('admin-manage-users', { body: { action: 'list', page: 1, per_page: 100 } });
+    const { data, error } = await supabaseClient.functions.invoke('admin-manage-users', { body: { action: 'list', page: 1, per_page: 1000 } });
     if (error || !Array.isArray(data?.users)) {
       adminUsersLoaded = false;
       rows.innerHTML = '<div class="admin-empty">تعذر تحميل المستخدمين. حاول تحديث القائمة.</div>';
@@ -2296,8 +2331,8 @@
       regions: buckets(users.map(user => field(user, ['governorate', 'province', 'city', 'region', 'area', 'location']))).slice(0, 8),
       stages: buckets(users.map(user => stage(field(user, ['stage', 'education_stage', 'study_stage', 'school_stage']))))
     };
-    const usageValues = users.map(user => Number(field(user, ['daily_usage_hours', 'usage_hours', 'app_usage_hours', 'dailyHours']))).filter(Number.isFinite);
-    if (usageValues.length) groups.usage = buckets(usageValues.map(hours => hours < 1 ? 'أقل من ساعة' : hours < 2 ? '1–2 ساعة' : hours < 4 ? '2–4 ساعات' : 'أكثر من 4 ساعات'));
+    const usageMinutes = users.map(user => { const minutes = Number(field(user, ['daily_usage_minutes', 'usage_minutes', 'app_usage_minutes'])); if (Number.isFinite(minutes)) return minutes; const hours = Number(field(user, ['daily_usage_hours', 'usage_hours', 'app_usage_hours', 'dailyHours'])); return Number.isFinite(hours) ? hours * 60 : NaN; }).filter(Number.isFinite);
+    if (usageMinutes.length) groups.usage = buckets(usageMinutes.map(minutes => minutes < 30 ? 'أقل من 30 دقيقة' : minutes < 60 ? '30–60 دقيقة' : minutes < 120 ? '1–2 ساعة' : minutes < 240 ? '2–4 ساعات' : 'أكثر من 4 ساعات'));
     const render = (id, entries, empty = 'لا تتوفر بيانات كافية') => { const holder = $('#' + id); if (!holder) return; if (!entries?.length || (entries.length === 1 && entries[0][0] === 'غير محدد')) { holder.innerHTML = `<p class="admin-analytics-empty">${empty}</p>`; return; } const max = Math.max(...entries.map(item => item[1]), 1); const total = entries.reduce((sum, item) => sum + item[1], 0); holder.innerHTML = entries.map(([label, count]) => { const percent = Math.round((count / total) * 100); const width = Math.max(8, Math.round((count / max) * 100)); return `<div class="admin-bar-row"><div class="admin-bar-label"><span>${escapeHTML(label)}</span><b>${count} <small>${percent}%</small></b></div><div class="admin-bar-track"><i style="--bar-width:${width}%"></i></div></div>`; }).join(''); };
     render('adminAnalyticsGender', groups.gender);
     render('adminAnalyticsRegions', groups.regions);
@@ -2310,11 +2345,11 @@
     if (!rows) return;
     if (!adminUsersLoaded) return;
     const normalized = String(query).trim().toLocaleLowerCase('ar');
-    const visible = adminUsers.filter(user => `${user.name || ''} ${user.email || ''} ${user.stage || ''}`.toLocaleLowerCase('ar').includes(normalized));
+    const visible = adminUsers.filter(user => `${user.name || ''} ${user.email || ''} ${user.stage || ''} ${user.province || user.governorate || ''}`.toLocaleLowerCase('ar').includes(normalized));
     rows.innerHTML = visible.length ? visible.map(user => {
       const name = user.name || user.email || 'مستخدم';
       const avatar = user.avatar_url ? `<img class="admin-user-avatar" src="${escapeHTML(user.avatar_url)}" alt="">` : `<span class="admin-user-avatar">${escapeHTML(name.slice(0, 1))}</span>`;
-      return `<article class="admin-user-card"><div class="admin-user-card-main">${avatar}<div class="admin-user-copy"><b>${escapeHTML(name)}</b><span dir="ltr">${escapeHTML(user.email || 'بدون بريد')}</span><small>${escapeHTML(user.stage || '—')} · انضم ${escapeHTML(displayAdminDate(user.created_at))}</small></div></div><button class="danger-button admin-user-delete" type="button" data-admin-action="user-delete" data-admin-id="${escapeHTML(user.id)}" data-admin-name="${escapeHTML(name)}"><i class="fa-solid fa-trash"></i><span>حذف</span></button></article>`;
+      return `<article class="admin-user-card"><div class="admin-user-card-main">${avatar}<div class="admin-user-copy"><b>${escapeHTML(name)}</b><span dir="ltr">${escapeHTML(user.email || 'بدون بريد')}</span><small>${escapeHTML(user.stage || '—')} · ${escapeHTML(user.province || 'محافظة غير محددة')} · انضم ${escapeHTML(displayAdminDate(user.created_at))}</small></div></div><button class="danger-button admin-user-delete" type="button" data-admin-action="user-delete" data-admin-id="${escapeHTML(user.id)}" data-admin-name="${escapeHTML(name)}"><i class="fa-solid fa-trash"></i><span>حذف</span></button></article>`;
     }).join('') : '<div class="admin-empty">لا توجد حسابات مطابقة للبحث.</div>';
   }
 
@@ -2444,7 +2479,10 @@
     const loader = adminTabLoaders[tab];
     if (typeof loader !== 'function') return;
     adminLoadedTabs.add(tab);
-    try { await loader(); } catch (error) { adminLoadedTabs.delete(tab); console.warn(`تعذر تحميل تبويب الإدارة: ${tab}`, error); }
+    try {
+      await loader();
+      if (tab === 'overview') await loadAdminUsers();
+    } catch (error) { adminLoadedTabs.delete(tab); console.warn(`تعذر تحميل تبويب الإدارة: ${tab}`, error); }
   }
   function setAdminTab(tab) {
     activeAdminTab = ADMIN_TABS.has(tab) ? tab : 'overview';
@@ -2684,6 +2722,7 @@
     // الجلسة والملف الشخصي مزامنة خلفية؛ عند اكتمالها نحدّث العناصر دون إعادة حجب الصفحة.
     window.setTimeout(() => Promise.resolve().then(() => requireStudentSession()).then(ready => {
       if (!ready) return;
+      startUsageTracking();
       updateProfileUI();
       syncAdminStudent(false);
       updateNotificationBadges();

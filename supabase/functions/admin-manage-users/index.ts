@@ -46,15 +46,24 @@ Deno.serve(async (request: Request) => {
 
   if (action === "list") {
     const page = Math.max(1, Number(payload.page) || 1);
-    const perPage = Math.min(100, Math.max(1, Number(payload.per_page) || 100));
+    const perPage = Math.min(1000, Math.max(1, Number(payload.per_page) || 1000));
     const { data: usersData, error: usersError } = await adminClient.auth.admin.listUsers({ page, perPage });
     if (usersError) return json({ error: "تعذر تحميل المستخدمين" }, 500);
 
     const users = usersData?.users || [];
     const ids = users.map((user) => user.id);
-    const { data: profiles, error: profilesError } = ids.length
-      ? await adminClient.from("student_profiles").select("user_id,first_name,father_name,family_name,study_stage,avatar_url,created_at,updated_at").in("user_id", ids).limit(100)
-      : { data: [], error: null };
+    let profiles: any[] = [];
+    let profilesError: any = null;
+    if (ids.length) {
+      const expanded = await adminClient.from("student_profiles").select("user_id,first_name,father_name,family_name,study_stage,province,governorate,gender,avatar_url,daily_usage_minutes,usage_day,last_usage_at,created_at,updated_at").in("user_id", ids).limit(1000);
+      profiles = expanded.data || [];
+      profilesError = expanded.error || null;
+      if (profilesError) {
+        const legacy = await adminClient.from("student_profiles").select("user_id,first_name,father_name,family_name,study_stage,avatar_url,created_at,updated_at").in("user_id", ids).limit(1000);
+        profiles = legacy.data || [];
+        profilesError = legacy.error || null;
+      }
+    }
     if (profilesError) return json({ error: "تعذر تحميل ملفات المستخدمين" }, 500);
     const profileMap = new Map((profiles || []).map((profile) => [profile.user_id, profile]));
 
@@ -68,6 +77,12 @@ Deno.serve(async (request: Request) => {
           last_sign_in_at: user.last_sign_in_at || null,
           name: [profile.first_name, profile.father_name, profile.family_name].filter(Boolean).join(" ") || user.email || "مستخدم",
           stage: profile.study_stage || "—",
+          province: profile.province || profile.governorate || "—",
+          governorate: profile.governorate || profile.province || "—",
+          gender: profile.gender || "",
+          daily_usage_minutes: Number(profile.daily_usage_minutes || 0),
+          usage_day: profile.usage_day || null,
+          last_usage_at: profile.last_usage_at || null,
           avatar_url: profile.avatar_url || null,
           is_admin: false,
         };
