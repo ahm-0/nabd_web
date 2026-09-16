@@ -146,6 +146,7 @@
   let adminStats = { total_users: 0, total_notifications: 0, total_news_posts: 0, total_news_comments: 0, open_support_threads: 0 };
   let adminNotifications = [];
   let activeAdminTab = 'overview';
+  let activeAnalyticsMetric = 'regions';
   const adminLoadedTabs = new Set();
   let adminNewsActivity = [];
   let adminSupportThreads = [];
@@ -2333,11 +2334,19 @@
     };
     const usageMinutes = users.map(user => { const minutes = Number(field(user, ['daily_usage_minutes', 'usage_minutes', 'app_usage_minutes'])); if (Number.isFinite(minutes)) return minutes; const hours = Number(field(user, ['daily_usage_hours', 'usage_hours', 'app_usage_hours', 'dailyHours'])); return Number.isFinite(hours) ? hours * 60 : NaN; }).filter(Number.isFinite);
     if (usageMinutes.length) groups.usage = buckets(usageMinutes.map(minutes => minutes < 30 ? 'أقل من 30 دقيقة' : minutes < 60 ? '30–60 دقيقة' : minutes < 120 ? '1–2 ساعة' : minutes < 240 ? '2–4 ساعات' : 'أكثر من 4 ساعات'));
-    const render = (id, entries, empty = 'لا تتوفر بيانات كافية') => { const holder = $('#' + id); if (!holder) return; if (!entries?.length || (entries.length === 1 && entries[0][0] === 'غير محدد')) { holder.innerHTML = `<p class="admin-analytics-empty">${empty}</p>`; return; } const max = Math.max(...entries.map(item => item[1]), 1); const total = entries.reduce((sum, item) => sum + item[1], 0); holder.innerHTML = entries.map(([label, count]) => { const percent = Math.round((count / total) * 100); const width = Math.max(8, Math.round((count / max) * 100)); return `<div class="admin-bar-row"><div class="admin-bar-label"><span>${escapeHTML(label)}</span><b>${count} <small>${percent}%</small></b></div><div class="admin-bar-track"><i style="--bar-width:${width}%"></i></div></div>`; }).join(''); };
-    render('adminAnalyticsGender', groups.gender);
-    render('adminAnalyticsRegions', groups.regions);
-    render('adminAnalyticsStages', groups.stages);
-    render('adminAnalyticsUsage', groups.usage, 'لا تصل مدة الاستخدام اليومية من مصدر بيانات المستخدمين الحالي.');
+    const activityHours = buckets(users.map(user => { const raw = field(user, ['last_usage_at', 'last_sign_in_at']); if (!raw) return ''; const hour = new Date(raw).getHours(); if (!Number.isFinite(hour)) return ''; return hour < 6 ? '12–6 ص' : hour < 12 ? '6 ص–12 م' : hour < 18 ? '12–6 م' : '6 م–12 ص'; }), 'وقت غير محدد');
+    groups.usage = activityHours.some(item => item[0] !== 'وقت غير محدد') ? activityHours : (groups.usage || []);
+    const labels = { regions: ['موقع الطلاب', 'إحصائيات المحافظات'], stages: ['المستوى الدراسي', 'المراحل الدراسية للطلاب'], usage: ['نشاط الطلاب', 'أوقات نشاط الطلاب حسب ساعات اليوم'], gender: ['التركيبة السكانية', 'جنس الطلاب'] };
+    const renderLegacy = (id, entries) => { const holder = $('#' + id); if (holder) holder.innerHTML = entries?.map(([label, count]) => `<span>${escapeHTML(label)} ${count}</span>`).join('') || ''; };
+    Object.entries(groups).forEach(([key, entries]) => renderLegacy(`adminAnalytics${key === 'regions' ? 'Regions' : key === 'stages' ? 'Stages' : key === 'gender' ? 'Gender' : 'Usage'}`, entries));
+    const entries = groups[activeAnalyticsMetric] || [];
+    const chart = $('#adminAnalyticsChart'); if (!chart) return;
+    const title = labels[activeAnalyticsMetric] || labels.regions;
+    const titleEl = $('#adminChartTitle'); const kickerEl = $('#adminChartKicker'); const totalEl = $('#adminChartTotal');
+    if (titleEl) titleEl.textContent = title[1]; if (kickerEl) kickerEl.textContent = title[0];
+    if (!entries.length || (entries.length === 1 && ['غير محدد', 'وقت غير محدد'].includes(entries[0][0]))) { chart.innerHTML = '<p class="admin-analytics-empty">لا تتوفر بيانات كافية لهذا المؤشر حتى الآن.</p>'; if (totalEl) totalEl.textContent = '0'; return; }
+    const max = Math.max(...entries.map(item => item[1]), 1); const total = entries.reduce((sum, item) => sum + item[1], 0); if (totalEl) totalEl.textContent = total;
+    chart.innerHTML = entries.map(([label, count]) => { const percent = Math.round((count / total) * 100); const height = Math.max(18, Math.round((count / max) * 100)); return `<div class="admin-column-item" title="${escapeHTML(label)}: ${count}"><div class="admin-column-value">${count}</div><div class="admin-column-track"><i style="--column-height:${height}%"></i></div><span>${escapeHTML(label)}</span><small>${percent}%</small></div>`; }).join('');
   }
 
   function renderAdminStudents(query = '') {
@@ -2503,6 +2512,7 @@
     if (adminControlsBound) return;
     adminControlsBound = true;
     $('#adminStudentSearch')?.addEventListener('input', event => renderAdminStudents(event.target.value));
+    $('#adminAnalyticsSwitcher')?.addEventListener('click', event => { const button = event.target.closest('[data-analytics-metric]'); if (!button) return; activeAnalyticsMetric = button.dataset.analyticsMetric || 'regions'; $$('#adminAnalyticsSwitcher [data-analytics-metric]').forEach(item => { const active = item === button; item.classList.toggle('is-active', active); item.setAttribute('aria-pressed', String(active)); }); renderAdminAnalytics(); });
     $('#adminTabs')?.addEventListener('keydown', event => {
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
       const tabs = [...$$('#adminTabs [data-admin-tab]')];
@@ -2542,7 +2552,8 @@
   function bindEvents() {
     document.addEventListener('click', event => {
       const adminTab = event.target.closest('[data-admin-tab]');
-      if (adminTab) { event.preventDefault(); setAdminTab(adminTab.dataset.adminTab); return; }
+      if (adminTab) { event.preventDefault(); setAdminTab(adminTab.dataset.adminTab); adminTab.closest('.admin-sections-menu')?.removeAttribute('open'); return; }
+      if (event.target.closest('.admin-sections-scrim')) { event.preventDefault(); event.target.closest('.admin-sections-menu')?.removeAttribute('open'); return; }
       const savedToggle = event.target.closest('[data-saved-toggle]');
       if (savedToggle) { event.preventDefault(); toggleSavedItem({ id: savedToggle.dataset.savedId, title: savedToggle.dataset.savedTitle, subtitle: savedToggle.dataset.savedSubtitle, type: savedToggle.dataset.savedType, icon: savedToggle.dataset.savedIcon, href: savedToggle.dataset.savedHref }); updateSavedToggleButton(savedToggle); if (PAGE === 'saved') renderSavedItems(); return; }
       if (event.target.closest('.close-modal') || event.target.id === 'modalBackdrop') closeModal();
