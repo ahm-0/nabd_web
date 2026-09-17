@@ -150,6 +150,8 @@
   const adminLoadedTabs = new Set();
   let adminNewsActivity = [];
   let adminSupportThreads = [];
+  let newsModerators = [];
+  let adminChartInstance = null;
   const defaultCustomCountdown = { title: 'هدفي الخاص', target: new Date('2027-01-01T08:00:00').getTime() };
   const storedCustomCountdown = readStorage('custom_countdown', defaultCustomCountdown);
   let customCountdown = {
@@ -625,8 +627,21 @@
     openModal(`<div class="confirm-sheet"><span class="confirm-sheet-icon"><i class="fa-solid fa-triangle-exclamation"></i></span><h3>${escapeHTML(title)}</h3><p>${escapeHTML(message)}</p><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button type="button" class="danger-button" data-confirm-action>${escapeHTML(confirmLabel)}</button></div></div>`);
   }
 
+  async function changePassword(form) {
+    const password = String(new FormData(form).get('password') || '');
+    const confirm = String(new FormData(form).get('confirm_password') || '');
+    if (password.length < 6) return toast('يجب أن تتكون كلمة السر من 6 محارف على الأقل.');
+    if (password !== confirm) return toast('تأكيد كلمة السر غير مطابق.');
+    const button = form.querySelector('button[type=submit]'); if (button) button.disabled = true;
+    const { error } = await supabaseClient.auth.updateUser({ password });
+    if (button) button.disabled = false;
+    if (error) return toast('تعذر تغيير كلمة السر. حاول مرة أخرى.');
+    closeModal(); toast('تم تغيير كلمة السر بنجاح.');
+  }
+
   function openNamedModal(name) {
     if (name === 'contact') { window.location.href = 'support-chat.html'; return; }
+    if (name === 'password') { openModal(`<div class="modal-head"><div><span class="eyebrow">أمان الحساب</span><h3>تغيير كلمة السر</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><form id="passwordForm"><div class="form-group"><label>كلمة السر الجديدة<input name="password" type="password" minlength="6" required autocomplete="new-password" placeholder="6 محارف على الأقل"></label></div><div class="form-group" style="margin-top:12px"><label>تأكيد كلمة السر<input name="confirm_password" type="password" minlength="6" required autocomplete="new-password"></label></div><p class="onboarding-note"><i class="fa-solid fa-circle-info"></i> لا تحتاج إلى كتابة كلمة السر القديمة.</p><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">حفظ كلمة السر</button></div></form>`); return; }
     const modals = {
       edit: `<div class="modal-head"><h3>تعديل الملف الشخصي</h3><button class="close-modal" aria-label="إغلاق">×</button></div>
         <form id="editForm"><div class="form-grid">
@@ -1207,7 +1222,7 @@
     if (!supabaseClient) return;
     try {
       await loadRemoteNewsPosts();
-      const { data, error } = await supabaseClient.rpc('premium_is_admin');
+      const { data, error } = await supabaseClient.rpc('news_is_admin');
       newsIsAdmin = !error && data === true;
     } catch (error) {
       // احتفظ بالنسخة المحلية عند بطء الشبكة أو فشل الطلب بدل إفراغ القسم.
@@ -2286,6 +2301,18 @@
     renderAdminSupport();
   }
 
+  async function loadNewsModerators() {
+    const holder = $('#newsModeratorsRows'); if (!supabaseClient || !remoteAdminVerified || !holder) return;
+    const { data, error } = await supabaseClient.rpc('admin_list_news_moderators');
+    if (error || !Array.isArray(data)) { holder.innerHTML = '<div class="admin-empty">تعذر تحميل مشرفي الأخبار.</div>'; return; }
+    newsModerators = data; holder.innerHTML = data.length ? data.map(item => `<article class="news-moderator-row"><div><b>${escapeHTML(item.name || item.email || 'مستخدم')}</b><small dir="ltr">${escapeHTML(item.email || item.user_id)}</small></div><button class="danger-button" type="button" data-admin-action="remove-news-moderator" data-moderator-id="${escapeHTML(item.user_id)}"><i class="fa-solid fa-user-minus"></i><span>إلغاء الصلاحية</span></button></article>`).join('') : '<div class="admin-empty">لا يوجد مشرفو أخبار حاليًا.</div>';
+  }
+  async function setNewsModerator(form, enabled = true, userId = null) {
+    const id = userId || String(new FormData(form).get('user_id') || '').trim(); if (!id) return toast('أدخل معرّف المستخدم UUID.');
+    const { error } = await supabaseClient.rpc('admin_set_news_moderator', { p_user_ref: id, p_enabled: enabled }); if (error) return toast(error.message || 'تعذر تحديث الصلاحية.');
+    if (form) form.reset(); await loadNewsModerators(); toast(enabled ? 'تم تعيين مشرف الأخبار.' : 'تم إلغاء صلاحية مشرف الأخبار.');
+  }
+
   async function loadAdminUsers() {
     if (!supabaseClient || !remoteAdminVerified || !$('#adminStudentsRows')) return;
     const rows = $('#adminStudentsRows');
@@ -2341,11 +2368,15 @@
     Object.entries(groups).forEach(([key, entries]) => renderLegacy(`adminAnalytics${key === 'regions' ? 'Regions' : key === 'stages' ? 'Stages' : key === 'gender' ? 'Gender' : 'Usage'}`, entries));
     const entries = groups[activeAnalyticsMetric] || [];
     const chart = $('#adminAnalyticsChart'); if (!chart) return;
+    const canvas = $('#adminAnalyticsCanvas');
+    if (adminChartInstance) { adminChartInstance.destroy(); adminChartInstance = null; }
+    if (canvas) canvas.style.display = 'none';
     const title = labels[activeAnalyticsMetric] || labels.regions;
     const titleEl = $('#adminChartTitle'); const kickerEl = $('#adminChartKicker'); const totalEl = $('#adminChartTotal');
     if (titleEl) titleEl.textContent = title[1]; if (kickerEl) kickerEl.textContent = title[0];
     if (!entries.length || (entries.length === 1 && ['غير محدد', 'وقت غير محدد'].includes(entries[0][0]))) { chart.innerHTML = '<p class="admin-analytics-empty">لا تتوفر بيانات كافية لهذا المؤشر حتى الآن.</p>'; if (totalEl) totalEl.textContent = '0'; return; }
     const max = Math.max(...entries.map(item => item[1]), 1); const total = entries.reduce((sum, item) => sum + item[1], 0); if (totalEl) totalEl.textContent = total;
+    if (canvas && window.Chart) { canvas.style.display = 'block'; chart.querySelector('.admin-analytics-empty')?.remove(); adminChartInstance = new Chart(canvas, { type: activeAnalyticsMetric === 'gender' ? 'doughnut' : 'bar', data: { labels: entries.map(item => item[0]), datasets: [{ label: title[1], data: entries.map(item => item[1]), backgroundColor: ['#087fc7','#56b4e9','#7b61ff','#20bde9','#45e0aa','#ffc24d','#f47db5','#ff6b82'], borderRadius: 10, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: activeAnalyticsMetric === 'gender', position: 'bottom', rtl: true, labels: { color: getComputedStyle(document.documentElement).getPropertyValue('--text') } } }, scales: activeAnalyticsMetric === 'gender' ? {} : { y: { beginAtZero: true, ticks: { precision: 0, color: '#70819b' }, grid: { color: 'rgba(128,145,170,.16)' } }, x: { ticks: { color: '#70819b' }, grid: { display: false } } } } }); return; }
     chart.innerHTML = entries.map(([label, count]) => { const percent = Math.round((count / total) * 100); const height = Math.max(18, Math.round((count / max) * 100)); return `<div class="admin-column-item" title="${escapeHTML(label)}: ${count}"><div class="admin-column-value">${count}</div><div class="admin-column-track"><i style="--column-height:${height}%"></i></div><span>${escapeHTML(label)}</span><small>${percent}%</small></div>`; }).join('');
   }
 
@@ -2382,6 +2413,8 @@
     if (action === 'logout') return logoutAdmin();
     if (!isAdminAuthenticated()) return toast('افتح بوابة المشرفين أولًا لتنفيذ هذا الإجراء.');
     if (action === 'refresh-users') return void loadAdminUsers();
+    if (action === 'refresh-news-moderators') return void loadNewsModerators();
+    if (action === 'remove-news-moderator') return void setNewsModerator(null, false, button.dataset.moderatorId);
     if (action === 'refresh-notifications') return void loadAdminNotifications();
     if (action === 'delete-notification') return void deleteAdminNotification(button.dataset.notificationId, button.dataset.notificationTitle);
     if (action === 'refresh-news') return void loadAdminNewsActivity();
@@ -2491,6 +2524,7 @@
     try {
       await loader();
       if (tab === 'overview') await loadAdminUsers();
+      if (tab === 'users') await loadNewsModerators();
     } catch (error) { adminLoadedTabs.delete(tab); console.warn(`تعذر تحميل تبويب الإدارة: ${tab}`, error); }
   }
   function setAdminTab(tab) {
@@ -2564,6 +2598,7 @@
       const adminButton = event.target.closest('[data-admin-action]');
       if (adminButton) handleAdminAction(adminButton);
       if (event.target.closest('#openEditProfile, #editProfileSmall, #completeProfile, #profileDataUpdate, [data-profile-edit]')) openNamedModal('edit');
+      if (event.target.closest('[data-password-change]')) openNamedModal('password');
       if (event.target.closest('#sharePlatform')) sharePlatform();
       const nativeChat = event.target.closest('[data-native-chat-url]');
       if (nativeChat) { event.preventDefault(); openNativeChatViewer(nativeChat.dataset.nativeChatUrl, nativeChat.dataset.nativeChatTitle); }
@@ -2625,6 +2660,8 @@
     document.addEventListener('submit', event => {
       if (event.target.id === 'adminNotificationForm') { event.preventDefault(); void sendAdminNotification(event.target); }
       if (event.target.id === 'editForm') { event.preventDefault(); handleProfileSave(event.target); }
+      if (event.target.id === 'passwordForm') { event.preventDefault(); void changePassword(event.target); }
+      if (event.target.id === 'newsModeratorForm') { event.preventDefault(); void setNewsModerator(event.target); }
       if (event.target.id === 'customCountdownForm') { event.preventDefault(); handleCountdownSave(event.target); }
       if (event.target.id === 'supportForm') { event.preventDefault(); void submitSupportRequest(event.target); }
       if (event.target.id === 'supportChatForm') { event.preventDefault(); void sendSupportChatMessage(event.target); }
