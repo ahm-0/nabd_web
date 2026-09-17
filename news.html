@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#080d19">
   <title>نبض التفوق | مجتمع الأخبار</title>
   <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name=\"theme-color\"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script><link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="nabd-ui.css?v=20260915-contrast-refresh">
-  <link rel="stylesheet" href="news-ui.css?v=20260825-comments-ux-history">
+  <link rel="stylesheet" href="nabd-ui.css?v=20260917-material-news">
+  <link rel="stylesheet" href="news-ui.css?v=20260917-material-news">
 
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
@@ -24,7 +24,14 @@
     </header>
     <div class="layout">
 
-      <main class="main-content">
+      <main class="main-content news-material-main">
+        <section class="news-material-hero" aria-labelledby="newsHeroTitle">
+          <div class="news-hero-orb news-hero-orb-one" aria-hidden="true"></div><div class="news-hero-orb news-hero-orb-two" aria-hidden="true"></div>
+          <div class="news-hero-icon"><i class="fa-solid fa-newspaper"></i></div>
+          <div class="news-hero-copy"><span class="eyebrow">مجتمع نبض التفوق</span><h2 id="newsHeroTitle">آخر الأخبار<br><strong>في مكان واحد</strong></h2><p>تابع المستجدات الدراسية، وشارك الحوار مع مجتمعك باحترام.</p></div>
+          <div class="news-hero-meta"><span><i class="fa-solid fa-bolt"></i> تحديثات موثوقة</span><span><i class="fa-solid fa-users"></i> مساحة طلابية</span></div>
+        </section>
+        <div class="news-material-toolbar" aria-label="أدوات الأخبار"><div><span class="news-toolbar-kicker">الموجز اليومي</span><h3>تغذية الأخبار</h3></div><span class="news-live-pill"><i class="fa-solid fa-circle"></i> مباشر</span></div>
         <div class="news-shell">
           <section id="feed" aria-live="polite"></section>
           <div class="news-composer-dock" id="newsComposerDock" aria-label="شريط كتابة خبر جديد">
