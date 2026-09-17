@@ -396,8 +396,14 @@
   function openNativeChatViewer(url, title) {
     try {
       const theme = document.documentElement.dataset.theme === 'light' || student.theme === 'light' ? 'light' : 'dark';
-      if (isNativeNabd() && typeof window.NabdAndroid?.openNativeChatViewer === 'function') { window.NabdAndroid.openNativeChatViewer(url, title, theme); return; }
-      window.open(url, '_blank', 'noopener,noreferrer');
+      const chatUrl = new URL(String(url || ''), window.location.href);
+      chatUrl.searchParams.set('first_name', student.first || '');
+      chatUrl.searchParams.set('father_name', student.father || '');
+      chatUrl.searchParams.set('family_name', student.last || '');
+      chatUrl.searchParams.set('theme', theme);
+      const encodedChatUrl = chatUrl.toString();
+      if (isNativeNabd() && typeof window.NabdAndroid?.openNativeChatViewer === 'function') { window.NabdAndroid.openNativeChatViewer(encodedChatUrl, title, theme); return; }
+      window.open(encodedChatUrl, '_blank', 'noopener,noreferrer');
     } catch (error) { console.warn('تعذر فتح نافذة الدردشة الأصلية', error); toast('تعذر فتح الصفحة الآن.'); }
   }
 
