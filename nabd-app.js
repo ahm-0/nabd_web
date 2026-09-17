@@ -395,7 +395,8 @@
 
   function openNativeChatViewer(url, title) {
     try {
-      if (isNativeNabd() && typeof window.NabdAndroid?.openNativeChatViewer === 'function') { window.NabdAndroid.openNativeChatViewer(url, title, 'dark'); return; }
+      const theme = document.documentElement.dataset.theme === 'light' || student.theme === 'light' ? 'light' : 'dark';
+      if (isNativeNabd() && typeof window.NabdAndroid?.openNativeChatViewer === 'function') { window.NabdAndroid.openNativeChatViewer(url, title, theme); return; }
       window.open(url, '_blank', 'noopener,noreferrer');
     } catch (error) { console.warn('تعذر فتح نافذة الدردشة الأصلية', error); toast('تعذر فتح الصفحة الآن.'); }
   }
