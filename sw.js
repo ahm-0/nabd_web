@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-09-15-03';
+const CACHE_VERSION = '2026-09-16-03';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
