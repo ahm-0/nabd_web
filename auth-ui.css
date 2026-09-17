@@ -68,3 +68,5 @@
   .auth-switch { margin-top:5px!important; font-size:9px!important; }
   .auth-footer-note { margin-top:5px; font-size:8px; }
 }
+
+.auth-message.is-visible{display:block;padding:9px 11px;border:1px solid rgba(240,138,138,.28);border-radius:11px;background:rgba(240,138,138,.08);font-weight:800}.auth-message.success.is-visible{border-color:rgba(83,201,145,.28);background:rgba(83,201,145,.08)}.auth-form label.has-error>span{color:#f08a8a}.auth-form input.has-error,.auth-form select.has-error{border-color:#f08a8a!important;box-shadow:0 0 0 3px rgba(240,138,138,.12)!important}

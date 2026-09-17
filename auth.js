@@ -30,8 +30,21 @@
   ];
 
   const setMessage = (text, success = false) => {
+    if (!message) return;
     message.textContent = text;
-    message.className = `auth-message${success ? ' success' : ''}`;
+    message.className = `auth-message${success ? ' success' : ''}${text ? ' is-visible' : ''}`;
+    if (text) message.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+
+  const fieldLabel = input => input?.closest('label')?.querySelector('span')?.textContent?.trim() || 'هذا الحقل';
+  const showFieldError = input => {
+    if (!input) return false;
+    input.classList.add('has-error');
+    input.closest('label')?.classList.add('has-error');
+    input.focus({ preventScroll: true });
+    const reason = input.validity.valueMissing ? `أكمل حقل «${fieldLabel(input)}».` : input.validity.typeMismatch ? `أدخل قيمة صحيحة في حقل «${fieldLabel(input)}».` : input.validationMessage;
+    setMessage(reason || `تحقق من حقل «${fieldLabel(input)}».`);
+    return false;
   };
 
   const friendlyError = error => {
@@ -75,11 +88,7 @@
 
   const validateCurrentStep = () => {
     for (const input of activeStepInputs()) {
-      if (!input.checkValidity()) {
-        input.reportValidity();
-        setMessage(input.validationMessage || 'أكمل الحقلين قبل المتابعة.');
-        return false;
-      }
+      if (!input.checkValidity()) return showFieldError(input);
     }
     setMessage('');
     return true;
@@ -113,6 +122,8 @@
     if (signupMode) showStep(0, 'forward');
   };
 
+  form?.addEventListener('invalid', event => { event.preventDefault(); showFieldError(event.target); }, true);
+  form?.addEventListener('input', event => { event.target.classList.remove('has-error'); event.target.closest('label')?.classList.remove('has-error'); if (message?.textContent) setMessage(''); });
   toggle?.addEventListener('click', () => setMode(!signupMode));
   next?.addEventListener('click', () => {
     if (!validateCurrentStep()) return;
@@ -126,7 +137,7 @@
       if (validateCurrentStep()) showStep(currentStep + 1, 'forward');
       return;
     }
-    if (!client) { setMessage('تعذر الاتصال بخدمة الحسابات حاليًا.'); return; }
+    if (!client) { setMessage('تعذر الاتصال بخدمة الحسابات حاليًا. أعد تحميل الصفحة وحاول مرة أخرى.'); return; }
     if (signupMode && !validateCurrentStep()) return;
     const data = signupMode ? {
       first_name: form.elements.signup_first_name.value.trim(),
@@ -143,6 +154,7 @@
     };
     setMessage('');
     const activeButton = submit;
+    if (!activeButton) { setMessage('تعذر تشغيل زر إنشاء الحساب. أعد تحميل الصفحة.'); return; }
     activeButton.disabled = true;
     activeButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>جارٍ التحقق...</span>';
     try {
@@ -163,6 +175,7 @@
         if (result.user) window.location.replace('index.html');
       }
     } catch (error) {
+      console.error('خطأ في المصادقة أو حفظ الملف الشخصي:', error);
       setMessage(friendlyError(error));
     } finally {
       activeButton.disabled = false;
