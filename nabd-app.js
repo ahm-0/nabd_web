@@ -360,9 +360,18 @@
 
   function renderTopActions() {
     const actions = $('.top-actions');
-    if (!actions || $('#sharePlatform')) return;
-    actions.insertAdjacentHTML('afterbegin', '<button class="icon-button share-platform" id="sharePlatform" type="button" title="مشاركة المنصة" aria-label="مشاركة المنصة"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>');
+    if (!actions) return;
+    if (!$('#globalSearchButton')) actions.insertAdjacentHTML('afterbegin', '<button class="icon-button global-search-button" id="globalSearchButton" type="button" title="بحث شامل" aria-label="بحث شامل"><i class="fa-solid fa-magnifying-glass"></i></button>');
+    if (!$('#sharePlatform') && !['screening-exam', 'baccalaureate-science', 'baccalaureate-literary'].includes(PAGE)) actions.insertAdjacentHTML('afterbegin', '<button class="icon-button share-platform" id="sharePlatform" type="button" title="مشاركة المنصة" aria-label="مشاركة المنصة"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>');
+    if (!$('#globalSearchDialog')) document.body.insertAdjacentHTML('beforeend', '<div class="global-search-backdrop" id="globalSearchDialog" role="dialog" aria-modal="true" aria-label="البحث الشامل"><div class="global-search-panel"><div class="global-search-head"><div><span class="eyebrow">نبض التفوق</span><h3>ابحث في التطبيق</h3></div><button class="icon-button" type="button" data-global-search-close aria-label="إغلاق البحث"><i class="fa-solid fa-xmark"></i></button></div><div class="global-search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="globalSearchInput" type="search" placeholder="كتب، ملفات، دعم، إعدادات…" autocomplete="off"></div><div class="global-search-hint" id="globalSearchHint">ابحث عن أي قسم أو خدمة أو إعداد.</div><div class="global-search-results" id="globalSearchResults"></div></div></div>');
   }
+
+  const globalSearchItems = [
+    ['الرئيسية', 'الواجهة الرئيسية ومسارات الدراسة', 'index.html', 'fa-house'], ['البكالوريا العلمي', 'كتب وملخصات وحدود النجاح والسبر الترشيحي', 'baccalaureate-science.html', 'fa-flask'], ['البكالوريا الأدبي', 'كتب وملخصات وحدود النجاح والسبر الترشيحي', 'baccalaureate-literary.html', 'fa-feather-pointed'], ['التاسع', 'مواد وكتب وملخصات وأسئلة دورات', 'nine.html', 'fa-school'], ['الجامعات والكليات', 'دليل الجامعات والمقارنة والاختصاصات', 'universities.html', 'fa-building-columns'], ['المكتبة والكتب', 'ابحث عن الكتب والملفات التعليمية', 'library.html', 'fa-book'], ['الأخبار', 'مجتمع الأخبار والمنشورات والتعليقات', 'news.html', 'fa-newspaper'], ['الجدول الدراسي', 'المهام والتذكيرات الدراسية', 'time-organizer.html', 'fa-calendar-days'], ['حاسبة المعدل', 'احسب معدلك حسب المرحلة والفرع', 'grade-calculator.html', 'fa-calculator'], ['برنامج ختم المنهاج', 'خطط الدراسة ومتابعة الإنجاز', 'completion-program.html', 'fa-list-check'], ['المحفوظات', 'الكتب والدروس والبرامج المحفوظة', 'saved-items.html', 'fa-bookmark'], ['الملف الشخصي', 'بيانات الطالب والصورة والسيرة الذاتية', 'profile.html', 'fa-user'], ['الإعدادات العامة', 'الوضع الليلي والنهاري والإشعارات والحركات', 'settings.html', 'fa-gear'], ['الدعم والمساعدة', 'تواصل مع الدعم وأرسل رسالة', 'support-chat.html', 'fa-headset'], ['الإشعارات', 'تنبيهات التطبيق والإعلانات المهمة', 'notifications.html', 'fa-bell'], ['الذكاء الاصطناعي', 'مساعد نبض التفوق والدردشة الذكية', 'assistant.html', 'fa-robot']
+  ];
+  function openGlobalSearch() { const dialog = $('#globalSearchDialog'); if (!dialog) return; dialog.classList.add('show'); const input = $('#globalSearchInput'); if (input) { input.value = ''; renderGlobalSearch(''); setTimeout(() => input.focus(), 40); } }
+  function closeGlobalSearch() { $('#globalSearchDialog')?.classList.remove('show'); }
+  function renderGlobalSearch(value = '') { const results = $('#globalSearchResults'); const hint = $('#globalSearchHint'); if (!results) return; const needle = String(value).trim().toLocaleLowerCase('ar'); const visible = needle ? globalSearchItems.filter(item => item.slice(0, 2).join(' ').toLocaleLowerCase('ar').includes(needle)) : globalSearchItems.slice(0, 6); if (hint) hint.textContent = needle ? `نتائج البحث عن: ${value}` : 'اقتراحات سريعة للوصول إلى خدمات التطبيق.'; results.innerHTML = visible.length ? visible.map(([title, description, href, icon]) => `<a class="global-search-result" href="${href}"><span class="global-search-result-icon"><i class="fa-solid ${icon}"></i></span><span><b>${title}</b><small>${description}</small></span><i class="fa-solid fa-chevron-left"></i></a>`).join('') : '<div class="global-search-empty"><i class="fa-solid fa-magnifying-glass"></i><b>لا توجد نتائج</b><span>جرّب كلمة أخرى مثل كتب أو دعم أو إعدادات.</span></div>'; }
 
   async function sharePlatform() {
     const url = location.href; const payload = { title: 'نبض التفوق', text: 'منصة نبض التفوق التعليمية', url, dialogTitle: 'مشاركة نبض التفوق' };
@@ -2614,6 +2623,8 @@
       if (event.target.closest('#openEditProfile, #editProfileSmall, #completeProfile, #profileDataUpdate, [data-profile-edit]')) openNamedModal('edit');
       if (event.target.closest('[data-password-change]')) openNamedModal('password');
       if (event.target.closest('#sharePlatform')) sharePlatform();
+      if (event.target.closest('#globalSearchButton')) { event.preventDefault(); openGlobalSearch(); return; }
+      if (event.target.closest('[data-global-search-close]') || event.target.id === 'globalSearchDialog') { closeGlobalSearch(); return; }
       const nativeChat = event.target.closest('[data-native-chat-url]');
       if (nativeChat) { event.preventDefault(); openNativeChatViewer(nativeChat.dataset.nativeChatUrl, nativeChat.dataset.nativeChatTitle); }
       if (event.target.closest('#studentLogout')) { event.preventDefault(); void signOutStudent(); return; }
@@ -2711,6 +2722,8 @@
       if (!window.matchMedia('(max-width: 980px)').matches || !event.target.matches('input, textarea, select')) return;
       window.setTimeout(() => event.target.scrollIntoView({ block: 'center', behavior: 'smooth' }), 170);
     });
+    $('#globalSearchInput')?.addEventListener('input', event => renderGlobalSearch(event.target.value));
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && $('#globalSearchDialog')?.classList.contains('show')) closeGlobalSearch(); });
   }
 
   function enableScreenCapture() {

@@ -17,9 +17,7 @@
   <div class="app">
     <header class="topbar">
       <a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a>
-      <div class="top-actions study-tools">
-        <button class="icon-button" id="screeningSearchButton" type="button" title="بحث" aria-label="بحث"><i class="fa-solid fa-magnifying-glass"></i></button>
-        <button class="icon-button" id="screeningShareButton" type="button" title="مشاركة" aria-label="مشاركة"><i class="fa-solid fa-share-nodes"></i></button>
+      <div class="top-actions">
         <a class="icon-button" href="notifications.html" title="الإشعارات" aria-label="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a>
       </div>
     </header>
@@ -39,15 +37,6 @@
     </main></div>
   </div>
   <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div>
-  <div class="screening-search-backdrop" id="screeningSearchBackdrop" role="dialog" aria-modal="true" aria-label="بحث في شرح السبر"><div class="screening-search-box"><div class="screening-search-head"><h3>ابحث في الشرح</h3><button class="icon-button" id="screeningSearchClose" type="button" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button></div><input class="screening-search-input" id="screeningSearchInput" type="search" placeholder="اكتب مادة أو معلومة…" autocomplete="off"><div class="screening-search-results" id="screeningSearchResults"></div></div></div>
-  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="nabd-app.js?v=20260827-scroll-fix"></script><script src="material-ui.js?v=20260917-material3"></script>
-  <script>
-    (()=>{const q=s=>document.querySelector(s), backdrop=q('#screeningSearchBackdrop'), input=q('#screeningSearchInput'), results=q('#screeningSearchResults'), text=document.querySelector('.screening-page').innerText;
-      const open=()=>{backdrop.classList.add('show');input.value='';render('');setTimeout(()=>input.focus(),40)};const close=()=>backdrop.classList.remove('show');
-      const render=value=>{const needle=value.trim();if(!needle){results.innerHTML='<div class="screening-empty">اكتب كلمة للبحث ضمن تفاصيل السبر والمواد وشروط النجاح.</div>';return}const chunks=text.split(/\n+/).filter(Boolean).filter(x=>x.toLowerCase().includes(needle.toLowerCase())).slice(0,12);results.innerHTML=chunks.length?chunks.map(x=>'<div class="screening-search-result">'+x.replace(new RegExp('('+needle.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','ig'),'<mark>$1</mark>')+'</div>').join(''):'<div class="screening-empty">لا توجد نتائج مطابقة.</div>'};
-      q('#screeningSearchButton').addEventListener('click',open);q('#screeningSearchClose').addEventListener('click',close);backdrop.addEventListener('click',e=>{if(e.target===backdrop)close()});input.addEventListener('input',e=>render(e.target.value));document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
-      const branch=new URLSearchParams(location.search).get('branch');if(branch==='science')q('#screeningBranchLabel').textContent='بكالوريا علمي · المواد والعلامات وشروط النجاح بالتفصيل';if(branch==='literary')q('#screeningBranchLabel').textContent='بكالوريا أدبي · المواد والعلامات وشروط النجاح بالتفصيل';
-      q('#screeningShareButton').addEventListener('click',async()=>{const data={title:'شرح السبر الترشيحي | نبض التفوق',text:'شرح مفصل عن السبر الترشيحي للبكالوريا العلمي والأدبي من منصة نبض التفوق',url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(data.text+'\n'+data.url);alert('تم نسخ رابط الشرح للمشاركة.')}}catch{} });
-    })();
-  </script>
+  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="nabd-app.js?v=20260917-global-search"></script><script src="material-ui.js?v=20260917-material3"></script>
+  <script>const branch=new URLSearchParams(location.search).get('branch');if(branch==='science')document.querySelector('#screeningBranchLabel').textContent='بكالوريا علمي · المواد والعلامات وشروط النجاح بالتفصيل';if(branch==='literary')document.querySelector('#screeningBranchLabel').textContent='بكالوريا أدبي · المواد والعلامات وشروط النجاح بالتفصيل';</script>
 </body></html>
