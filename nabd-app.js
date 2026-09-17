@@ -2308,7 +2308,7 @@
     newsModerators = data; holder.innerHTML = data.length ? data.map(item => `<article class="news-moderator-row"><div><b>${escapeHTML(item.name || item.email || 'مستخدم')}</b><small dir="ltr">${escapeHTML(item.email || item.user_id)}</small></div><button class="danger-button" type="button" data-admin-action="remove-news-moderator" data-moderator-id="${escapeHTML(item.user_id)}"><i class="fa-solid fa-user-minus"></i><span>إلغاء الصلاحية</span></button></article>`).join('') : '<div class="admin-empty">لا يوجد مشرفو أخبار حاليًا.</div>';
   }
   async function setNewsModerator(form, enabled = true, userId = null) {
-    const id = userId || String(new FormData(form).get('user_id') || '').trim(); if (!id) return toast('أدخل معرّف المستخدم UUID.');
+    const id = userId || String(new FormData(form).get('user_id') || '').trim(); if (!id) return toast('أدخل البريد الإلكتروني أو UUID للمستخدم.');
     const { error } = await supabaseClient.rpc('admin_set_news_moderator', { p_user_ref: id, p_enabled: enabled }); if (error) return toast(error.message || 'تعذر تحديث الصلاحية.');
     if (form) form.reset(); await loadNewsModerators(); toast(enabled ? 'تم تعيين مشرف الأخبار.' : 'تم إلغاء صلاحية مشرف الأخبار.');
   }
@@ -2396,10 +2396,17 @@
   async function deleteAdminUser(userId, userName) {
     if (!isAdminAuthenticated() || !userId) return;
     confirmAction('حذف المستخدم؟', `سيُحذف حساب ${userName || 'هذا المستخدم'} نهائيًا من المنصة ولا يمكن التراجع عن العملية.`, async () => {
-      const { data, error } = await supabaseClient.functions.invoke('admin-manage-users', { body: { action: 'delete', user_id: userId } });
-      if (error || !data?.deleted) {
-        toast(data?.error || 'تعذر حذف المستخدم.');
-        return;
+      let deleted = false;
+      let functionError = null;
+      try {
+        const result = await supabaseClient.functions.invoke('admin-manage-users', { body: { action: 'delete', user_id: userId } });
+        functionError = result.error || null;
+        deleted = Boolean(result.data?.deleted);
+      } catch (error) { functionError = error; }
+      if (!deleted) {
+        const fallback = await supabaseClient.rpc('admin_delete_user', { p_user_id: userId });
+        if (!fallback.error && fallback.data === true) deleted = true;
+        else { console.warn('تعذر حذف المستخدم عبر المسارين', functionError, fallback.error); toast(fallback.error?.message || 'تعذر حذف المستخدم. تحقق من صلاحيات المشرف واتصال Supabase.'); return; }
       }
       adminUsers = adminUsers.filter(user => user.id !== userId);
       adminStats.total_users = Math.max(0, Number(adminStats.total_users || adminUsers.length + 1) - 1);
@@ -2513,8 +2520,8 @@
 
   async function initStudySchedule() { if (!$('#studyTasks')) return; await loadStudyTasks(); const note = $('#studyNativeNote'); if (note) note.innerHTML = isNativeNabd() && capacitorPlugin('LocalNotifications') ? '<i class="fa-solid fa-mobile-screen-button"></i><span>التذكيرات الأصلية متاحة داخل التطبيق.</span>' : '<i class="fa-solid fa-globe"></i><span>يعمل الجدول في المتصفح؛ الإشعار الأصلي يحتاج جسر التطبيق.</span>'; renderStudyTasks(); }
 
-  const ADMIN_TABS = new Set(['overview', 'notifications', 'news', 'support', 'users']);
-  const adminTabLoaders = { overview: loadAdminOverview, notifications: loadAdminNotifications, news: loadAdminNewsActivity, support: loadAdminSupport, users: loadAdminUsers };
+  const ADMIN_TABS = new Set(['overview', 'notifications', 'news', 'support', 'users', 'moderators']);
+  const adminTabLoaders = { overview: loadAdminOverview, notifications: loadAdminNotifications, news: loadAdminNewsActivity, support: loadAdminSupport, users: loadAdminUsers, moderators: loadNewsModerators };
   async function loadAdminTabData(tab = activeAdminTab, force = false) {
     if (!remoteAdminVerified || !supabaseClient) return;
     if (!force && adminLoadedTabs.has(tab)) return;
@@ -2524,7 +2531,6 @@
     try {
       await loader();
       if (tab === 'overview') await loadAdminUsers();
-      if (tab === 'users') await loadNewsModerators();
     } catch (error) { adminLoadedTabs.delete(tab); console.warn(`تعذر تحميل تبويب الإدارة: ${tab}`, error); }
   }
   function setAdminTab(tab) {
