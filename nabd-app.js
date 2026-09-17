@@ -23,11 +23,11 @@
     }
     if (lastError || !session) { window.location.replace('auth.html'); return false; }
     currentAuthUser = session.user;
-    const expandedSelect = 'user_id,first_name,father_name,family_name,study_stage,province,governorate,email,avatar_url,bio,daily_usage_minutes,usage_day,last_usage_at';
+    const expandedSelect = 'user_id,first_name,father_name,family_name,study_stage,province,governorate,gender,email,avatar_url,bio,daily_usage_minutes,usage_day,last_usage_at';
     let { data: profile, error: profileError } = await supabaseClient.from('student_profiles').select(expandedSelect).eq('user_id', currentAuthUser.id).maybeSingle();
     if (profileError) ({ data: profile, error: profileError } = await supabaseClient.from('student_profiles').select('user_id,first_name,father_name,family_name,study_stage,email,avatar_url,bio').eq('user_id', currentAuthUser.id).maybeSingle());
     if (!profileError && profile) {
-      student = { ...student, first: profile.first_name || student.first, father: profile.father_name || student.father, last: profile.family_name || student.last, stage: profile.study_stage || student.stage, province: profile.province || profile.governorate || student.province, bio: profile.bio || student.bio, avatar: profile.avatar_url || student.avatar, dailyUsageMinutes: Number.isFinite(Number(profile.daily_usage_minutes)) ? Number(profile.daily_usage_minutes) : student.dailyUsageMinutes, usageDay: profile.usage_day || student.usageDay, lastUsageAt: profile.last_usage_at || student.lastUsageAt };
+      student = { ...student, first: profile.first_name || student.first, father: profile.father_name || student.father, last: profile.family_name || student.last, stage: profile.study_stage || student.stage, province: profile.province || profile.governorate || student.province, gender: profile.gender || student.gender, bio: profile.bio || student.bio, avatar: profile.avatar_url || student.avatar, dailyUsageMinutes: Number.isFinite(Number(profile.daily_usage_minutes)) ? Number(profile.daily_usage_minutes) : student.dailyUsageMinutes, usageDay: profile.usage_day || student.usageDay, lastUsageAt: profile.last_usage_at || student.lastUsageAt };
       saveState();
     }
     return true;
@@ -35,10 +35,10 @@
 
   async function persistStudentProfile() {
     if (!supabaseClient || !currentAuthUser) return;
-    const profile = { user_id: currentAuthUser.id, first_name: student.first, father_name: student.father || '', family_name: student.last, study_stage: student.stage, province: student.province || '', email: currentAuthUser.email, avatar_url: student.avatar || null, bio: student.bio || '', daily_usage_minutes: Number(student.dailyUsageMinutes || 0), usage_day: student.usageDay || localUsageDay(), last_usage_at: student.lastUsageAt || new Date().toISOString() };
+    const profile = { user_id: currentAuthUser.id, first_name: student.first, father_name: student.father || '', family_name: student.last, study_stage: student.stage, province: student.province || '', governorate: student.province || '', gender: student.gender || '', email: currentAuthUser.email, avatar_url: student.avatar || null, bio: student.bio || '', daily_usage_minutes: Number(student.dailyUsageMinutes || 0), usage_day: student.usageDay || localUsageDay(), last_usage_at: student.lastUsageAt || new Date().toISOString() };
     let { error } = await supabaseClient.from('student_profiles').upsert(profile, { onConflict: 'user_id' });
     if (error) {
-      const legacy = { user_id: currentAuthUser.id, first_name: student.first, father_name: student.father || '', family_name: student.last, study_stage: student.stage, email: currentAuthUser.email, avatar_url: student.avatar || null, bio: student.bio || '' };
+      const legacy = { user_id: currentAuthUser.id, first_name: student.first, father_name: student.father || '', family_name: student.last, study_stage: student.stage, province: student.province || '', governorate: student.province || '', gender: student.gender || '', email: currentAuthUser.email, avatar_url: student.avatar || null, bio: student.bio || '' };
       ({ error } = await supabaseClient.from('student_profiles').upsert(legacy, { onConflict: 'user_id' }));
     }
     if (error) console.warn('تعذر مزامنة ملف الطالب مع الخادم', error);
@@ -2390,7 +2390,7 @@
     rows.innerHTML = visible.length ? visible.map(user => {
       const name = user.name || user.email || 'مستخدم';
       const avatar = user.avatar_url ? `<img class="admin-user-avatar" src="${escapeHTML(user.avatar_url)}" alt="">` : `<span class="admin-user-avatar">${escapeHTML(name.slice(0, 1))}</span>`;
-      return `<article class="admin-user-card"><div class="admin-user-card-main">${avatar}<div class="admin-user-copy"><b>${escapeHTML(name)}</b><span dir="ltr">${escapeHTML(user.email || 'بدون بريد')}</span><small>${escapeHTML(user.stage || '—')} · ${escapeHTML(user.province || 'محافظة غير محددة')} · انضم ${escapeHTML(displayAdminDate(user.created_at))}</small></div></div><button class="danger-button admin-user-delete" type="button" data-admin-action="user-delete" data-admin-id="${escapeHTML(user.id)}" data-admin-name="${escapeHTML(name)}"><i class="fa-solid fa-trash"></i><span>حذف</span></button></article>`;
+      return `<article class="admin-user-card"><div class="admin-user-card-main">${avatar}<div class="admin-user-copy"><b>${escapeHTML(name)}</b><span dir="ltr">${escapeHTML(user.email || 'بدون بريد')}</span><small>${escapeHTML(user.stage || '—')} · ${escapeHTML(user.province || 'محافظة غير محددة')} · ${escapeHTML(user.gender || 'الجنس غير محدد')} · انضم ${escapeHTML(displayAdminDate(user.created_at))}</small></div></div><button class="danger-button admin-user-delete" type="button" data-admin-action="user-delete" data-admin-id="${escapeHTML(user.id)}" data-admin-name="${escapeHTML(name)}"><i class="fa-solid fa-trash"></i><span>حذف</span></button></article>`;
     }).join('') : '<div class="admin-empty">لا توجد حسابات مطابقة للبحث.</div>';
   }
 

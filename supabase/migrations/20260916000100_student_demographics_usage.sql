@@ -11,3 +11,5 @@ alter table if exists public.student_profiles
 create index if not exists student_profiles_province_idx on public.student_profiles (province);
 create index if not exists student_profiles_study_stage_idx on public.student_profiles (study_stage);
 create index if not exists student_profiles_usage_day_idx on public.student_profiles (usage_day);
+
+create index if not exists student_profiles_gender_idx on public.student_profiles (gender);

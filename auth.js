@@ -134,6 +134,7 @@
       family_name: form.elements.signup_family_name.value.trim(),
       study_stage: form.elements.signup_study_stage.value,
       province: form.elements.signup_province.value,
+      gender: form.elements.signup_gender.value,
       email: form.elements.signup_email.value.trim(),
       password: form.elements.signup_password.value
     } : {
@@ -146,7 +147,7 @@
     activeButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>جارٍ التحقق...</span>';
     try {
       if (signupMode) {
-        const { data: result, error } = await client.auth.signUp({ email: data.email, password: data.password, options: { data: { first_name: data.first_name, father_name: data.father_name, family_name: data.family_name, study_stage: data.study_stage, province: data.province } } });
+        const { data: result, error } = await client.auth.signUp({ email: data.email, password: data.password, options: { data: { first_name: data.first_name, father_name: data.father_name, family_name: data.family_name, study_stage: data.study_stage, province: data.province, gender: data.gender } } });
         if (error) throw error;
         if (result.user) await saveProfile(result.user, data);
         if (!result.session) {
@@ -170,10 +171,10 @@
   });
 
   async function saveProfile(user, data) {
-    const profile = { user_id: user.id, first_name: data.first_name, father_name: data.father_name, family_name: data.family_name, study_stage: data.study_stage, province: data.province, email: user.email, daily_usage_minutes: 0, usage_day: new Date().toISOString().slice(0, 10), last_usage_at: new Date().toISOString() };
+    const profile = { user_id: user.id, first_name: data.first_name, father_name: data.father_name, family_name: data.family_name, study_stage: data.study_stage, province: data.province, gender: data.gender, email: user.email, daily_usage_minutes: 0, usage_day: new Date().toISOString().slice(0, 10), last_usage_at: new Date().toISOString() };
     let { error } = await client.from('student_profiles').upsert(profile, { onConflict: 'user_id' });
     if (error) {
-      ({ error } = await client.from('student_profiles').upsert({ user_id: user.id, first_name: data.first_name, father_name: data.father_name, family_name: data.family_name, study_stage: data.study_stage, email: user.email }, { onConflict: 'user_id' }));
+      ({ error } = await client.from('student_profiles').upsert({ user_id: user.id, first_name: data.first_name, father_name: data.father_name, family_name: data.family_name, study_stage: data.study_stage, province: data.province, gender: data.gender, email: user.email }, { onConflict: 'user_id' }));
     }
     if (error) throw error;
   }
