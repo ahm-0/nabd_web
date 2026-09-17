@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-09-17-05';
+const CACHE_VERSION = '2026-09-17-06';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -63,6 +63,8 @@ const APP_SHELL = [
   './pwa.js',
   './sw.js',
   './manifest.json',
+  './material-ui.css',
+  './material-ui.js',
   './vendor/fontawesome/css/all.min.css',
   './vendor/fontawesome/webfonts/fa-brands-400.woff2',
   './vendor/fontawesome/webfonts/fa-regular-400.woff2',
