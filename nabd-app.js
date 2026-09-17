@@ -816,6 +816,7 @@
       authorId: row.author_id || '',
       name: row.author_name || 'مشرف نبض',
       meta: row.author_meta || 'إدارة الأخبار · نبض التفوق',
+      avatar: row.author_avatar_url || '',
       text: row.body || '',
       images: Array.isArray(row.images) ? row.images : [],
       likes: Number(row.like_count || 0),
@@ -893,7 +894,7 @@
 
   function postTemplate(rawPost) {
     const post = enrichedPost(rawPost);
-    const avatar = rawPost.mine ? avatarMarkup() : `<span class="avatar">${escapeHTML((post.name || 'ط')[0])}</span>`;
+    const avatar = rawPost.mine ? avatarMarkup() : (post.avatar ? `<img class="avatar" src="${escapeHTML(post.avatar)}" alt="صورة ${escapeHTML(post.name || 'مشرف الأخبار')}" loading="lazy">` : `<span class="avatar">${escapeHTML((post.name || 'ط')[0])}</span>`);
     const verified = rawPost.mine ? student.verificationStatus === 'approved' : Boolean(post.verified);
     const images = (post.images || []).length
       ? `<div class="post-images ${(post.images || []).length > 1 ? 'multiple' : ''}">${post.images.map(src => `<img loading="lazy" src="${escapeHTML(src)}" alt="صورة مرفقة بالمنشور">`).join('')}</div><div class="post-media-indicator">${post.images.length > 1 ? `<i class="fa-solid fa-images"></i> اسحب لمشاهدة الصور ${post.images.length}` : ''}</div>`
