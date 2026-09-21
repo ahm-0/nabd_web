@@ -101,6 +101,9 @@
   studyTasks = Array.isArray(studyTasks) ? studyTasks : [];
   let savedItems = readStorage('saved_items', []);
   savedItems = Array.isArray(savedItems) ? savedItems.filter(item => item && item.id && item.title).slice(0, 300) : [];
+  let chatMessages = readStorage('student_chat_messages', []);
+  chatMessages = Array.isArray(chatMessages) ? chatMessages.slice(-120) : [];
+  let chatSettings = { notifications: true, bio: '', ...readStorage('student_chat_settings', {}) };
   const saveSavedItems = () => { try { localStorage.setItem(STORE + 'saved_items', JSON.stringify(savedItems.slice(0, 300))); return true; } catch { toast('تعذر حفظ العنصر محليًا.'); return false; } };
   const savedItemId = item => String(item?.id || '').trim();
   const isSavedItem = id => savedItems.some(item => item.id === String(id));
@@ -451,7 +454,7 @@
     const bottomNav = $('#bottomNav');
     if (bottomNav) {
       bottomNav.innerHTML = `
-        <button class="bottom-link" type="button" data-native-chat-url="https://open-chat-vibe.lovable.app" data-native-chat-title="الدردشة"><i class="fa-solid fa-comments"></i><span>الدردشة</span></button>
+        <a class="bottom-link ${PAGE === 'chat' ? 'active' : ''}" href="chat.html"><i class="fa-solid fa-comments"></i><span>الدردشة</span></a>
         <button class="bottom-link" type="button" data-native-chat-url="https://rtl-pulse-chat.lovable.app/" data-native-chat-title="AI"><i class="fa-solid fa-robot"></i><span>AI</span></button>
         <a class="bottom-link ${PAGE === 'home' ? 'active' : ''}" href="index.html"><i class="fa-solid fa-house"></i><span>الرئيسية</span></a>
         <a class="bottom-link ${PAGE === 'news' ? 'active' : ''}" href="news.html"><i class="fa-regular fa-newspaper"></i><span>الأخبار</span></a>
@@ -2127,6 +2130,35 @@
     return ticket.message ? [{ id: `legacy-${ticket.id}`, sender: 'student', text: ticket.message, createdAt: ticket.createdAt || Date.now() }] : [];
   }
 
+  function saveChatState() {
+    try { localStorage.setItem(STORE + 'student_chat_messages', JSON.stringify(chatMessages.slice(-120))); localStorage.setItem(STORE + 'student_chat_settings', JSON.stringify(chatSettings)); return true; }
+    catch { toast('تعذر حفظ الدردشة محليًا.'); return false; }
+  }
+  function chatProfileBio() { return chatSettings.bio || student.bio || 'طالب في منصة نبض التفوق'; }
+  function renderChatPage() {
+    const holder = $('#chatMessages'); if (!holder) return;
+    const name = fullName(); const nameNode = $('#chatStudentName'); const stageNode = $('#chatStudentStage'); const provinceNode = $('#chatStudentProvince'); const bioNode = $('#chatStudentBio');
+    if (nameNode) nameNode.textContent = name; if (stageNode) stageNode.textContent = student.stage || 'لم تحدد المرحلة'; if (provinceNode) provinceNode.textContent = student.province || student.city || 'سورية'; if (bioNode) bioNode.textContent = chatProfileBio(); const bioInput = $('#chatBio'); if (bioInput && document.activeElement !== bioInput) bioInput.value = chatSettings.bio || student.bio || '';
+    const avatar = $('#chatStudentAvatar'); if (avatar) { if (student.avatar) { avatar.innerHTML = `<img src="${escapeHTML(student.avatar)}" alt="صورة ${escapeHTML(name)}">`; } else avatar.textContent = initials(); }
+    const notice = $('#chatNoticeSwitch'); if (notice) notice.checked = chatSettings.notifications !== false;
+    holder.innerHTML = chatMessages.length ? chatMessages.map(message => `<article class="chat-bubble ${message.sender === 'student' ? 'mine' : 'system'}"><p>${escapeHTML(message.text)}</p><div class="chat-bubble-meta"><small>${message.sender === 'student' ? 'أنت' : 'نبض التفوق'} · ${displayAdminDate(message.createdAt)}</small><button type="button" class="chat-react ${message.reacted ? 'is-reacted' : ''}" data-chat-react="${escapeHTML(message.id)}" aria-label="تفاعل"><i class="fa-${message.reacted ? 'solid' : 'regular'} fa-heart"></i></button></div></article>`).join('') : '<div class="chat-empty"><i class="fa-regular fa-comments"></i><b>ابدأ محادثتك</b><span>اكتب رسالة، وستظهر هنا محفوظة على جهازك.</span></div>';
+    holder.scrollTop = holder.scrollHeight;
+  }
+  function openChatSettings() { $('#chatSettingsPanel')?.classList.add('show'); }
+  function closeChatSettings() { $('#chatSettingsPanel')?.classList.remove('show'); }
+  function sendLocalChatMessage(form) {
+    const input = $('[name="chatMessage"]', form); const text = String(input?.value || '').trim(); if (!text) return;
+    chatMessages.push({ id: `chat-${Date.now()}`, sender: 'student', text, createdAt: Date.now() }); saveChatState(); input.value = ''; renderChatPage();
+  }
+  function toggleChatReaction(id) { const message = chatMessages.find(item => item.id === id); if (!message) return; message.reacted = !message.reacted; saveChatState(); renderChatPage(); }
+  function initChatPage() {
+    if (!$('#chatMessages')) return; renderChatPage();
+    $('#chatForm')?.addEventListener('submit', event => { event.preventDefault(); sendLocalChatMessage(event.currentTarget); });
+    $('#chatSettingsButton')?.addEventListener('click', openChatSettings); $('#chatSettingsClose')?.addEventListener('click', closeChatSettings); $('#chatSettingsPanel')?.addEventListener('click', event => { if (event.target.id === 'chatSettingsPanel') closeChatSettings(); });
+    $('#chatNoticeSwitch')?.addEventListener('change', event => { chatSettings.notifications = event.target.checked; saveChatState(); toast(event.target.checked ? 'تم تفعيل إشعارات الدردشة.' : 'تم إيقاف إشعارات الدردشة.'); });
+    $('#chatBioForm')?.addEventListener('submit', event => { event.preventDefault(); chatSettings.bio = String($('[name="chatBio"]', event.currentTarget)?.value || '').trim(); saveChatState(); renderChatPage(); closeChatSettings(); toast('تم حفظ نبذة الدردشة.'); });
+  }
+
   function mySupportTicket() {
     ensureStudentId();
     const ownerId = currentAuthUser?.id || student.studentId;
@@ -2623,6 +2655,8 @@
       if (event.target.closest('#openEditProfile, #editProfileSmall, #completeProfile, #profileDataUpdate, [data-profile-edit]')) openNamedModal('edit');
       if (event.target.closest('[data-password-change]')) openNamedModal('password');
       if (event.target.closest('#sharePlatform')) sharePlatform();
+      const chatReaction = event.target.closest('[data-chat-react]');
+      if (chatReaction) { event.preventDefault(); toggleChatReaction(chatReaction.dataset.chatReact); return; }
       if (event.target.closest('#globalSearchButton')) { event.preventDefault(); openGlobalSearch(); return; }
       if (event.target.closest('[data-global-search-close]') || event.target.id === 'globalSearchDialog') { closeGlobalSearch(); return; }
       const nativeChat = event.target.closest('[data-native-chat-url]');
@@ -2783,6 +2817,7 @@
       library: initLibrary,
       saved: initSavedItems,
       'study-schedule': initStudySchedule,
+      chat: initChatPage,
       ai: initChat,
       'support-chat': initSupportChat,
       notifications: initNotifications,
@@ -2799,6 +2834,7 @@
       if (!ready) return;
       startUsageTracking();
       updateProfileUI();
+      if (PAGE === 'chat') renderChatPage();
       syncAdminStudent(false);
       updateNotificationBadges();
       if (PAGE === 'notifications') initNotifications();

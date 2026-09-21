@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080d19">
+  <title>نبض التفوق | الدردشة</title>
+  <script>(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;document.documentElement.dataset.theme=saved?.theme==='light'?'light':'dark';}catch{document.documentElement.dataset.theme='dark';}})();</script>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css"><link rel="stylesheet" href="nabd-ui.css?v=20260921-chat"><link rel="stylesheet" href="material-ui.css?v=20260917-material3"><link rel="stylesheet" href="chat.css?v=20260921-chat">
+  <link rel="manifest" href="manifest.json"><script src="pwa.js?v=20260827-scroll-recovery" defer></script>
+</head>
+<body data-page="chat">
+  <div class="app chat-app"><header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>دردشة الطالب</small></span></a><div class="top-actions"><a class="icon-button" href="profile.html" title="الملف الشخصي"><i class="fa-regular fa-user"></i></a><button class="icon-button" id="chatSettingsButton" type="button" title="إعدادات الدردشة"><i class="fa-solid fa-gear"></i></button></div></header>
+    <div class="layout"><main class="main-content"><section class="chat-page panel">
+      <header class="chat-room-head"><span class="chat-room-avatar" id="chatStudentAvatar">ط</span><div class="chat-room-copy"><b id="chatStudentName">طالب نبض التفوق</b><span><i class="fa-solid fa-circle"></i> دردشة شخصية محلية</span></div><a class="chat-room-profile" href="profile.html" title="عرض الملف"><i class="fa-solid fa-chevron-left"></i></a></header>
+      <section class="chat-profile-strip"><div><b id="chatStudentStage">المرحلة الدراسية</b><span id="chatStudentProvince">المنطقة</span></div><p id="chatStudentBio">طالب في منصة نبض التفوق</p></section>
+      <section class="chat-messages" id="chatMessages" aria-live="polite"></section>
+      <form class="chat-composer" id="chatForm"><button type="button" class="chat-attach" title="ميزة قادمة" aria-label="إرفاق ملف"><i class="fa-solid fa-plus"></i></button><textarea name="chatMessage" rows="1" maxlength="1000" required placeholder="اكتب رسالة..."></textarea><button class="chat-send" type="submit" title="إرسال" aria-label="إرسال"><i class="fa-solid fa-paper-plane"></i></button></form>
+    </section></main></div>
+  </div>
+  <div class="chat-settings-panel" id="chatSettingsPanel" role="dialog" aria-modal="true" aria-label="إعدادات الدردشة"><section class="chat-settings-card"><header><div><span class="eyebrow">تخصيص الدردشة</span><h2>الإعدادات</h2></div><button class="icon-button" id="chatSettingsClose" type="button" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button></header><label class="chat-setting-line"><span><b>إشعارات الدردشة</b><small>تنبيهك عند وصول رسائل جديدة</small></span><input class="switch" id="chatNoticeSwitch" type="checkbox" checked></label><form id="chatBioForm"><label class="chat-bio-label" for="chatBio">نبذة الدردشة</label><textarea id="chatBio" name="chatBio" maxlength="180" placeholder="اكتب نبذة قصيرة عنك..."></textarea><button class="primary-button" type="submit"><i class="fa-solid fa-check"></i> حفظ النبذة</button></form><p class="chat-settings-note"><i class="fa-solid fa-lock"></i> الرسائل والنبذة محفوظة محلياً على جهازك ولا يتم إرسالها إلى موقع خارجي.</p></section></div>
+  <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div>
+  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="nabd-app.js?v=20260921-chat"></script><script src="material-ui.js?v=20260917-material3"></script>
+</body></html>
