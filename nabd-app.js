@@ -104,6 +104,9 @@
   let chatMessages = readStorage('student_chat_messages', []);
   chatMessages = Array.isArray(chatMessages) ? chatMessages.slice(-120) : [];
   let chatSettings = { notifications: true, bio: '', ...readStorage('student_chat_settings', {}) };
+  let chatStats = { total: 1, online: 1 };
+  let activeChatMessageId = null;
+  let chatReplyTarget = null;
   const saveSavedItems = () => { try { localStorage.setItem(STORE + 'saved_items', JSON.stringify(savedItems.slice(0, 300))); return true; } catch { toast('تعذر حفظ العنصر محليًا.'); return false; } };
   const savedItemId = item => String(item?.id || '').trim();
   const isSavedItem = id => savedItems.some(item => item.id === String(id));
@@ -2135,25 +2138,46 @@
     catch { toast('تعذر حفظ الدردشة محليًا.'); return false; }
   }
   function chatProfileBio() { return chatSettings.bio || student.bio || 'طالب في منصة نبض التفوق'; }
+  async function loadChatStats() {
+    if (supabaseClient) try {
+      const totalResult = await supabaseClient.from('student_profiles').select('user_id', { count: 'exact', head: true });
+      const since = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const onlineResult = await supabaseClient.from('student_profiles').select('user_id', { count: 'exact', head: true }).gte('last_usage_at', since);
+      chatStats.total = Math.max(1, Number(totalResult.count || 1)); chatStats.online = Math.max(1, Math.min(chatStats.total, Number(onlineResult.count || 1)));
+    } catch (error) { console.warn('تعذر تحميل إحصائيات الدردشة', error); }
+    const line = $('#chatStatsLine'); if (line) line.textContent = `${chatStats.total} مستخدم · ${chatStats.online} متصل الآن`;
+  }
   function renderChatPage() {
     const holder = $('#chatMessages'); if (!holder) return;
-    const name = fullName(); const nameNode = $('#chatStudentName'); const stageNode = $('#chatStudentStage'); const provinceNode = $('#chatStudentProvince'); const bioNode = $('#chatStudentBio');
-    if (nameNode) nameNode.textContent = name; if (stageNode) stageNode.textContent = student.stage || 'لم تحدد المرحلة'; if (provinceNode) provinceNode.textContent = student.province || student.city || 'سورية'; if (bioNode) bioNode.textContent = chatProfileBio(); const bioInput = $('#chatBio'); if (bioInput && document.activeElement !== bioInput) bioInput.value = chatSettings.bio || student.bio || '';
-    const avatar = $('#chatStudentAvatar'); if (avatar) { if (student.avatar) { avatar.innerHTML = `<img src="${escapeHTML(student.avatar)}" alt="صورة ${escapeHTML(name)}">`; } else avatar.textContent = initials(); }
+    const name = fullName(); const bioInput = $('#chatBio'); if (bioInput && document.activeElement !== bioInput) bioInput.value = chatSettings.bio || student.bio || '';
     const notice = $('#chatNoticeSwitch'); if (notice) notice.checked = chatSettings.notifications !== false;
-    holder.innerHTML = chatMessages.length ? chatMessages.map(message => `<article class="chat-bubble ${message.sender === 'student' ? 'mine' : 'system'}"><p>${escapeHTML(message.text)}</p><div class="chat-bubble-meta"><small>${message.sender === 'student' ? 'أنت' : 'نبض التفوق'} · ${displayAdminDate(message.createdAt)}</small><button type="button" class="chat-react ${message.reacted ? 'is-reacted' : ''}" data-chat-react="${escapeHTML(message.id)}" aria-label="تفاعل"><i class="fa-${message.reacted ? 'solid' : 'regular'} fa-heart"></i></button></div></article>`).join('') : '<div class="chat-empty"><i class="fa-regular fa-comments"></i><b>ابدأ محادثتك</b><span>اكتب رسالة، وستظهر هنا محفوظة على جهازك.</span></div>';
+    const avatar = student.avatar ? `<img src="${escapeHTML(student.avatar)}" alt="صورة ${escapeHTML(name)}">` : escapeHTML(initials());
+    holder.innerHTML = chatMessages.length ? chatMessages.map(message => `<article class="chat-bubble-row ${message.sender === 'student' ? 'mine' : 'other'}" data-chat-message="${escapeHTML(message.id)}"><span class="chat-avatar">${avatar}</span><div class="chat-bubble"><b class="chat-message-name">${escapeHTML(message.name || (message.sender === 'student' ? name : 'نبض التفوق'))}</b>${message.replyTo ? `<div class="chat-message-reply">↩ ${escapeHTML(message.replyTo.text)}</div>` : ''}<p>${escapeHTML(message.text)}</p><div class="chat-bubble-meta"><small>${displayAdminDate(message.createdAt)}${message.edited ? ' · معدّلة' : ''}</small><button type="button" class="chat-react ${message.reacted ? 'is-reacted' : ''}" data-chat-react="${escapeHTML(message.id)}" aria-label="تفاعل"><i class="fa-${message.reacted ? 'solid' : 'regular'} fa-heart"></i></button></div></div></article>`).join('') : '<div class="chat-empty"><i class="fa-regular fa-comments"></i><b>ابدأ محادثتك</b><span>اسحب الرسالة للرد أو اضغط عليها للتعديل والحذف.</span></div>';
     holder.scrollTop = holder.scrollHeight;
   }
   function openChatSettings() { $('#chatSettingsPanel')?.classList.add('show'); }
   function closeChatSettings() { $('#chatSettingsPanel')?.classList.remove('show'); }
   function sendLocalChatMessage(form) {
     const input = $('[name="chatMessage"]', form); const text = String(input?.value || '').trim(); if (!text) return;
-    chatMessages.push({ id: `chat-${Date.now()}`, sender: 'student', text, createdAt: Date.now() }); saveChatState(); input.value = ''; renderChatPage();
+    const now = Date.now(); chatMessages.push({ id: `chat-${now}`, sender: 'student', name: fullName(), text, createdAt: now, replyTo: chatReplyTarget ? { text: chatReplyTarget.text, name: chatReplyTarget.name } : null }); saveChatState(); input.value = ''; chatReplyTarget = null; clearChatReply(); renderChatPage();
   }
   function toggleChatReaction(id) { const message = chatMessages.find(item => item.id === id); if (!message) return; message.reacted = !message.reacted; saveChatState(); renderChatPage(); }
+  function clearChatReply() { const preview = $('#chatReplyPreview'); if (preview) preview.classList.add('hidden'); const text = $('#chatReplyText'); if (text) text.textContent = ''; }
+  function setChatReply(id) { const message = chatMessages.find(item => item.id === id); if (!message) return; chatReplyTarget = message; const preview = $('#chatReplyPreview'); if (preview) preview.classList.remove('hidden'); const label = $('#chatReplyLabel'); if (label) label.textContent = `الرد على ${message.name || 'الرسالة'}`; const text = $('#chatReplyText'); if (text) text.textContent = message.text; $('[name="chatMessage"]')?.focus(); }
+  function showChatActionMenu(id, anchor) { activeChatMessageId = id; const menu = $('#chatActionMenu'); if (!menu) return; const message = chatMessages.find(item => item.id === id); const own = message?.sender === 'student'; $('[data-chat-edit]', menu)?.classList.toggle('hidden', !own); $('[data-chat-delete]', menu)?.classList.toggle('hidden', !own); const rect = anchor.getBoundingClientRect(); menu.style.top = `${Math.min(window.innerHeight - 105, rect.bottom + 6)}px`; menu.style.left = `${Math.max(8, Math.min(window.innerWidth - 170, rect.left))}px`; menu.classList.add('show'); }
+  function closeChatActionMenu() { $('#chatActionMenu')?.classList.remove('show'); activeChatMessageId = null; }
+  function editChatMessage() { const message = chatMessages.find(item => item.id === activeChatMessageId); closeChatActionMenu(); if (!message) return; const next = window.prompt('تعديل الرسالة', message.text); if (next === null) return; const text = next.trim(); if (!text) return toast('لا يمكن أن تكون الرسالة فارغة.'); message.text = text; message.edited = true; saveChatState(); renderChatPage(); }
+  function deleteChatMessage() { const id = activeChatMessageId; closeChatActionMenu(); if (!id) return; if (!window.confirm('حذف هذه الرسالة؟')) return; chatMessages = chatMessages.filter(message => message.id !== id); saveChatState(); renderChatPage(); toast('تم حذف الرسالة.'); }
   function initChatPage() {
-    if (!$('#chatMessages')) return; renderChatPage();
+    if (!$('#chatMessages')) return; renderChatPage(); loadChatStats();
     $('#chatForm')?.addEventListener('submit', event => { event.preventDefault(); sendLocalChatMessage(event.currentTarget); });
+    $('#chatReplyCancel')?.addEventListener('click', () => { chatReplyTarget = null; clearChatReply(); });
+    $('#chatActionMenu [data-chat-edit]')?.addEventListener('click', editChatMessage); $('#chatActionMenu [data-chat-delete]')?.addEventListener('click', deleteChatMessage);
+    const messages = $('#chatMessages'); let startX = 0; let activeRow = null; let holdTimer = null;
+    messages?.addEventListener('pointerdown', event => { const row = event.target.closest('[data-chat-message]'); if (!row) return; startX = event.clientX; activeRow = row; holdTimer = window.setTimeout(() => showChatActionMenu(row.dataset.chatMessage, row), 550); });
+    messages?.addEventListener('pointerup', event => { if (!activeRow) return; window.clearTimeout(holdTimer); const row = activeRow; const distance = event.clientX - startX; activeRow = null; if (Math.abs(distance) >= 42) { setChatReply(row.dataset.chatMessage); row.classList.remove('is-swiping'); } else if (event.target.closest('.chat-bubble') && !event.target.closest('[data-chat-react]')) showChatActionMenu(row.dataset.chatMessage, row); });
+    messages?.addEventListener('pointercancel', () => { window.clearTimeout(holdTimer); activeRow = null; });
+    document.addEventListener('click', event => { if (!event.target.closest('#chatActionMenu, [data-chat-message]')) closeChatActionMenu(); });
     $('#chatSettingsButton')?.addEventListener('click', openChatSettings); $('#chatSettingsClose')?.addEventListener('click', closeChatSettings); $('#chatSettingsPanel')?.addEventListener('click', event => { if (event.target.id === 'chatSettingsPanel') closeChatSettings(); });
     $('#chatNoticeSwitch')?.addEventListener('change', event => { chatSettings.notifications = event.target.checked; saveChatState(); toast(event.target.checked ? 'تم تفعيل إشعارات الدردشة.' : 'تم إيقاف إشعارات الدردشة.'); });
     $('#chatBioForm')?.addEventListener('submit', event => { event.preventDefault(); chatSettings.bio = String($('[name="chatBio"]', event.currentTarget)?.value || '').trim(); saveChatState(); renderChatPage(); closeChatSettings(); toast('تم حفظ نبذة الدردشة.'); });
