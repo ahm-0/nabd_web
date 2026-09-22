@@ -162,6 +162,8 @@
   const adminLoadedTabs = new Set();
   let adminNewsActivity = [];
   let adminSupportThreads = [];
+  let adminChatStats = {};
+  let adminChatModerators = [];
   let newsModerators = [];
   let adminChartInstance = null;
   const defaultCustomCountdown = { title: 'هدفي الخاص', target: new Date('2027-01-01T08:00:00').getTime() };
@@ -2153,6 +2155,7 @@
     } catch (error) { console.warn('تعذر تحميل إحصائيات الدردشة', error); }
     const line = $('#chatStatsLine'); if (line) line.textContent = `${chatStats.total} مستخدم · ${chatStats.online} متصل الآن`;
   }
+  async function loadChatPlatformSettings() { if (!supabaseClient || !currentAuthUser?.id) return; const { data, error } = await supabaseClient.rpc('chat_get_platform_settings'); if (error || !Array.isArray(data) || !data[0]) return; const settings = data[0]; const announcement = $('#chatPlatformAnnouncement'); const form = $('#chatForm'); if (announcement) { announcement.textContent = settings.announcement || (!settings.enabled ? 'الدردشة متوقفة مؤقتاً من قبل الإدارة.' : ''); announcement.classList.toggle('hidden', !announcement.textContent); announcement.classList.toggle('is-disabled', settings.enabled === false); } if (form) { [...form.elements].forEach(element => { element.disabled = settings.enabled === false; }); } }
   async function loadPublicChat() {
     if (!supabaseClient || !currentAuthUser?.id) return;
     try {
@@ -2206,7 +2209,7 @@
   async function loadPrivateChatMessages() { if (!privateThread || !supabaseClient) return; const result = await supabaseClient.from('private_chat_messages').select('id,thread_id,sender_id,body,reaction,edited_at,created_at').eq('thread_id', privateThread.id).order('created_at', { ascending: true }).limit(120); if (result.error) return; privateChatMessages = result.data || []; const holder = $('#privateChatMessages'); if (holder) { holder.innerHTML = privateChatMessages.map(message => `<article class="private-bubble ${message.sender_id === currentAuthUser.id ? 'mine' : 'other'}"><p>${escapeHTML(message.body)}</p><small>${displayAdminDate(message.created_at)}</small></article>`).join(''); holder.scrollTop = holder.scrollHeight; } }
   async function sendPrivateChatMessage(form) { if (!privateThread || !supabaseClient) return; const input = $('[name="privateMessage"]', form); const text = String(input?.value || '').trim(); if (!text) return; const { error } = await supabaseClient.from('private_chat_messages').insert({ thread_id: privateThread.id, sender_id: currentAuthUser.id, body: text }); if (error) return toast('تعذر إرسال الرسالة الخاصة.'); input.value = ''; await loadPrivateChatMessages(); }
   function initChatPage() {
-    if (!$('#chatMessages')) return; renderChatPage(); loadChatStats(); void loadChatSettings(); void loadPublicChat(); void loadChatRequests();
+    if (!$('#chatMessages')) return; renderChatPage(); loadChatStats(); void loadChatPlatformSettings(); void loadChatSettings(); void loadPublicChat(); void loadChatRequests();
     $('#chatForm')?.addEventListener('submit', event => { event.preventDefault(); sendLocalChatMessage(event.currentTarget); });
     $('#chatReplyCancel')?.addEventListener('click', () => { chatReplyTarget = null; clearChatReply(); });
     $('#chatActionMenu [data-chat-edit]')?.addEventListener('click', editChatMessage); $('#chatActionMenu [data-chat-delete]')?.addEventListener('click', deleteChatMessage); $$('#chatReactionMenu [data-chat-reaction]').forEach(button => button.addEventListener('click', () => setChatReaction(button.dataset.chatReaction)));
@@ -2541,6 +2544,8 @@
     if (action === 'refresh-support') return void loadAdminSupport();
     if (action === 'support-reply') return void openSupportReply(button.dataset.supportId);
     if (action === 'user-delete') return void deleteAdminUser(button.dataset.adminId, button.dataset.adminName);
+    if (action === 'refresh-chat-admin') return void loadChatAdmin();
+    if (action === 'remove-chat-moderator') return void setChatAdminModerator(null, false, button.dataset.moderatorId);
   }
 
   const capacitorPlugin = name => window.Capacitor?.Plugins?.[name] || null;
@@ -2633,8 +2638,14 @@
 
   async function initStudySchedule() { if (!$('#studyTasks')) return; await loadStudyTasks(); const note = $('#studyNativeNote'); if (note) note.innerHTML = isNativeNabd() && capacitorPlugin('LocalNotifications') ? '<i class="fa-solid fa-mobile-screen-button"></i><span>التذكيرات الأصلية متاحة داخل التطبيق.</span>' : '<i class="fa-solid fa-globe"></i><span>يعمل الجدول في المتصفح؛ الإشعار الأصلي يحتاج جسر التطبيق.</span>'; renderStudyTasks(); }
 
-  const ADMIN_TABS = new Set(['overview', 'notifications', 'news', 'support', 'users', 'moderators']);
-  const adminTabLoaders = { overview: loadAdminOverview, notifications: loadAdminNotifications, news: loadAdminNewsActivity, support: loadAdminSupport, users: loadAdminUsers, moderators: loadNewsModerators };
+  function renderChatAdminModerators() { const holder = $('#chatModeratorsRows'); if (!holder) return; holder.innerHTML = adminChatModerators.length ? adminChatModerators.map(item => `<article class="news-moderator-row"><div><b>${escapeHTML(item.name || item.email || 'مستخدم')}</b><small dir="ltr">${escapeHTML(item.email || item.user_id)}</small></div><button class="danger-button" type="button" data-admin-action="remove-chat-moderator" data-moderator-id="${escapeHTML(item.user_id)}"><i class="fa-solid fa-user-minus"></i><span>إزالة</span></button></article>`).join('') : '<div class="admin-empty">لا يوجد مشرفو دردشة حاليًا.</div>'; }
+  function renderChatAdminStats() { const stats = adminChatStats || {}; setText('adminChatTotalUsers', stats.total_users || 0); setText('adminChatOnlineUsers', stats.online_users || 0); setText('adminChatTodayMessages', stats.today_messages || 0); setText('adminChatPrivateRequests', stats.private_requests || 0); const top = $('#adminChatTopUsers'); const users = Array.isArray(stats.top_users) ? stats.top_users : []; if (top) top.innerHTML = users.length ? users.map((user, index) => `<div class="admin-chat-top-user"><b>${index + 1}</b><span>${escapeHTML(user.name || 'طالب')}</span><small>${Number(user.messages || 0)} رسالة</small></div>`).join('') : '<div class="admin-empty">لا توجد بيانات نشاط بعد.</div>'; }
+  async function loadChatAdmin() { if (!supabaseClient || !remoteAdminVerified) return; const stats = await supabaseClient.rpc('chat_admin_get_stats'); if (!stats.error) { adminChatStats = stats.data || {}; renderChatAdminStats(); } else console.warn('تعذر تحميل إحصائيات الدردشة', stats.error); const moderators = await supabaseClient.rpc('chat_admin_list_moderators'); if (!moderators.error) { adminChatModerators = moderators.data || []; renderChatAdminModerators(); } const settings = await supabaseClient.rpc('chat_admin_get_settings'); if (!settings.error && settings.data) { const enabled = $('#adminChatEnabled'); const announcement = $('[name="announcement"]', $('#adminChatAnnouncementForm')); if (enabled) enabled.checked = settings.data.enabled !== false; if (announcement) announcement.value = settings.data.announcement || ''; } }
+  async function setChatAdminModerator(form, enabled = true, userId = null) { const id = userId || String(new FormData(form).get('user_ref') || '').trim(); if (!id) return toast('أدخل البريد الإلكتروني أو UUID للمستخدم.'); const result = await supabaseClient.rpc('chat_admin_set_moderator', { p_user_ref: id, p_enabled: enabled }); if (result.error) return toast(result.error.message || 'تعذر تحديث مشرف الدردشة.'); if (form) form.reset(); await loadChatAdmin(); toast(enabled ? 'تمت إضافة مشرف الدردشة.' : 'تمت إزالة مشرف الدردشة.'); }
+  async function saveChatAdminSettings(form) { const enabled = $('#adminChatEnabled')?.checked !== false; const announcement = String(new FormData(form).get('announcement') || ''); const result = await supabaseClient.rpc('chat_admin_update_settings', { p_enabled: enabled, p_announcement: announcement || null }); if (result.error) return toast(result.error.message || 'تعذر حفظ إعدادات الدردشة.'); toast('تم حفظ إعدادات الدردشة.'); }
+  async function sendChatAdminMessage(form) { const data = new FormData(form); const result = await supabaseClient.rpc('chat_admin_send_message', { p_title: String(data.get('title') || ''), p_body: String(data.get('body') || '') }); if (result.error) return toast(result.error.message || 'تعذر إرسال رسالة الدردشة.'); form.reset(); toast('تم إرسال الرسالة لجميع المستخدمين.'); }
+  const ADMIN_TABS = new Set(['overview', 'notifications', 'news', 'support', 'users', 'moderators', 'chat']);
+  const adminTabLoaders = { overview: loadAdminOverview, notifications: loadAdminNotifications, news: loadAdminNewsActivity, support: loadAdminSupport, users: loadAdminUsers, moderators: loadNewsModerators, chat: loadChatAdmin };
   async function loadAdminTabData(tab = activeAdminTab, force = false) {
     if (!remoteAdminVerified || !supabaseClient) return;
     if (!force && adminLoadedTabs.has(tab)) return;
@@ -2665,6 +2676,9 @@
     if (adminControlsBound) return;
     adminControlsBound = true;
     $('#adminStudentSearch')?.addEventListener('input', event => renderAdminStudents(event.target.value));
+    $('#chatModeratorForm')?.addEventListener('submit', event => { event.preventDefault(); void setChatAdminModerator(event.currentTarget); });
+    $('#adminChatAnnouncementForm')?.addEventListener('submit', event => { event.preventDefault(); void saveChatAdminSettings(event.currentTarget); });
+    $('#adminChatMessageForm')?.addEventListener('submit', event => { event.preventDefault(); void sendChatAdminMessage(event.currentTarget); });
     $('#adminAnalyticsSwitcher')?.addEventListener('click', event => { const button = event.target.closest('[data-analytics-metric]'); if (!button) return; activeAnalyticsMetric = button.dataset.analyticsMetric || 'regions'; $$('#adminAnalyticsSwitcher [data-analytics-metric]').forEach(item => { const active = item === button; item.classList.toggle('is-active', active); item.setAttribute('aria-pressed', String(active)); }); renderAdminAnalytics(); });
     $('#adminTabs')?.addEventListener('keydown', event => {
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
