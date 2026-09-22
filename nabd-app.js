@@ -2169,7 +2169,9 @@
   async function loadPublicChat() {
     if (!supabaseClient || !currentAuthUser?.id) return;
     try {
-      const { data, error } = await supabaseClient.from('public_chat_messages').select('id,sender_id,body,reply_to_id,reaction,edited_at,created_at,pinned_at,pinned_by').order('created_at', { ascending: true }).limit(120);
+      let result = await supabaseClient.from('public_chat_messages').select('id,sender_id,body,reply_to_id,reaction,edited_at,created_at,pinned_at,pinned_by').order('created_at', { ascending: true }).limit(120);
+      if (result.error) result = await supabaseClient.from('public_chat_messages').select('id,sender_id,body,reply_to_id,reaction,edited_at,created_at').order('created_at', { ascending: true }).limit(120);
+      const { data, error } = result;
       if (error) throw error;
       const ids = [...new Set((data || []).map(item => item.sender_id).filter(Boolean))];
       if (ids.length) { const profiles = await supabaseClient.from('student_profiles').select('user_id,first_name,father_name,family_name,study_stage,province,avatar_url,bio').in('user_id', ids); (profiles.data || []).forEach(profile => chatProfiles.set(profile.user_id, profile)); }
@@ -2219,12 +2221,30 @@
   function closeChatProfile() { $('#chatProfilePanel')?.classList.remove('show'); chatProfileTarget = null; }
   async function requestPrivateChat() { if (!chatProfileTarget?.user_id || !supabaseClient || !currentAuthUser?.id) return toast('سجّل الدخول لبدء دردشة خاصة.'); const { error } = await supabaseClient.rpc('chat_send_private_request', { p_recipient: chatProfileTarget.user_id }); closeChatProfile(); toast(error ? (error.message || 'تعذر إرسال الطلب.') : 'تم إرسال طلب الدردشة الخاصة.'); }
   async function respondChatRequest(id, accept) { if (!supabaseClient) return; const { error } = await supabaseClient.rpc('chat_respond_private_request', { p_request: id, p_accept: accept }); if (error) return toast(error.message || 'تعذر تحديث الطلب.'); await loadChatRequests(); toast(accept ? 'تم قبول طلب الدردشة.' : 'تم رفض الطلب.'); }
-  async function openPrivateChat(userId) { if (!supabaseClient || !currentAuthUser?.id || !userId) return toast('يلزم تسجيل الدخول لفتح الدردشة الخاصة.'); const { data, error } = await supabaseClient.rpc('chat_get_or_create_thread', { p_other_user: userId }); if (error) return toast(error.message || 'تعذر فتح الدردشة الخاصة.'); privateThread = data; const profile = chatProfiles.get(userId) || {}; $('#privateChatName').textContent = `${profile.first_name || ''} ${profile.father_name || ''} ${profile.family_name || ''}`.replace(/\s+/g, ' ').trim() || 'دردشة خاصة'; $('#privateChatAvatar').innerHTML = profile.avatar_url ? `<img src="${escapeHTML(profile.avatar_url)}" alt="">` : 'ط'; $('#privateChatPanel')?.classList.add('show'); await loadPrivateChatMessages(); }
+  async function openPrivateChat(userId) { if (!supabaseClient || !currentAuthUser?.id || !userId) return toast('يلزم تسجيل الدخول لفتح الدردشة الخاصة.'); const { data, error } = await supabaseClient.rpc('chat_get_or_create_thread', { p_other_user: userId }); if (error) { const request = await supabaseClient.rpc('chat_send_private_request', { p_recipient: userId }); return toast(request.error ? (error.message || 'تعذر فتح الدردشة الخاصة.') : 'أُرسِل طلب الدردشة الخاصة، وستفتح بعد موافقة الطرف الآخر.'); } closeChatProfile(); privateThread = data; const profile = chatProfiles.get(userId) || {}; $('#privateChatName').textContent = `${profile.first_name || ''} ${profile.father_name || ''} ${profile.family_name || ''}`.replace(/\s+/g, ' ').trim() || 'دردشة خاصة'; $('#privateChatAvatar').innerHTML = profile.avatar_url ? `<img src="${escapeHTML(profile.avatar_url)}" alt="">` : 'ط'; $('#privateChatPanel')?.classList.add('show'); await loadPrivateChatMessages(); }
   async function loadPrivateChatMessages() { if (!privateThread || !supabaseClient) return; const result = await supabaseClient.from('private_chat_messages').select('id,thread_id,sender_id,body,reaction,edited_at,created_at').eq('thread_id', privateThread.id).order('created_at', { ascending: true }).limit(120); if (result.error) return; privateChatMessages = result.data || []; const holder = $('#privateChatMessages'); if (holder) { holder.innerHTML = privateChatMessages.map(message => `<article class="private-bubble ${message.sender_id === currentAuthUser.id ? 'mine' : 'other'}"><p>${escapeHTML(message.body)}</p><small>${displayAdminDate(message.created_at)}</small></article>`).join(''); holder.scrollTop = holder.scrollHeight; } }
   async function sendPrivateChatMessage(form) { if (!privateThread || !supabaseClient) return; const input = $('[name="privateMessage"]', form); const text = String(input?.value || '').trim(); if (!text) return; const { error } = await supabaseClient.from('private_chat_messages').insert({ thread_id: privateThread.id, sender_id: currentAuthUser.id, body: text }); if (error) return toast('تعذر إرسال الرسالة الخاصة.'); input.value = ''; await loadPrivateChatMessages(); }
+  let chatRefreshInFlight = null;
+  async function refreshChatAfterSession() {
+    if (!$('#chatMessages') || !supabaseClient || !currentAuthUser?.id) return;
+    if (chatRefreshInFlight) return chatRefreshInFlight;
+    chatRefreshInFlight = (async () => {
+      setSectionLoading('.chat-main', true, 'جارٍ تحميل الدردشة');
+      try {
+        const moderator = await supabaseClient.rpc('chat_can_moderate');
+        chatCanModerate = !moderator.error && moderator.data === true;
+      } catch { chatCanModerate = false; }
+      await Promise.allSettled([loadChatStats(), loadChatPlatformSettings(), loadChatSettings(), loadPublicChat(), loadChatRequests()]);
+      renderChatPage();
+      setSectionLoading('.chat-main', false);
+      chatRefreshInFlight = null;
+    })();
+    return chatRefreshInFlight;
+  }
+
   async function initChatPage() {
     if (!$('#chatMessages')) return;
-    setSectionLoading('.chat-main', true, 'جارٍ تحميل الدردشة'); renderChatPage(); loadChatStats(); if (supabaseClient && currentAuthUser?.id) { const moderator = await supabaseClient.rpc('chat_can_moderate'); chatCanModerate = !moderator.error && moderator.data === true; } void loadChatPlatformSettings(); void loadChatSettings(); void loadPublicChat().finally(() => setSectionLoading('.chat-main', false)); void loadChatRequests();
+    setSectionLoading('.chat-main', true, 'جارٍ تحميل الدردشة'); renderChatPage(); void refreshChatAfterSession();
     $('#chatForm')?.addEventListener('submit', event => { event.preventDefault(); sendLocalChatMessage(event.currentTarget); });
     $('#chatReplyCancel')?.addEventListener('click', () => { chatReplyTarget = null; clearChatReply(); });
     $('#chatActionMenu [data-chat-edit]')?.addEventListener('click', editChatMessage); $('#chatActionMenu [data-chat-delete]')?.addEventListener('click', deleteChatMessage); $$('#chatReactionMenu [data-chat-reaction]').forEach(button => button.addEventListener('click', () => setChatReaction(button.dataset.chatReaction)));
@@ -2942,7 +2962,7 @@
       if (!ready) return;
       startUsageTracking();
       updateProfileUI();
-      if (PAGE === 'chat') renderChatPage();
+      if (PAGE === 'chat') { renderChatPage(); void refreshChatAfterSession(); }
       syncAdminStudent(false);
       updateNotificationBadges();
       if (PAGE === 'notifications') initNotifications();
