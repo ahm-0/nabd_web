@@ -767,11 +767,14 @@
     const originalLabel = button?.querySelector('span')?.textContent || 'مشاركة صورة العداد';
     if (button) { button.disabled = true; button.classList.add('is-loading'); const label = button.querySelector('span'); if (label) label.textContent = 'جارٍ تجهيز الصورة...'; }
     try {
-      const canvas = await window.html2canvas(target, { backgroundColor: getComputedStyle(target).backgroundColor || '#0b1220', scale: Math.min(2, Math.max(1, window.devicePixelRatio || 1)), useCORS: true, logging: false });
+      if (document.fonts?.ready) await document.fonts.ready;
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const canvas = await window.html2canvas(target, { backgroundColor: getComputedStyle(target).backgroundColor || '#0b1220', scale: Math.min(2, Math.max(1, window.devicePixelRatio || 1)), useCORS: true, allowTaint: false, imageTimeout: 12000, logging: false });
       const dataUrl = canvas.toDataURL('image/png');
       const response = await fetch(dataUrl); const blob = await response.blob(); const file = new File([blob], 'nabd-countdown.png', { type: 'image/png' });
       const title = `عداد ${exam.title}`; const text = `أستعد لـ ${exam.title} في منصة نبض التفوق. ${exam.note}`;
       const nativeShare = capacitorPlugin('Share'); const filesystem = capacitorPlugin('Filesystem');
+      if (window.NabdAndroid?.shareImage) { await window.NabdAndroid.shareImage(dataUrl, title, text); return; }
       if (isNativeNabd() && nativeShare?.share && filesystem?.writeFile) {
         const saved = await filesystem.writeFile({ path: `nabd-countdown-${Date.now()}.png`, data: dataUrl.split(',')[1], directory: 'CACHE', recursive: true });
         if (saved?.uri) { await nativeShare.share({ title, text, files: [saved.uri], dialogTitle: 'مشاركة صورة العداد' }); return; }
@@ -1230,8 +1233,11 @@
     dock.dataset.viewportLayer = 'true';
   }
 
+  function setSectionLoading(selector, active, label = 'جارٍ التحميل') { const root = typeof selector === 'string' ? $(selector) : selector; if (!root) return; let indicator = root.querySelector(':scope > .section-loading-indicator'); if (active) { if (!indicator) { indicator = document.createElement('div'); indicator.className = 'section-loading-indicator'; indicator.setAttribute('role', 'status'); root.prepend(indicator); } indicator.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>${escapeHTML(label)}</span>`; indicator.hidden = false; root.setAttribute('aria-busy', 'true'); } else if (indicator) { indicator.hidden = true; root.removeAttribute('aria-busy'); } }
+
   async function initNews() {
     if (!$('#feed')) return;
+    setSectionLoading('.news-material-main', true, 'جارٍ تحديث الأخبار');
     elevateNewsComposer();
     const dock = $('#newsComposerDock');
     if (dock) dock.hidden = true;
@@ -1253,7 +1259,7 @@
     }
     resizeNewsComposer();
 
-    if (!supabaseClient) return;
+    if (!supabaseClient) { setSectionLoading('.news-material-main', false); return; }
     try {
       await loadRemoteNewsPosts();
       const { data, error } = await supabaseClient.rpc('news_is_admin');
@@ -1267,6 +1273,7 @@
     document.body.classList.toggle('news-admin', newsIsAdmin);
     if (dock) dock.hidden = !newsIsAdmin;
     renderFeed();
+    setSectionLoading('.news-material-main', false);
   }
 
   function dateInputValue(date = new Date()) {
@@ -2208,7 +2215,7 @@
   function deleteChatMessage() { const id = activeChatMessageId; closeChatActionMenu(); if (!id) return; if (!window.confirm('حذف هذه الرسالة؟')) return; chatMessages = chatMessages.filter(message => message.id !== id); saveChatState(); renderChatPage(); toast('تم حذف الرسالة.'); }
   async function toggleChatPin(remoteId) { if (!chatCanModerate || !remoteId || !supabaseClient) return; const message = remotePublicChatMessages.find(item => item.remoteId === remoteId); const next = !message?.pinned; const { error } = await supabaseClient.rpc('chat_toggle_pin', { p_message: remoteId, p_pinned: next }); if (error) return toast(error.message || 'تعذر تحديث تثبيت الرسالة.'); remotePublicChatMessages.forEach(item => { item.pinned = item.remoteId === remoteId ? next : false; }); pinnedChatMessage = next ? message : null; if (message) message.pinned = next; renderChatPage(); toast(next ? 'تم تثبيت الرسالة أعلى الدردشة.' : 'تم إلغاء تثبيت الرسالة.'); }
   function scrollToPinnedMessage(id) { document.getElementById(`chat-message-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-  function openChatProfile(userId) { const profile = chatProfiles.get(userId); if (!profile) return toast('معلومات هذا الطالب غير متاحة حالياً.'); chatProfileTarget = profile; const name = `${profile.first_name || ''} ${profile.father_name || ''} ${profile.family_name || ''}`.replace(/\s+/g, ' ').trim() || 'طالب نبض التفوق'; const avatar = $('#chatProfileAvatar'); if (avatar) avatar.innerHTML = profile.avatar_url ? `<img src="${escapeHTML(profile.avatar_url)}" alt="">` : escapeHTML(name.slice(0, 2)); $('#chatProfileName').textContent = name; $('#chatProfileStage').textContent = `${profile.study_stage || 'طالب'} · ${profile.province || 'سورية'}`; $('#chatProfileBio').textContent = profile.bio || 'لا توجد نبذة مضافة.'; $('#chatProfileView').href = `profile.html?user=${encodeURIComponent(userId)}`; $('#chatProfilePanel')?.classList.add('show'); }
+  async function openChatProfile(userId) { if (!userId) return; let profile = chatProfiles.get(userId); if (!profile && supabaseClient) { const result = await supabaseClient.from('student_profiles').select('user_id,first_name,father_name,family_name,study_stage,province,avatar_url,bio,gender,birth_date').eq('user_id', userId).maybeSingle(); if (!result.error && result.data) { profile = result.data; chatProfiles.set(userId, profile); } } if (!profile) return toast('معلومات هذا الطالب غير متاحة حالياً.'); chatProfileTarget = profile; const name = `${profile.first_name || ''} ${profile.father_name || ''} ${profile.family_name || ''}`.replace(/\s+/g, ' ').trim() || 'طالب نبض التفوق'; const avatar = $('#chatProfileAvatar'); if (avatar) avatar.innerHTML = profile.avatar_url ? `<img src="${escapeHTML(profile.avatar_url)}" alt="">` : escapeHTML(name.slice(0, 2)); $('#chatProfileName').textContent = name; $('#chatProfileStage').textContent = `${profile.study_stage || 'طالب'} · ${profile.province || 'سورية'}`; $('#chatProfileBio').textContent = profile.bio || 'لا توجد نبذة مضافة.'; $('#chatProfileView').href = `profile.html?user=${encodeURIComponent(userId)}`; $('#chatProfilePanel')?.classList.add('show'); }
   function closeChatProfile() { $('#chatProfilePanel')?.classList.remove('show'); chatProfileTarget = null; }
   async function requestPrivateChat() { if (!chatProfileTarget?.user_id || !supabaseClient || !currentAuthUser?.id) return toast('سجّل الدخول لبدء دردشة خاصة.'); const { error } = await supabaseClient.rpc('chat_send_private_request', { p_recipient: chatProfileTarget.user_id }); closeChatProfile(); toast(error ? (error.message || 'تعذر إرسال الطلب.') : 'تم إرسال طلب الدردشة الخاصة.'); }
   async function respondChatRequest(id, accept) { if (!supabaseClient) return; const { error } = await supabaseClient.rpc('chat_respond_private_request', { p_request: id, p_accept: accept }); if (error) return toast(error.message || 'تعذر تحديث الطلب.'); await loadChatRequests(); toast(accept ? 'تم قبول طلب الدردشة.' : 'تم رفض الطلب.'); }
@@ -2216,7 +2223,8 @@
   async function loadPrivateChatMessages() { if (!privateThread || !supabaseClient) return; const result = await supabaseClient.from('private_chat_messages').select('id,thread_id,sender_id,body,reaction,edited_at,created_at').eq('thread_id', privateThread.id).order('created_at', { ascending: true }).limit(120); if (result.error) return; privateChatMessages = result.data || []; const holder = $('#privateChatMessages'); if (holder) { holder.innerHTML = privateChatMessages.map(message => `<article class="private-bubble ${message.sender_id === currentAuthUser.id ? 'mine' : 'other'}"><p>${escapeHTML(message.body)}</p><small>${displayAdminDate(message.created_at)}</small></article>`).join(''); holder.scrollTop = holder.scrollHeight; } }
   async function sendPrivateChatMessage(form) { if (!privateThread || !supabaseClient) return; const input = $('[name="privateMessage"]', form); const text = String(input?.value || '').trim(); if (!text) return; const { error } = await supabaseClient.from('private_chat_messages').insert({ thread_id: privateThread.id, sender_id: currentAuthUser.id, body: text }); if (error) return toast('تعذر إرسال الرسالة الخاصة.'); input.value = ''; await loadPrivateChatMessages(); }
   async function initChatPage() {
-    if (!$('#chatMessages')) return; renderChatPage(); loadChatStats(); if (supabaseClient && currentAuthUser?.id) { const moderator = await supabaseClient.rpc('chat_can_moderate'); chatCanModerate = !moderator.error && moderator.data === true; } void loadChatPlatformSettings(); void loadChatSettings(); void loadPublicChat(); void loadChatRequests();
+    if (!$('#chatMessages')) return;
+    setSectionLoading('.chat-main', true, 'جارٍ تحميل الدردشة'); renderChatPage(); loadChatStats(); if (supabaseClient && currentAuthUser?.id) { const moderator = await supabaseClient.rpc('chat_can_moderate'); chatCanModerate = !moderator.error && moderator.data === true; } void loadChatPlatformSettings(); void loadChatSettings(); void loadPublicChat().finally(() => setSectionLoading('.chat-main', false)); void loadChatRequests();
     $('#chatForm')?.addEventListener('submit', event => { event.preventDefault(); sendLocalChatMessage(event.currentTarget); });
     $('#chatReplyCancel')?.addEventListener('click', () => { chatReplyTarget = null; clearChatReply(); });
     $('#chatActionMenu [data-chat-edit]')?.addEventListener('click', editChatMessage); $('#chatActionMenu [data-chat-delete]')?.addEventListener('click', deleteChatMessage); $$('#chatReactionMenu [data-chat-reaction]').forEach(button => button.addEventListener('click', () => setChatReaction(button.dataset.chatReaction)));
@@ -2224,7 +2232,7 @@
     messages?.addEventListener('pointerdown', event => { const row = event.target.closest('[data-chat-message]'); if (!row) return; startX = event.clientX; activeRow = row; holdTimer = window.setTimeout(() => showChatActionMenu(row.dataset.chatMessage, row), 550); });
     messages?.addEventListener('pointerup', event => { if (!activeRow) return; window.clearTimeout(holdTimer); const row = activeRow; const distance = event.clientX - startX; activeRow = null; if (Math.abs(distance) >= 42) { setChatReply(row.dataset.chatMessage); row.classList.remove('is-swiping'); } else if (event.target.closest('.chat-bubble') && !event.target.closest('[data-chat-react]')) showChatActionMenu(row.dataset.chatMessage, row); });
     messages?.addEventListener('pointercancel', () => { window.clearTimeout(holdTimer); activeRow = null; });
-    document.addEventListener('click', event => { if (!event.target.closest('#chatActionMenu, [data-chat-message]')) closeChatActionMenu(); if (!event.target.closest('#chatReactionMenu, [data-chat-react]')) $('#chatReactionMenu')?.classList.remove('show'); const profileButton = event.target.closest('[data-chat-profile]'); if (profileButton) { event.preventDefault(); openChatProfile(profileButton.dataset.chatProfile); } const requestButton = event.target.closest('[data-chat-request]'); if (requestButton) void respondChatRequest(requestButton.dataset.chatRequest, requestButton.dataset.chatRequestAccept === 'true'); });
+    document.addEventListener('click', event => { if (!event.target.closest('#chatActionMenu, [data-chat-message]')) closeChatActionMenu(); if (!event.target.closest('#chatReactionMenu, [data-chat-react]')) $('#chatReactionMenu')?.classList.remove('show'); const profileButton = event.target.closest('[data-chat-profile]'); if (profileButton) { event.preventDefault(); void openChatProfile(profileButton.dataset.chatProfile); } const requestButton = event.target.closest('[data-chat-request]'); if (requestButton) void respondChatRequest(requestButton.dataset.chatRequest, requestButton.dataset.chatRequestAccept === 'true'); });
     $('#chatProfilePanel')?.addEventListener('click', event => { if (event.target.id === 'chatProfilePanel' || event.target.closest('[data-chat-profile-close]')) closeChatProfile(); }); $('#chatPrivateStart')?.addEventListener('click', () => { if (chatProfileTarget?.user_id) void openPrivateChat(chatProfileTarget.user_id); }); $('#chatRequestsButton')?.addEventListener('click', () => { renderChatRequests(); $('#chatRequestsPanel')?.classList.add('show'); }); $('#chatRequestsPanel')?.addEventListener('click', event => { if (event.target.id === 'chatRequestsPanel' || event.target.closest('[data-chat-requests-close]')) $('#chatRequestsPanel')?.classList.remove('show'); });
     $('#privateChatForm')?.addEventListener('submit', event => { event.preventDefault(); void sendPrivateChatMessage(event.currentTarget); }); $('[data-private-chat-close]')?.addEventListener('click', () => $('#privateChatPanel')?.classList.remove('show'));
     $('#chatPrivateSwitch')?.addEventListener('change', async event => { chatSettings.private_chat_enabled = event.target.checked; saveChatState(); if (supabaseClient && currentAuthUser?.id) await supabaseClient.from('chat_settings').upsert({ user_id: currentAuthUser.id, private_chat_enabled: event.target.checked, chat_notifications_enabled: chatSettings.notifications !== false, updated_at: new Date().toISOString() }); toast(event.target.checked ? 'تم السماح بطلبات الدردشة الخاصة.' : 'تم إغلاق طلبات الدردشة الخاصة.'); });
