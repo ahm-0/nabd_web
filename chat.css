@@ -47,3 +47,5 @@
 .chat-reaction-badge{background:transparent!important;color:var(--chat-primary)!important}
 
 [data-theme="light"] .chat-private-setting b,[data-theme="light"] .chat-private-setting small{color:#111827!important}
+
+.chat-bubble-row{touch-action:pan-y}
