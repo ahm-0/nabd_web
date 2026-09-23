@@ -51,3 +51,5 @@
 .chat-bubble-row{touch-action:pan-y}
 
 .section-loading-indicator[hidden]{display:none!important}
+
+.chat-action-buttons button.hidden{display:none!important}
