@@ -13,27 +13,36 @@
 
   async function syncOneSignalSubscription() {
     if (!supabaseClient || !currentAuthUser?.id) return;
-    const oneSignal = window.Capacitor?.Plugins?.OneSignal || null;
-    if (!oneSignal) return;
+    const oneSignal = window.OneSignal || window.Capacitor?.Plugins?.OneSignal || null;
+    if (!oneSignal) { console.warn('OneSignal غير متاح داخل جسر Capacitor. تأكد من تسجيل الإضافة في التطبيق.'); return; }
     try {
       const appId = window.NABD_ONESIGNAL_APP_ID || document.querySelector('meta[name="onesignal-app-id"]')?.content || '';
       if (appId && typeof oneSignal.initialize === 'function') await oneSignal.initialize(appId);
-      if (typeof oneSignal.login === 'function') await oneSignal.login(currentAuthUser.id);
-      const subscription = oneSignal.User?.pushSubscription || oneSignal.pushSubscription;
-      const readId = async () => {
-        const value = typeof subscription?.getId === 'function' ? await subscription.getId() : subscription?.id;
-        return typeof value === 'string' ? value : value?.id || value?.value || '';
+      if (typeof oneSignal.login === 'function') await oneSignal.login(String(currentAuthUser.id));
+      const userApi = oneSignal.User || oneSignal.user || null;
+      const subscription = userApi?.pushSubscription || oneSignal.pushSubscription || null;
+      const getOneSignalId = async () => {
+        if (typeof userApi?.getOnesignalId === 'function') return await userApi.getOnesignalId();
+        if (typeof userApi?.getOneSignalId === 'function') return await userApi.getOneSignalId();
+        return userApi?.onesignalId || userApi?.id || null;
       };
-      const save = async id => {
-        if (!id) return;
+      const getSubscriptionId = async () => {
+        if (typeof subscription?.getIdAsync === 'function') return await subscription.getIdAsync();
+        if (typeof subscription?.getId === 'function') return await subscription.getId();
+        return subscription?.id || null;
+      };
+      const save = async (oneSignalId, subscriptionId) => {
+        const id = oneSignalId || subscriptionId;
+        if (!id) { console.warn('لم يجهز OneSignal معرّف المستخدم/الاشتراك بعد.'); return; }
+        const now = new Date().toISOString();
         const platform = window.Capacitor?.getPlatform?.() || (window.Capacitor?.isNativePlatform?.() ? 'native' : 'web');
-        const { error } = await supabaseClient.from('user_push_subscriptions').upsert({ user_id: currentAuthUser.id, onesignal_id: id, platform, last_seen_at: new Date().toISOString(), updated_at: new Date().toISOString() }, { onConflict: 'user_id,onesignal_id' });
-        if (error) console.warn('تعذر حفظ معرّف OneSignal', error);
+        const { error } = await supabaseClient.from('user_push_subscriptions').upsert({ user_id: currentAuthUser.id, onesignal_id: id, subscription_id: subscriptionId || null, platform, last_seen_at: now, updated_at: now }, { onConflict: 'user_id,onesignal_id' });
+        if (error) console.warn('تعذر حفظ معرّف OneSignal في Supabase', error); else console.info('تم حفظ معرّف OneSignal للمستخدم الحالي');
       };
-      await save(await readId());
-      if (!oneSignalObserverBound && typeof subscription?.addObserver === 'function') {
+      await save(await getOneSignalId(), await getSubscriptionId());
+      if (!oneSignalObserverBound && typeof subscription?.addEventListener === 'function') {
         oneSignalObserverBound = true;
-        subscription.addObserver(event => { const id = event?.current?.id || event?.id; if (id) void save(id); });
+        subscription.addEventListener('change', event => { const current = event?.current || {}; void save(current.id || null, current.id || null); });
       }
     } catch (error) { console.warn('تعذر مزامنة OneSignal', error); }
   }
