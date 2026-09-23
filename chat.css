@@ -25,3 +25,5 @@
 
 /* تصحيح نهائي لمحاذاة الرسائل والنوافذ */
 .chat-bubble-row.mine,.chat-bubble-row.other{flex-direction:row!important;direction:rtl!important}.chat-bubble-row .chat-avatar,.chat-bubble-row .chat-avatar-static{margin-inline-start:1px}.chat-profile-panel,.chat-requests-panel,.private-chat-panel{overscroll-behavior:contain}.chat-profile-panel.show,.chat-requests-panel.show,.private-chat-panel.show{animation:chatPanelIn .18s ease-out both}.chat-profile-card,.chat-requests-card{max-height:calc(100dvh - 28px);overflow:auto}.chat-reaction-menu{touch-action:manipulation}.chat-reaction-menu button:focus-visible,.chat-react:focus-visible,.chat-avatar:focus-visible{outline:2px solid #5ac8f5;outline-offset:2px}@keyframes chatPanelIn{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:reduce){.chat-profile-panel.show,.chat-requests-panel.show{animation:none}}
+
+.chat-message-name{border:0;background:transparent;color:inherit;font:inherit;font-weight:800;padding:0;text-align:right;cursor:pointer}.chat-message-name:hover{text-decoration:underline;color:var(--primary)}
