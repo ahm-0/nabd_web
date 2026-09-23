@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-09-23-02';
+const CACHE_VERSION = '2026-09-23-03';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -7,6 +7,7 @@ const APP_SHELL = [
   './index.html',
   './about.html',
   './admin-dashboard.html',
+  './chat.html',
   './advertising.html',
   './assistant.html',
   './auth.html',
@@ -52,6 +53,7 @@ const APP_SHELL = [
   './vendor/html2canvas/html2canvas.min.js',
   './curriculum-cards.css',
   './channels.css',
+  './chat.css',
   './notifications.css',
   './nabd-admin-ui.css',
   './premium.css',
