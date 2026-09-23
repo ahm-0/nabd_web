@@ -9,6 +9,34 @@
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
   const supabaseClient = window.nabdSupabase;
   let currentAuthUser = null;
+  let oneSignalObserverBound = false;
+
+  async function syncOneSignalSubscription() {
+    if (!supabaseClient || !currentAuthUser?.id) return;
+    const oneSignal = window.Capacitor?.Plugins?.OneSignal || null;
+    if (!oneSignal) return;
+    try {
+      const appId = window.NABD_ONESIGNAL_APP_ID || document.querySelector('meta[name="onesignal-app-id"]')?.content || '';
+      if (appId && typeof oneSignal.initialize === 'function') await oneSignal.initialize(appId);
+      if (typeof oneSignal.login === 'function') await oneSignal.login(currentAuthUser.id);
+      const subscription = oneSignal.User?.pushSubscription || oneSignal.pushSubscription;
+      const readId = async () => {
+        const value = typeof subscription?.getId === 'function' ? await subscription.getId() : subscription?.id;
+        return typeof value === 'string' ? value : value?.id || value?.value || '';
+      };
+      const save = async id => {
+        if (!id) return;
+        const platform = window.Capacitor?.getPlatform?.() || (window.Capacitor?.isNativePlatform?.() ? 'native' : 'web');
+        const { error } = await supabaseClient.from('user_push_subscriptions').upsert({ user_id: currentAuthUser.id, onesignal_id: id, platform, last_seen_at: new Date().toISOString(), updated_at: new Date().toISOString() }, { onConflict: 'user_id,onesignal_id' });
+        if (error) console.warn('تعذر حفظ معرّف OneSignal', error);
+      };
+      await save(await readId());
+      if (!oneSignalObserverBound && typeof subscription?.addObserver === 'function') {
+        oneSignalObserverBound = true;
+        subscription.addObserver(event => { const id = event?.current?.id || event?.id; if (id) void save(id); });
+      }
+    } catch (error) { console.warn('تعذر مزامنة OneSignal', error); }
+  }
 
   async function requireStudentSession() {
     if (!supabaseClient) { window.location.replace('auth.html'); return false; }
@@ -23,6 +51,7 @@
     }
     if (lastError || !session) { window.location.replace('auth.html'); return false; }
     currentAuthUser = session.user;
+    void syncOneSignalSubscription();
     const expandedSelect = 'user_id,first_name,father_name,family_name,study_stage,province,governorate,gender,email,avatar_url,bio,daily_usage_minutes,usage_day,last_usage_at';
     let { data: profile, error: profileError } = await supabaseClient.from('student_profiles').select(expandedSelect).eq('user_id', currentAuthUser.id).maybeSingle();
     if (profileError) ({ data: profile, error: profileError } = await supabaseClient.from('student_profiles').select('user_id,first_name,father_name,family_name,study_stage,email,avatar_url,bio').eq('user_id', currentAuthUser.id).maybeSingle());
