@@ -2190,10 +2190,10 @@
   function chatProfileBio() { return chatSettings.bio || student.bio || 'طالب في منصة نبض التفوق'; }
   async function loadChatStats() {
     if (supabaseClient) try {
-      const totalResult = await supabaseClient.from('student_profiles').select('user_id', { count: 'exact', head: true });
+      const totalResult = await supabaseClient.rpc('chat_get_total_users');
       const since = new Date(Date.now() - 5 * 60 * 1000).toISOString();
       const onlineResult = await supabaseClient.from('student_profiles').select('user_id', { count: 'exact', head: true }).gte('last_usage_at', since);
-      chatStats.total = Math.max(0, Number(totalResult.count || 0)); chatStats.online = Math.max(0, Math.min(chatStats.total, Number(onlineResult.count || 0)));
+      const total = totalResult.error ? 0 : Number(totalResult.data || 0); chatStats.total = Math.max(0, total); chatStats.online = Math.max(0, Math.min(chatStats.total, Number(onlineResult.count || 0)));
     } catch (error) { console.warn('تعذر تحميل إحصائيات الدردشة', error); }
     const line = $('#chatStatsLine'); if (line) line.textContent = `${chatStats.total} مستخدم · ${chatStats.online} متصل الآن`;
   }
