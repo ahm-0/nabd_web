@@ -49,3 +49,5 @@
 [data-theme="light"] .chat-private-setting b,[data-theme="light"] .chat-private-setting small{color:#111827!important}
 
 .chat-bubble-row{touch-action:pan-y}
+
+.section-loading-indicator[hidden]{display:none!important}

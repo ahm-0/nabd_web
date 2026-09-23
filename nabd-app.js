@@ -1234,7 +1234,7 @@
     dock.dataset.viewportLayer = 'true';
   }
 
-  function setSectionLoading(selector, active, label = 'جارٍ التحميل') { const root = typeof selector === 'string' ? $(selector) : selector; if (!root) return; let indicator = root.querySelector(':scope > .section-loading-indicator'); if (active) { if (!indicator) { indicator = document.createElement('div'); indicator.className = 'section-loading-indicator'; indicator.setAttribute('role', 'status'); root.prepend(indicator); } indicator.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>${escapeHTML(label)}</span>`; indicator.hidden = false; root.setAttribute('aria-busy', 'true'); } else if (indicator) { indicator.hidden = true; root.removeAttribute('aria-busy'); } }
+  function setSectionLoading(selector, active, label = 'جارٍ التحميل') { const root = typeof selector === 'string' ? $(selector) : selector; if (!root) return; let indicator = root.querySelector(':scope > .section-loading-indicator'); if (active) { if (!indicator) { indicator = document.createElement('div'); indicator.className = 'section-loading-indicator'; indicator.setAttribute('role', 'status'); root.prepend(indicator); } indicator.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>${escapeHTML(label)}</span>`; indicator.hidden = false; root.setAttribute('aria-busy', 'true'); } else { if (indicator) indicator.remove(); root.removeAttribute('aria-busy'); } }
 
   async function initNews() {
     if (!$('#feed')) return;
