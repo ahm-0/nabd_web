@@ -103,3 +103,18 @@
 
 /* قائمة الإدارة: لوحة جانبية خفيفة وسريعة على الهاتف */
 .admin-sections-menu-panel{width:min(82vw,310px)!important;max-height:min(76vh,620px)!important;padding:14px!important;border-radius:20px!important;box-shadow:0 18px 46px rgba(5,18,38,.24)!important}.admin-drawer-head{padding:2px 2px 10px!important}.admin-drawer-head h3{font-size:16px!important}.admin-drawer-head p{font-size:9px!important}.admin-dashboard-tabs{gap:4px!important;margin-top:8px!important}.admin-dashboard-tabs .admin-tab{min-height:42px!important;padding:8px 10px!important;border-radius:12px!important;font-size:11px!important}.admin-dashboard-tabs .admin-tab i{width:23px!important;font-size:14px!important}.admin-menu-actions{margin-top:10px!important;padding-top:10px!important;gap:5px!important}.admin-menu-actions .outline-button{min-height:38px!important;border-radius:11px!important;font-size:10px!important}.admin-sections-scrim{background:rgba(3,12,25,.28)!important;backdrop-filter:blur(1px)!important}.admin-sections-menu-panel .admin-tab.is-active{box-shadow:inset -3px 0 var(--primary)}@media(max-width:520px){.admin-sections-menu-panel{width:min(78vw,286px)!important;max-height:70vh!important}}
+
+/* إصلاح نهائي لقائمة النقاط: درج جانبي مستقل فوق المحتوى دون تداخل */
+.admin-compact-header{position:relative!important;z-index:200!important;overflow:visible!important}
+.admin-sections-menu{position:static!important;z-index:200!important}
+.admin-sections-menu summary{position:relative!important;z-index:1003!important;user-select:none!important}
+.admin-sections-scrim{position:fixed!important;inset:0!important;z-index:1001!important;opacity:0!important;pointer-events:none!important;background:rgba(2,8,18,.46)!important;backdrop-filter:none!important;transition:opacity .18s ease!important}
+.admin-sections-menu[open] .admin-sections-scrim{opacity:1!important;pointer-events:auto!important}
+.admin-sections-menu-panel{position:fixed!important;z-index:1002!important;inset-block:0!important;inset-inline-end:0!important;inset-inline-start:auto!important;top:auto!important;bottom:auto!important;width:min(86vw,360px)!important;height:100dvh!important;max-height:none!important;box-sizing:border-box!important;overflow-x:hidden!important;overflow-y:auto!important;padding:calc(18px + env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom))!important;border:0!important;border-inline-start:1px solid color-mix(in srgb,var(--primary) 28%,var(--line))!important;border-radius:24px 0 0 24px!important;background:var(--surface)!important;box-shadow:-18px 0 42px rgba(0,0,0,.28)!important;transform:translateX(104%)!important;transition:transform .22s cubic-bezier(.23,1,.32,1)!important;backdrop-filter:none!important}
+.admin-sections-menu[open] .admin-sections-menu-panel{transform:translateX(0)!important}
+.admin-sections-menu-panel .admin-drawer-head{position:relative!important;z-index:1!important}
+.admin-sections-menu-panel .admin-dashboard-tabs{display:grid!important;gap:5px!important;max-height:none!important;overflow:visible!important}
+.admin-sections-menu-panel .admin-tab{width:100%!important;box-sizing:border-box!important;justify-content:flex-start!important;text-align:right!important}
+.admin-menu-actions{position:relative!important;z-index:1!important}
+@media(max-width:520px){.admin-sections-menu-panel{width:min(88vw,340px)!important;border-radius:20px 0 0 20px!important}.admin-sections-menu-panel .admin-tab{min-height:44px!important}}
+@media(prefers-reduced-motion:reduce){.admin-sections-menu-panel,.admin-sections-scrim{transition:none!important}}

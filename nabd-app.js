@@ -3079,7 +3079,7 @@
       window.setTimeout(() => event.target.scrollIntoView({ block: 'center', behavior: 'smooth' }), 170);
     });
     $('#globalSearchInput')?.addEventListener('input', event => renderGlobalSearch(event.target.value));
-    document.addEventListener('keydown', event => { if (event.key === 'Escape' && $('#globalSearchDialog')?.classList.contains('show')) closeGlobalSearch(); });
+    document.addEventListener('keydown', event => { if (event.key !== 'Escape') return; if ($('#globalSearchDialog')?.classList.contains('show')) closeGlobalSearch(); document.querySelector('.admin-sections-menu[open]')?.removeAttribute('open'); });
   }
 
   function enableScreenCapture() {
