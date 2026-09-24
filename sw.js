@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-09-24-06';
+const CACHE_VERSION = '2026-09-24-07';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -8,6 +8,7 @@ const APP_SHELL = [
   './about.html',
   './admin-dashboard.html',
   './chat.html',
+  './private-chat.html',
   './advertising.html',
   './assistant.html',
   './auth.html',

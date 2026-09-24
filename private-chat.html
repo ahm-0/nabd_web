@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#152d50">
+  <title>دردشة خاصة | نبض التفوق</title>
+  <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;document.documentElement.dataset.theme=saved?.theme==='light'?'light':'dark'}catch{document.documentElement.dataset.theme='dark'}})();</script>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="nabd-ui.css?v=20260924-private-chat">
+  <link rel="stylesheet" href="chat.css?v=20260924-private-chat">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body data-page="private-chat" class="private-chat-page">
+  <div class="private-chat-screen">
+    <header class="private-page-topbar">
+      <button id="privateChatBack" class="chat-top-action" type="button" aria-label="العودة إلى الدردشة الجماعية"><i class="fa-solid fa-arrow-right"></i></button>
+      <span class="chat-private-avatar" id="privateChatAvatarPage">ط</span>
+      <div class="private-page-title"><b id="privateChatNamePage">دردشة خاصة</b><small id="privateChatStagePage">محادثة بين طرفين</small></div>
+      <span class="private-encrypted"><i class="fa-solid fa-lock"></i></span>
+    </header>
+    <main class="private-page-messages" id="privateChatMessagesPage" aria-live="polite"><div class="private-page-loading"><i class="fa-solid fa-spinner fa-spin"></i><span>جارٍ تحميل المحادثة...</span></div></main>
+    <form class="private-page-composer" id="privateChatFormPage">
+      <button class="private-attach" type="button" aria-label="إضافة مرفق"><i class="fa-solid fa-paperclip"></i></button>
+      <textarea name="privateMessage" rows="1" required maxlength="2000" placeholder="اكتب رسالة خاصة..."></textarea>
+      <button class="chat-send" type="submit" aria-label="إرسال"><i class="fa-solid fa-paper-plane"></i></button>
+    </form>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script src="vendor/supabase/supabase.js"></script>
+  <script src="supabase-client.js?v=20260823-session-fix"></script>
+  <script src="nabd-app.js?v=20260924-private-chat"></script>
+  <script src="material-ui.js?v=20260917-material3"></script>
+</body>
+</html>
