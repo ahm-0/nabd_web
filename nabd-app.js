@@ -2209,19 +2209,35 @@
     const line = $('#chatStatsLine'); if (line) line.textContent = `${chatStats.total} مستخدم · ${chatStats.online} متصل الآن`;
   }
   async function loadChatPlatformSettings() { if (!supabaseClient || !currentAuthUser?.id) return; const { data, error } = await supabaseClient.rpc('chat_get_platform_settings'); const settings = Array.isArray(data) ? data[0] : data; if (error || !settings) return; const enabled = settings.enabled !== false; const announcement = $('#chatPlatformAnnouncement'); const form = $('#chatForm'); if (announcement) { announcement.textContent = settings.announcement || (!enabled ? 'الدردشة متوقفة مؤقتاً من قبل الإدارة.' : ''); announcement.classList.toggle('hidden', !announcement.textContent); announcement.classList.toggle('is-disabled', !enabled); } if (form) { [...form.elements].forEach(element => { element.disabled = !enabled; }); } }
+  let publicChatLoadToken = 0;
   async function loadPublicChat() {
     if (!supabaseClient || !currentAuthUser?.id) return;
+    const requestToken = ++publicChatLoadToken;
     try {
       let result = await supabaseClient.from('public_chat_messages').select('id,sender_id,body,reply_to_id,reaction,edited_at,created_at,pinned_at,pinned_by').order('created_at', { ascending: false }).limit(CHAT_PAGE_SIZE);
       if (result.error) result = await supabaseClient.from('public_chat_messages').select('id,sender_id,body,reply_to_id,reaction,edited_at,created_at').order('created_at', { ascending: false }).limit(CHAT_PAGE_SIZE);
       const { data, error } = result;
       if (error) throw error;
-      const ids = [...new Set((data || []).map(item => item.sender_id).filter(Boolean))];
-      if (ids.length) { const profiles = await supabaseClient.rpc('chat_get_profiles', { p_user_ids: ids }); if (!profiles.error) (profiles.data || []).forEach(profile => chatProfiles.set(profile.user_id, profile)); else { const fallback = await supabaseClient.from('student_profiles').select('user_id,first_name,father_name,family_name,study_stage,province,avatar_url,bio').in('user_id', ids); (fallback.data || []).forEach(profile => chatProfiles.set(profile.user_id, profile)); } }
-      const remoteRows = [...(data || [])].reverse(); const remoteById = new Map(remoteRows.map(item => [item.id, item]));
-      remotePublicChatMessages = remoteRows.map(item => { const profile = chatProfiles.get(item.sender_id) || {}; const messageName = `${profile.first_name || ''} ${profile.father_name || ''} ${profile.family_name || ''}`.replace(/\s+/g, ' ').trim(); const reply = item.reply_to_id ? remoteById.get(item.reply_to_id) : null; return { id: `remote-${item.id}`, remoteId: item.id, sender: item.sender_id === currentAuthUser.id ? 'student' : 'other', senderId: item.sender_id, name: messageName || 'طالب نبض التفوق', text: item.body, createdAt: item.created_at, reaction: item.reaction || '', edited: Boolean(item.edited_at), pinned: Boolean(item.pinned_at), replyTo: reply ? { remoteId: reply.id, text: reply.body, name: 'رسالة سابقة' } : null, avatar: profile.avatar_url || '', stage: profile.study_stage || '', province: profile.province || '' }; });
+      const remoteRows = [...(data || [])].reverse();
+      const remoteById = new Map(remoteRows.map(item => [item.id, item]));
+      const hydrateMessages = () => remoteRows.map(item => { const profile = chatProfiles.get(item.sender_id) || {}; const messageName = `${profile.first_name || ''} ${profile.father_name || ''} ${profile.family_name || ''}`.replace(/\s+/g, ' ').trim(); const reply = item.reply_to_id ? remoteById.get(item.reply_to_id) : null; return { id: `remote-${item.id}`, remoteId: item.id, sender: item.sender_id === currentAuthUser.id ? 'student' : 'other', senderId: item.sender_id, name: messageName || 'طالب نبض التفوق', text: item.body, createdAt: item.created_at, reaction: item.reaction || '', edited: Boolean(item.edited_at), pinned: Boolean(item.pinned_at), replyTo: reply ? { remoteId: reply.id, text: reply.body, name: 'رسالة سابقة' } : null, avatar: profile.avatar_url || '', stage: profile.study_stage || '', province: profile.province || '' }; });
+      remotePublicChatMessages = hydrateMessages();
       pinnedChatMessage = remotePublicChatMessages.find(message => message.pinned) || null;
       renderChatPage();
+      const ids = [...new Set(remoteRows.map(item => item.sender_id).filter(Boolean))];
+      if (!ids.length) return;
+      void (async () => {
+        const profiles = await supabaseClient.rpc('chat_get_profiles', { p_user_ids: ids });
+        if (!profiles.error) (profiles.data || []).forEach(profile => chatProfiles.set(profile.user_id, profile));
+        else {
+          const fallback = await supabaseClient.from('student_profiles').select('user_id,first_name,father_name,family_name,study_stage,province,avatar_url,bio').in('user_id', ids);
+          (fallback.data || []).forEach(profile => chatProfiles.set(profile.user_id, profile));
+        }
+        if (requestToken !== publicChatLoadToken) return;
+        remotePublicChatMessages = hydrateMessages();
+        pinnedChatMessage = remotePublicChatMessages.find(message => message.pinned) || null;
+        renderChatPage();
+      })().catch(error => console.warn('تعذر تحميل ملفات مرسلي الدردشة', error));
     } catch (error) { console.warn('تعذر تحميل الدردشة العامة من Supabase', error); }
   }
   async function savePublicChatMessage(message) {
@@ -2285,14 +2301,14 @@
     if (chatRefreshInFlight) return chatRefreshInFlight;
     chatRefreshInFlight = (async () => {
       setSectionLoading('.chat-main', true, 'جارٍ تحميل الدردشة'); setChatLoading(true);
-      try {
-        const moderator = await supabaseClient.rpc('chat_can_moderate');
+      const moderatorCheck = supabaseClient.rpc('chat_can_moderate').then(moderator => {
         chatCanModerate = !moderator.error && moderator.data === true;
-      } catch { chatCanModerate = false; }
-      await Promise.allSettled([loadChatStats(), loadChatPlatformSettings(), loadChatSettings(), loadPublicChat(), loadChatRequests(), loadPrivateUnreadCount()]);
+      }).catch(() => { chatCanModerate = false; });
+      await loadPublicChat();
+      setSectionLoading('.chat-main', false); setChatLoading(false);
       startChatRealtime();
       renderChatPage();
-      setSectionLoading('.chat-main', false); setChatLoading(false);
+      void Promise.allSettled([moderatorCheck, loadChatStats(), loadChatPlatformSettings(), loadChatSettings(), loadChatRequests(), loadPrivateUnreadCount()]);
       chatRefreshInFlight = null;
     })();
     return chatRefreshInFlight;
@@ -2301,7 +2317,7 @@
   function setChatLoading(active) { const loader = $('#chatLoadingState'); if (loader) loader.hidden = !active; document.body.classList.toggle('chat-is-loading', Boolean(active)); }
   async function initChatPage() {
     if (!$('#chatMessages')) return;
-    setSectionLoading('.chat-main', true, 'جارٍ تحميل الدردشة'); renderChatPage(); void refreshChatAfterSession();
+     renderChatPage(); setChatLoading(false); void refreshChatAfterSession();
     $('#chatForm')?.addEventListener('submit', event => { event.preventDefault(); sendLocalChatMessage(event.currentTarget); });
     $('#chatReplyCancel')?.addEventListener('click', () => { chatReplyTarget = null; clearChatReply(); });
     $('#chatActionMenu [data-chat-edit]')?.addEventListener('click', editChatMessage); $('#chatActionMenu [data-chat-delete]')?.addEventListener('click', deleteChatMessage); $('#chatActionMenu [data-chat-pin-action]')?.addEventListener('click', () => { const message = remotePublicChatMessages.find(item => item.id === activeChatMessageId); closeChatActionMenu(); if (message?.remoteId) void toggleChatPin(message.remoteId); }); $$('#chatActionMenu [data-chat-reaction-option]').forEach(button => button.addEventListener('click', () => setChatReaction(button.dataset.chatReactionOption)));

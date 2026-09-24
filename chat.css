@@ -76,11 +76,24 @@
 @media(prefers-reduced-motion:reduce){.bottom-link.has-new i,.bottom-link.has-new:after{animation:none}.news-loading-state{animation:none}}
 
 /* Public chat alignment: other users on the right, current user on the left. */
-.chat-messages .chat-bubble-row{direction:ltr!important;align-self:flex-end!important;flex-direction:row!important}
-.chat-messages .chat-bubble-row.mine{align-self:flex-start!important;flex-direction:row-reverse!important}
+ .chat-messages .chat-bubble-row{direction:ltr!important;align-self:flex-start!important;flex-direction:row!important}
+ .chat-messages .chat-bubble-row.mine{align-self:flex-end!important;flex-direction:row-reverse!important}
 .chat-messages .chat-bubble-row .chat-bubble{direction:rtl!important;text-align:right!important}
 .chat-messages .chat-bubble-row.other .chat-bubble{border-top-left-radius:3px!important;border-top-right-radius:18px!important}
 .chat-messages .chat-bubble-row.mine .chat-bubble{border-top-right-radius:3px!important;border-top-left-radius:18px!important}
+
+/* WhatsApp-style reply quote above the composer, never beside the input. */
+ .chat-composer>.chat-reply-preview{display:flex!important;align-items:center!important;gap:9px!important;width:100%!important;box-sizing:border-box!important;min-height:48px!important;height:auto!important;margin:0 0 8px!important;padding:7px 10px!important;border:1px solid var(--chat-border)!important;border-right:4px solid var(--chat-primary)!important;border-radius:14px!important;background:var(--chat-primary-soft)!important;color:var(--chat-text)!important;direction:rtl!important}
+ .chat-composer>.chat-reply-preview.hidden{display:none!important}
+ .chat-reply-preview-icon{display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;border-radius:9px;background:var(--chat-primary)!important;color:#fff;font-size:12px}
+ .chat-composer>.chat-reply-preview>span{display:grid!important;flex:1!important;min-width:0!important;gap:2px!important}
+ .chat-composer>.chat-reply-preview b{font-size:10px!important;color:var(--chat-primary-strong)!important}
+ .chat-composer>.chat-reply-preview small{font-size:11px!important;color:var(--chat-muted)!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .chat-composer>.chat-reply-preview button{display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;border:0;border-radius:50%;background:transparent;color:var(--chat-muted);cursor:pointer}
+ .chat-composer>.chat-reply-preview button:hover{background:color-mix(in srgb,var(--chat-primary) 14%,transparent);color:var(--chat-primary-strong)}
+
+/* Keep cached/local messages visible while remote metadata is loading. */
+ .chat-main[aria-busy=true] .chat-messages{opacity:1!important;filter:none!important}
 
 /* Android-style chat surface: one coherent Material-inspired layer over the legacy themes. */
 :root{
