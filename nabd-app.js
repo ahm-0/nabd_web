@@ -2210,6 +2210,57 @@
   }
   async function loadChatPlatformSettings() { if (!supabaseClient || !currentAuthUser?.id) return; const { data, error } = await supabaseClient.rpc('chat_get_platform_settings'); const settings = Array.isArray(data) ? data[0] : data; if (error || !settings) return; const enabled = settings.enabled !== false; const announcement = $('#chatPlatformAnnouncement'); const form = $('#chatForm'); if (announcement) { announcement.textContent = settings.announcement || (!enabled ? 'الدردشة متوقفة مؤقتاً من قبل الإدارة.' : ''); announcement.classList.toggle('hidden', !announcement.textContent); announcement.classList.toggle('is-disabled', !enabled); } if (form) { [...form.elements].forEach(element => { element.disabled = !enabled; }); } }
   let publicChatLoadToken = 0;
+  function chatProfileName(profile = {}) {
+    return [profile.first_name, profile.father_name, profile.family_name]
+      .map(value => String(value || '').trim())
+      .filter(Boolean)
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+  function currentStudentChatProfile() {
+    return {
+      user_id: currentAuthUser?.id || '',
+      first_name: student.first || '',
+      father_name: student.father || '',
+      family_name: student.last || '',
+      study_stage: student.stage || '',
+      province: student.province || '',
+      avatar_url: student.avatar || '',
+      bio: student.bio || ''
+    };
+  }
+  async function loadChatProfiles(ids) {
+    const uniqueIds = [...new Set(ids.filter(Boolean))];
+    if (!uniqueIds.length || !supabaseClient) return;
+    const currentId = currentAuthUser?.id;
+    if (currentId) chatProfiles.set(currentId, currentStudentChatProfile());
+    let profiles = [];
+    try {
+      const batch = await supabaseClient.rpc('chat_get_profiles', { p_user_ids: uniqueIds });
+      profiles = Array.isArray(batch.data) ? batch.data : [];
+    } catch (error) {
+      console.warn('تعذر تحميل ملفات مرسلي الدردشة عبر الدالة المختصرة', error);
+    }
+    profiles.forEach(profile => {
+      const userId = profile?.user_id || profile?.id;
+      if (userId) chatProfiles.set(userId, profile);
+    });
+    const missingIds = uniqueIds.filter(userId => {
+      const profile = chatProfiles.get(userId);
+      return !profile || (!chatProfileName(profile) && !profile.avatar_url);
+    });
+    if (!missingIds.length) return;
+    const fallback = await supabaseClient
+      .from('student_profiles')
+      .select('user_id,first_name,father_name,family_name,study_stage,province,avatar_url,bio,gender')
+      .in('user_id', missingIds);
+    if (fallback.error) {
+      console.warn('تعذر تحميل ملفات مرسلي الدردشة من student_profiles', fallback.error);
+      return;
+    }
+    (fallback.data || []).forEach(profile => chatProfiles.set(profile.user_id, profile));
+  }
   async function loadPublicChat() {
     if (!supabaseClient || !currentAuthUser?.id) return;
     const requestToken = ++publicChatLoadToken;
@@ -2220,19 +2271,35 @@
       if (error) throw error;
       const remoteRows = [...(data || [])].reverse();
       const remoteById = new Map(remoteRows.map(item => [item.id, item]));
-      const hydrateMessages = () => remoteRows.map(item => { const profile = chatProfiles.get(item.sender_id) || {}; const messageName = `${profile.first_name || ''} ${profile.father_name || ''} ${profile.family_name || ''}`.replace(/\s+/g, ' ').trim(); const reply = item.reply_to_id ? remoteById.get(item.reply_to_id) : null; return { id: `remote-${item.id}`, remoteId: item.id, sender: item.sender_id === currentAuthUser.id ? 'student' : 'other', senderId: item.sender_id, name: messageName || 'طالب نبض التفوق', text: item.body, createdAt: item.created_at, reaction: item.reaction || '', edited: Boolean(item.edited_at), pinned: Boolean(item.pinned_at), replyTo: reply ? { remoteId: reply.id, text: reply.body, name: 'رسالة سابقة' } : null, avatar: profile.avatar_url || '', stage: profile.study_stage || '', province: profile.province || '' }; });
+      const hydrateMessages = () => remoteRows.map(item => {
+        const profile = chatProfiles.get(item.sender_id) || {};
+        const messageName = chatProfileName(profile);
+        const reply = item.reply_to_id ? remoteById.get(item.reply_to_id) : null;
+        return {
+          id: `remote-${item.id}`,
+          remoteId: item.id,
+          sender: item.sender_id === currentAuthUser.id ? 'student' : 'other',
+          senderId: item.sender_id,
+          name: messageName,
+          text: item.body,
+          createdAt: item.created_at,
+          reaction: item.reaction || '',
+          edited: Boolean(item.edited_at),
+          pinned: Boolean(item.pinned_at),
+          replyTo: reply ? { remoteId: reply.id, text: reply.body, name: 'رسالة سابقة' } : null,
+          avatar: profile.avatar_url || '',
+          stage: profile.study_stage || '',
+          province: profile.province || ''
+        };
+      });
+      chatProfiles.set(currentAuthUser.id, currentStudentChatProfile());
       remotePublicChatMessages = hydrateMessages();
       pinnedChatMessage = remotePublicChatMessages.find(message => message.pinned) || null;
       renderChatPage();
       const ids = [...new Set(remoteRows.map(item => item.sender_id).filter(Boolean))];
       if (!ids.length) return;
       void (async () => {
-        const profiles = await supabaseClient.rpc('chat_get_profiles', { p_user_ids: ids });
-        if (!profiles.error) (profiles.data || []).forEach(profile => chatProfiles.set(profile.user_id, profile));
-        else {
-          const fallback = await supabaseClient.from('student_profiles').select('user_id,first_name,father_name,family_name,study_stage,province,avatar_url,bio').in('user_id', ids);
-          (fallback.data || []).forEach(profile => chatProfiles.set(profile.user_id, profile));
-        }
+        await loadChatProfiles(ids);
         if (requestToken !== publicChatLoadToken) return;
         remotePublicChatMessages = hydrateMessages();
         pinnedChatMessage = remotePublicChatMessages.find(message => message.pinned) || null;
@@ -2278,15 +2345,39 @@
   }
   function toggleChatReaction(id, button) { const message = chatMessages.find(item => item.id === id) || remotePublicChatMessages.find(item => item.id === id); const menu = $('#chatReactionMenu'); if (!message || !menu || !button) return; activeChatMessageId = id; const rect = button.getBoundingClientRect(); menu.style.top = `${Math.max(8, rect.top - 48)}px`; menu.style.left = `${Math.max(8, Math.min(window.innerWidth - 240, rect.left - 100))}px`; menu.classList.add('show'); }
   async function setChatReaction(reaction) { const message = chatMessages.find(item => item.id === activeChatMessageId) || remotePublicChatMessages.find(item => item.id === activeChatMessageId); if (!message) return; message.reaction = reaction; message.reacted = true; if (message.remoteId && supabaseClient && currentAuthUser?.id) { const result = await supabaseClient.rpc('chat_toggle_reaction', { p_message: message.remoteId, p_reaction: reaction }); if (result.error) return toast(result.error.message || 'تعذر حفظ التفاعل.'); } else { saveChatState(); } $('#chatReactionMenu')?.classList.remove('show'); activeChatMessageId = null; renderChatPage(); }
-  function clearChatReply() { const preview = $('#chatReplyPreview'); if (preview) preview.classList.add('hidden'); const text = $('#chatReplyText'); if (text) text.textContent = ''; }
-  function setChatReply(id) { const message = chatMessages.find(item => item.id === id) || remotePublicChatMessages.find(item => item.id === id); if (!message) return; chatReplyTarget = message; const preview = $('#chatReplyPreview'); if (preview) preview.classList.remove('hidden'); const label = $('#chatReplyLabel'); if (label) label.textContent = `الرد على ${message.name || 'الرسالة'}`; const text = $('#chatReplyText'); if (text) text.textContent = message.text; $('[name="chatMessage"]')?.focus(); }
+  function clearChatReply() {
+    const preview = $('#chatReplyPreview');
+    if (preview) {
+      preview.classList.add('hidden');
+      preview.setAttribute('aria-hidden', 'true');
+    }
+    $('#chatReplyLabel')?.replaceChildren(document.createTextNode('الرد على الرسالة'));
+    const text = $('#chatReplyText'); if (text) text.textContent = '';
+    $('.chat-screen')?.classList.remove('has-chat-reply');
+  }
+  function setChatReply(id) {
+    const message = chatMessages.find(item => item.id === id) || remotePublicChatMessages.find(item => item.id === id);
+    if (!message) return;
+    chatReplyTarget = message;
+    const preview = $('#chatReplyPreview');
+    if (preview) {
+      preview.classList.remove('hidden');
+      preview.setAttribute('aria-hidden', 'false');
+    }
+    const label = $('#chatReplyLabel');
+    if (label) label.textContent = `الرد على ${message.name || 'الرسالة'}`;
+    const text = $('#chatReplyText'); if (text) text.textContent = String(message.text || '').trim() || 'رسالة بدون نص';
+    $('.chat-screen')?.classList.add('has-chat-reply');
+    $('[name="chatMessage"]')?.focus();
+    window.requestAnimationFrame(() => preview?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }));
+  }
   function showChatActionMenu(id, anchor, reactionOnly = false) { activeChatMessageId = id; const menu = $('#chatActionMenu'); if (!menu) return; const message = chatMessages.find(item => item.id === id) || remotePublicChatMessages.find(item => item.id === id); const own = message?.sender === 'student'; const canPin = Boolean(chatCanModerate && message?.remoteId); $('[data-chat-edit]', menu)?.classList.toggle('hidden', !own); $('[data-chat-delete]', menu)?.classList.toggle('hidden', !(own || canPin)); const pinButton = $('[data-chat-pin-action]', menu); if (pinButton) { pinButton.classList.toggle('hidden', !canPin); pinButton.innerHTML = `<i class="fa-solid fa-thumbtack"></i> ${message?.pinned ? 'إلغاء التثبيت' : 'تثبيت الرسالة'}`; } menu.classList.toggle('reaction-focus', reactionOnly); const rect = anchor.getBoundingClientRect(); menu.style.top = `${Math.min(window.innerHeight - 190, rect.bottom + 6)}px`; menu.style.left = `${Math.max(8, Math.min(window.innerWidth - 210, rect.left))}px`; menu.classList.add('show'); }
   function closeChatActionMenu() { $('#chatActionMenu')?.classList.remove('show', 'reaction-focus'); activeChatMessageId = null; }
   function editChatMessage() { const message = chatMessages.find(item => item.id === activeChatMessageId); closeChatActionMenu(); if (!message) return; const next = window.prompt('تعديل الرسالة', message.text); if (next === null) return; const text = next.trim(); if (!text) return toast('لا يمكن أن تكون الرسالة فارغة.'); message.text = text; message.edited = true; saveChatState(); renderChatPage(); }
   async function deleteChatMessage() { const id = activeChatMessageId; const message = chatMessages.find(item => item.id === id) || remotePublicChatMessages.find(item => item.id === id); closeChatActionMenu(); if (!id || !message) return; if (message.remoteId && message.senderId !== currentAuthUser?.id && !chatCanModerate) return toast('لا يمكنك حذف رسالة مستخدم آخر.'); if (!window.confirm('حذف هذه الرسالة؟')) return; if (message?.remoteId && chatCanModerate && supabaseClient) { const result = await supabaseClient.rpc('chat_moderate_delete_message', { p_message: message.remoteId }); if (result.error) return toast(result.error.message || 'تعذر حذف الرسالة.'); remotePublicChatMessages = remotePublicChatMessages.filter(item => item.remoteId !== message.remoteId); renderChatPage(); toast('تم حذف الرسالة من الدردشة.'); return; } chatMessages = chatMessages.filter(item => item.id !== id); saveChatState(); renderChatPage(); toast('تم حذف الرسالة.'); }
   async function toggleChatPin(remoteId) { if (!chatCanModerate || !remoteId || !supabaseClient) return; const message = remotePublicChatMessages.find(item => item.remoteId === remoteId); const next = !message?.pinned; const { error } = await supabaseClient.rpc('chat_toggle_pin', { p_message: remoteId, p_pinned: next }); if (error) return toast(error.message || 'تعذر تحديث تثبيت الرسالة.'); remotePublicChatMessages.forEach(item => { item.pinned = item.remoteId === remoteId ? next : false; }); pinnedChatMessage = next ? message : null; if (message) message.pinned = next; renderChatPage(); toast(next ? 'تم تثبيت الرسالة أعلى الدردشة.' : 'تم إلغاء تثبيت الرسالة.'); }
   function scrollToPinnedMessage(id) { document.getElementById(`chat-message-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-  async function openChatProfile(userId) { if (!userId) return; let profile = chatProfiles.get(userId); if (!profile && supabaseClient) { const rpcResult = await supabaseClient.rpc('chat_get_profile', { p_user_id: userId }); if (!rpcResult.error && rpcResult.data) { profile = Array.isArray(rpcResult.data) ? rpcResult.data[0] : rpcResult.data; if (profile) chatProfiles.set(userId, profile); } if (!profile) { const result = await supabaseClient.from('student_profiles').select('user_id,first_name,father_name,family_name,study_stage,province,avatar_url,bio,gender').eq('user_id', userId).maybeSingle(); if (!result.error && result.data) { profile = result.data; chatProfiles.set(userId, profile); } } } if (!profile && userId === currentAuthUser?.id) profile = { user_id: userId, first_name: student.first || '', father_name: student.father || '', family_name: student.last || '', study_stage: student.stage || '', province: student.province || '', avatar_url: student.avatar || '', bio: student.bio || '' }; if (!profile) return toast('معلومات هذا الطالب غير متاحة حالياً.'); chatProfileTarget = profile; const name = `${profile.first_name || ''} ${profile.father_name || ''} ${profile.family_name || ''}`.replace(/\s+/g, ' ').trim() || 'طالب نبض التفوق'; const avatar = $('#chatProfileAvatar'); if (avatar) avatar.innerHTML = profile.avatar_url ? `<img src="${escapeHTML(profile.avatar_url)}" alt="">` : escapeHTML(name.slice(0, 2)); $('#chatProfileName').textContent = name; $('#chatProfileStage').textContent = `${profile.study_stage || 'طالب'} · ${profile.province || 'سورية'}`; $('#chatProfileBio').textContent = profile.bio || 'لا توجد نبذة مضافة.'; $('#chatProfilePanel')?.classList.add('show'); }
+  async function openChatProfile(userId) { if (!userId) return; let profile = chatProfiles.get(userId); if ((!profile || (!chatProfileName(profile) && !profile.avatar_url)) && supabaseClient) { const rpcResult = await supabaseClient.rpc('chat_get_profile', { p_user_id: userId }); if (!rpcResult.error && rpcResult.data) { profile = Array.isArray(rpcResult.data) ? rpcResult.data[0] : rpcResult.data; if (profile) chatProfiles.set(userId, profile); } if (!profile || (!chatProfileName(profile) && !profile.avatar_url)) { const result = await supabaseClient.from('student_profiles').select('user_id,first_name,father_name,family_name,study_stage,province,avatar_url,bio,gender').eq('user_id', userId).maybeSingle(); if (!result.error && result.data) { profile = result.data; chatProfiles.set(userId, profile); } } } if (!profile && userId === currentAuthUser?.id) profile = currentStudentChatProfile(); if (!profile) return toast('معلومات هذا الطالب غير متاحة حالياً.'); chatProfileTarget = profile; const name = chatProfileName(profile) || 'طالب نبض التفوق'; const avatar = $('#chatProfileAvatar'); if (avatar) avatar.innerHTML = profile.avatar_url ? `<img src="${escapeHTML(profile.avatar_url)}" alt="">` : escapeHTML(name.slice(0, 2)); $('#chatProfileName').textContent = name; $('#chatProfileStage').textContent = `${profile.study_stage || 'طالب'} · ${profile.province || 'سورية'}`; $('#chatProfileBio').textContent = profile.bio || 'لا توجد نبذة مضافة.'; $('#chatProfilePanel')?.classList.add('show'); }
   function closeChatProfile() { $('#chatProfilePanel')?.classList.remove('show'); chatProfileTarget = null; }
   async function requestPrivateChat() { if (!chatProfileTarget?.user_id || !supabaseClient || !currentAuthUser?.id) return toast('سجّل الدخول لبدء دردشة خاصة.'); const { error } = await supabaseClient.rpc('chat_send_private_request', { p_recipient: chatProfileTarget.user_id }); closeChatProfile(); toast(error ? (error.message || 'تعذر إرسال الطلب.') : 'تم إرسال طلب الدردشة الخاصة.'); }
   async function respondChatRequest(id, accept) { if (!supabaseClient) return; const { error } = await supabaseClient.rpc('chat_respond_private_request', { p_request: id, p_accept: accept }); if (error) return toast(error.message || 'تعذر تحديث الطلب.'); await loadChatRequests(); toast(accept ? 'تم قبول طلب الدردشة.' : 'تم رفض الطلب.'); }
