@@ -2265,32 +2265,31 @@
     if (!supabaseClient || !currentAuthUser?.id) return;
     const requestToken = ++publicChatLoadToken;
     try {
-      let result = await supabaseClient.from('public_chat_messages').select('id,sender_id,body,reply_to_id,reaction,edited_at,created_at,pinned_at,pinned_by').order('created_at', { ascending: false }).limit(CHAT_PAGE_SIZE);
-      if (result.error) result = await supabaseClient.from('public_chat_messages').select('id,sender_id,body,reply_to_id,reaction,edited_at,created_at').order('created_at', { ascending: false }).limit(CHAT_PAGE_SIZE);
-      const { data, error } = result;
-      if (error) throw error;
-      const remoteRows = [...(data || [])].reverse();
+      let remoteRows = [];
+      let directResult = await supabaseClient.rpc('chat_list_messages_with_profiles', { p_limit: CHAT_PAGE_SIZE });
+      if (!directResult.error && Array.isArray(directResult.data)) {
+        remoteRows = [...directResult.data].reverse();
+        remoteRows.forEach(row => {
+          const profile = { user_id: row.sender_id, first_name: row.first_name || '', father_name: row.father_name || '', family_name: row.family_name || '', study_stage: row.study_stage || '', province: row.province || '', avatar_url: row.avatar_url || '', bio: row.bio || '', is_moderator: Boolean(row.is_moderator) };
+          if (row.sender_id) chatProfiles.set(row.sender_id, profile);
+        });
+      } else {
+        let result = await supabaseClient.from('public_chat_messages').select('id,sender_id,body,reply_to_id,reaction,edited_at,created_at,pinned_at,pinned_by').order('created_at', { ascending: false }).limit(CHAT_PAGE_SIZE);
+        if (result.error) result = await supabaseClient.from('public_chat_messages').select('id,sender_id,body,reply_to_id,reaction,edited_at,created_at').order('created_at', { ascending: false }).limit(CHAT_PAGE_SIZE);
+        if (result.error) throw result.error;
+        remoteRows = [...(result.data || [])].reverse();
+      }
       const remoteById = new Map(remoteRows.map(item => [item.id, item]));
       const hydrateMessages = () => remoteRows.map(item => {
-        const profile = chatProfiles.get(item.sender_id) || {};
+        const profile = chatProfiles.get(item.sender_id) || item;
         const messageName = chatProfileName(profile);
         const reply = item.reply_to_id ? remoteById.get(item.reply_to_id) : null;
         return {
-          id: `remote-${item.id}`,
-          remoteId: item.id,
-          sender: item.sender_id === currentAuthUser.id ? 'student' : 'other',
-          senderId: item.sender_id,
-          name: messageName,
-          text: item.body,
-          createdAt: item.created_at,
-          reaction: item.reaction || '',
-          edited: Boolean(item.edited_at),
-          pinned: Boolean(item.pinned_at),
-          replyTo: reply ? { remoteId: reply.id, text: reply.body, name: 'رسالة سابقة' } : null,
-          avatar: profile.avatar_url || '',
-          stage: profile.study_stage || '',
-          province: profile.province || '',
-          moderator: Boolean(profile.is_moderator)
+          id: `remote-${item.id}`, remoteId: item.id,
+          sender: item.sender_id === currentAuthUser.id ? 'student' : 'other', senderId: item.sender_id,
+          name: messageName, text: item.body, createdAt: item.created_at, reaction: item.reaction || '', edited: Boolean(item.edited_at), pinned: Boolean(item.pinned_at),
+          replyTo: reply ? { remoteId: reply.id, text: reply.body, name: chatProfileName(chatProfiles.get(reply.sender_id) || reply) || 'رسالة سابقة' } : null,
+          avatar: profile.avatar_url || '', stage: profile.study_stage || '', province: profile.province || '', moderator: Boolean(profile.is_moderator)
         };
       });
       chatProfiles.set(currentAuthUser.id, currentStudentChatProfile());
@@ -2298,16 +2297,16 @@
       pinnedChatMessage = remotePublicChatMessages.find(message => message.pinned) || null;
       renderChatPage();
       const ids = [...new Set(remoteRows.map(item => item.sender_id).filter(Boolean))];
-      if (!ids.length) return;
+      const missingIds = ids.filter(id => !chatProfiles.has(id) || (!chatProfileName(chatProfiles.get(id)) && !chatProfiles.get(id).avatar_url));
+      if (!missingIds.length) return;
       void (async () => {
-        await loadChatProfiles(ids);
+        await loadChatProfiles(missingIds);
         if (requestToken !== publicChatLoadToken) return;
-        remotePublicChatMessages = hydrateMessages();
-        pinnedChatMessage = remotePublicChatMessages.find(message => message.pinned) || null;
-        renderChatPage();
+        remotePublicChatMessages = hydrateMessages(); pinnedChatMessage = remotePublicChatMessages.find(message => message.pinned) || null; renderChatPage();
       })().catch(error => console.warn('تعذر تحميل ملفات مرسلي الدردشة', error));
     } catch (error) { console.warn('تعذر تحميل الدردشة العامة من Supabase', error); }
   }
+
   async function savePublicChatMessage(message) {
     if (!supabaseClient || !currentAuthUser?.id) return false;
     const result = await supabaseClient.from('public_chat_messages').insert({ sender_id: currentAuthUser.id, body: message.text, reply_to_id: message.replyTo?.remoteId || null, reaction: message.reaction || null }).select('id').single();
@@ -2418,14 +2417,16 @@
     if (form && form.dataset.bound !== 'true') { form.dataset.bound = 'true'; form.addEventListener('submit', event => { event.preventDefault(); void sendPrivateChatMessage(event.currentTarget); }); }
     if (!threadId || !userId || !supabaseClient || !currentAuthUser?.id) return;
     privateThread = { id: threadId };
-    await loadChatProfiles([userId]);
+    const profileLoad = loadChatProfiles([userId]);
+    const messageLoad = loadPrivateChatMessages();
+    await profileLoad;
     const profile = chatProfiles.get(userId) || {};
-    const name = `${profile.first_name || ''} ${profile.father_name || ''} ${profile.family_name || ''}`.replace(/\s+/g, ' ').trim() || 'دردشة خاصة';
+    const name = chatProfileName(profile) || 'دردشة خاصة';
     $('#privateChatNamePage').textContent = name;
     $('#privateChatAvatarPage').innerHTML = profile.avatar_url ? `<img src="${escapeHTML(profile.avatar_url)}" alt="">` : escapeHTML(name.slice(0, 2));
     $('#privateChatStagePage').textContent = profile.study_stage || 'محادثة خاصة';
     startPrivateRealtime();
-    await loadPrivateChatMessages();
+    await messageLoad;
     await markPrivateThreadRead();
   }
 
