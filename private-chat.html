@@ -7,20 +7,21 @@
   <title>دردشة خاصة | نبض التفوق</title>
   <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;document.documentElement.dataset.theme=saved?.theme==='light'?'light':'dark'}catch{document.documentElement.dataset.theme='dark'}})();</script>
   <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="nabd-ui.css?v=20260924-private-chat">
-  <link rel="stylesheet" href="chat.css?v=20260924-private-chat">
+  <link rel="stylesheet" href="nabd-ui.css?v=20260927-private-chat-list">
+  <link rel="stylesheet" href="chat.css?v=20260927-private-chat-list">
   <link rel="manifest" href="manifest.json">
 </head>
 <body data-page="private-chat" class="private-chat-page">
   <div class="private-chat-screen">
-    <header class="private-page-topbar">
+    <header class="private-page-topbar" id="privateChatHeader">
       <button id="privateChatBack" class="chat-top-action" type="button" aria-label="العودة إلى الدردشة الجماعية"><i class="fa-solid fa-arrow-right"></i></button>
       <span class="chat-private-avatar" id="privateChatAvatarPage">ط</span>
       <div class="private-page-title"><b id="privateChatNamePage">دردشة خاصة</b><small id="privateChatStagePage">محادثة بين طرفين</small></div>
       <span class="private-encrypted"><i class="fa-solid fa-lock"></i></span>
     </header>
-    <main class="private-page-messages" id="privateChatMessagesPage" aria-live="polite"><div class="private-page-loading"><i class="fa-solid fa-spinner fa-spin"></i><span>جارٍ تحميل المحادثة...</span></div></main>
-    <form class="private-page-composer" id="privateChatFormPage">
+    <main class="private-page-messages" id="privateChatMessagesPage" aria-live="polite"><div class="private-page-loading"><i class="fa-solid fa-spinner fa-spin"></i><span>جارٍ تحميل المحادثات...</span></div></main>
+    <section class="private-conversations-page" id="privateConversationsPage" hidden><div class="private-conversations-page-head"><span class="eyebrow">صندوق الرسائل</span><h1>محادثاتي الخاصة</h1><p>اختر محادثة للمتابعة. ستظهر الرسائل الجديدة هنا مباشرة.</p></div><div id="privateConversationsListPage"></div></section>
+    <form class="private-page-composer" id="privateChatFormPage" hidden>
       <button class="private-attach" type="button" aria-label="إضافة مرفق"><i class="fa-solid fa-paperclip"></i></button>
       <textarea name="privateMessage" rows="1" required maxlength="2000" placeholder="اكتب رسالة خاصة..."></textarea>
       <button class="chat-send" type="submit" aria-label="إرسال"><i class="fa-solid fa-paper-plane"></i></button>

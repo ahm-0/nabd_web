@@ -3,7 +3,7 @@ returns table(id uuid, sender_id uuid, body text, reply_to_id uuid, reaction tex
 language sql stable security definer set search_path=public,pg_temp as $$
   select m.id,m.sender_id,m.body,m.reply_to_id,m.reaction,m.edited_at,m.created_at,m.pinned_at,m.pinned_by,
          sp.first_name,sp.father_name,sp.family_name,sp.study_stage,sp.province,sp.avatar_url,sp.bio,
-         exists(select 1 from public.chat_moderators cm where cm.user_id=m.sender_id) as is_moderator
+         (exists(select 1 from public.admin_users au where au.user_id=m.sender_id and au.is_active=true and au.role in ('admin','editor')) or exists(select 1 from public.chat_moderators cm where cm.user_id=m.sender_id)) as is_moderator
   from public.public_chat_messages m
   left join public.student_profiles sp on sp.user_id=m.sender_id
   where m.deleted_at is null

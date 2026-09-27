@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-09-27-03';
+const CACHE_VERSION = '2026-09-27-04';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -44,6 +44,7 @@ const APP_SHELL = [
   './tests.html',
   './time-organizer.html',
   './universities.html',
+  './university-admission-2026.html',
   './university-directory.html',
   './university-info.html',
   './university-majors.html',

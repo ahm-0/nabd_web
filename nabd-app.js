@@ -2314,11 +2314,11 @@
     if (result.data?.id) message.remoteId = result.data.id;
     return true;
   }
-  function updatePrivateChatBadges() { const count = Math.max(0, Number(privateUnreadCount || 0)); ['#chatRequestsBadge', '#chatConversationsRequestsBadge'].forEach(selector => { const badge = $(selector); if (badge) { badge.textContent = String(count); badge.classList.toggle('has-unread', count > 0); } }); const bottom = document.querySelector('.bottom-link[href="chat.html"]'); if (bottom) { bottom.classList.toggle('has-new', count > 0); bottom.setAttribute('aria-label', count > 0 ? `الدردشة، ${count} جديد` : 'الدردشة'); } }
+  function updatePrivateChatBadges() { const count = Math.max(0, Number(privateUnreadCount || 0)); document.body.classList.toggle('has-private-unread', count > 0); document.body.classList.toggle('has-private-unread', count > 0); document.body.classList.toggle('has-private-unread', count > 0); ['#chatRequestsBadge', '#chatConversationsRequestsBadge'].forEach(selector => { const badge = $(selector); if (badge) { badge.textContent = String(count); badge.classList.toggle('has-unread', count > 0); } }); const bottom = document.querySelector('.bottom-link[href="chat.html"]'); if (bottom) { bottom.classList.toggle('has-new', count > 0); bottom.setAttribute('aria-label', count > 0 ? `الدردشة، ${count} جديد` : 'الدردشة'); } }
   async function loadPrivateUnreadCount() { if (!supabaseClient || !currentAuthUser?.id) return; const result = await supabaseClient.rpc('chat_get_private_unread_count'); if (!result.error) { privateUnreadCount = Number(result.data || 0); updatePrivateChatBadges(); } }
   async function markPrivateThreadRead() { if (!privateThread || !supabaseClient) return; const result = await supabaseClient.rpc('chat_mark_private_thread_read', { p_thread_id: privateThread.id }); if (!result.error) { privateUnreadCount = 0; await loadPrivateUnreadCount(); } }
   async function loadPrivateConversations() { if (!supabaseClient || !currentAuthUser?.id) return; const result = await supabaseClient.rpc('chat_list_private_conversations'); if (result.error) { console.warn('تعذر تحميل قائمة المحادثات الخاصة', result.error); return; } privateConversations = result.data || []; renderPrivateConversations(); updatePrivateChatBadges(); }
-  function renderPrivateConversations() { const holder = $('#chatConversationsList'); if (!holder) return; holder.innerHTML = privateConversations.length ? privateConversations.map(item => { const name = item.other_name || 'مستخدم'; const avatar = item.other_avatar ? `<img src="${escapeHTML(item.other_avatar)}" alt="">` : escapeHTML(name.slice(0, 2)); return `<button type="button" class="private-conversation-item" data-private-conversation="${escapeHTML(item.other_user_id)}"><span class="chat-avatar">${avatar}</span><span class="private-conversation-copy"><b>${escapeHTML(name)}</b><small>${escapeHTML(item.last_message || 'ابدأ محادثة خاصة')}</small></span><time>${item.last_message_at ? displayAdminDate(item.last_message_at) : ''}</time><i class="fa-solid fa-chevron-left"></i></button>`; }).join('') : '<div class="chat-empty"><i class="fa-regular fa-comments"></i><b>لا توجد محادثات خاصة</b><span>اضغط على اسم مستخدم في الدردشة العامة لبدء محادثة.</span></div>'; }
+  function renderPrivateConversations() { const holder = $('#chatConversationsList') || $('#privateConversationsListPage'); if (!holder) return; holder.innerHTML = privateConversations.length ? privateConversations.map(item => { const name = item.other_name || 'مستخدم'; const avatar = item.other_avatar ? `<img src="${escapeHTML(item.other_avatar)}" alt="">` : escapeHTML(name.slice(0, 2)); return `<button type="button" class="private-conversation-item" data-private-conversation="${escapeHTML(item.other_user_id)}"><span class="chat-avatar">${avatar}</span><span class="private-conversation-copy"><b>${escapeHTML(name)}</b><small>${escapeHTML(item.last_message || 'ابدأ محادثة خاصة')}</small></span><time>${item.last_message_at ? displayAdminDate(item.last_message_at) : ''}</time><i class="fa-solid fa-chevron-left"></i></button>`; }).join('') : '<div class="chat-empty"><i class="fa-regular fa-comments"></i><b>لا توجد محادثات خاصة</b><span>اضغط على اسم مستخدم في الدردشة العامة لبدء محادثة.</span></div>'; }
   async function loadChatRequests() {
     if (!supabaseClient || !currentAuthUser?.id) return;
     const { data, error } = await supabaseClient.from('private_chat_requests').select('id,sender_id,recipient_id,status,created_at').eq('recipient_id', currentAuthUser.id).eq('status', 'pending').order('created_at', { ascending: false });
@@ -2406,28 +2406,37 @@
 
   function setChatLoading(active) { const loader = $('#chatLoadingState'); if (loader) loader.hidden = !active; document.body.classList.toggle('chat-is-loading', Boolean(active)); }
   async function initPrivateChatPage() {
-    const holder = $('#privateChatMessages');
-    if (!holder) return;
+    const pageHolder = $('#privateChatMessagesPage');
+    if (!pageHolder) return;
     const params = new URLSearchParams(location.search);
     const threadId = params.get('thread');
     const userId = params.get('user');
     const form = $('#privateChatFormPage');
     const back = $('#privateChatBack');
-    if (back && back.dataset.bound !== 'true') { back.dataset.bound = 'true'; back.addEventListener('click', event => { event.preventDefault(); if (history.length > 1) history.back(); else location.href = 'chat.html'; }); }
+    const list = $('#privateConversationsPage');
+    const pageTitle = $('.private-page-title b');
+    const pageSubtitle = $('.private-page-title small');
+    const avatar = $('#privateChatAvatarPage');
+    if (back && back.dataset.bound !== 'true') { back.dataset.bound = 'true'; back.addEventListener('click', event => { event.preventDefault(); if (threadId) location.href = 'private-chat.html'; else location.href = 'chat.html'; }); }
     if (form && form.dataset.bound !== 'true') { form.dataset.bound = 'true'; form.addEventListener('submit', event => { event.preventDefault(); void sendPrivateChatMessage(event.currentTarget); }); }
-    if (!threadId || !userId || !supabaseClient || !currentAuthUser?.id) return;
-    privateThread = { id: threadId };
-    const profileLoad = loadChatProfiles([userId]);
-    const messageLoad = loadPrivateChatMessages();
-    await profileLoad;
-    const profile = chatProfiles.get(userId) || {};
-    const name = chatProfileName(profile) || 'دردشة خاصة';
-    $('#privateChatNamePage').textContent = name;
-    $('#privateChatAvatarPage').innerHTML = profile.avatar_url ? `<img src="${escapeHTML(profile.avatar_url)}" alt="">` : escapeHTML(name.slice(0, 2));
-    $('#privateChatStagePage').textContent = profile.study_stage || 'محادثة خاصة';
-    startPrivateRealtime();
-    await messageLoad;
-    await markPrivateThreadRead();
+    if (!supabaseClient || !currentAuthUser?.id) return;
+    if (!threadId || !userId) {
+      pageHolder.hidden = true; if (form) form.hidden = true; if (list) list.hidden = false;
+      if (pageTitle) pageTitle.textContent = 'الرسائل الخاصة'; if (pageSubtitle) pageSubtitle.textContent = 'محادثاتك';
+      if (avatar) avatar.textContent = '✉';
+      await Promise.all([loadPrivateConversations(), loadChatRequests(), loadPrivateUnreadCount()]);
+      const holder = $('#privateConversationsListPage');
+      if (holder) { holder.onclick = event => { const item = event.target.closest('[data-private-conversation]'); if (item) { event.preventDefault(); window.location.href = `private-chat.html?user=${encodeURIComponent(item.dataset.privateConversation)}`; } }; }
+      return;
+    }
+    pageHolder.hidden = false; if (form) form.hidden = false; if (list) list.hidden = true;
+    const threadResult = await supabaseClient.rpc('chat_get_or_create_thread', { p_other_user: userId });
+    if (!threadResult.error?.id && threadResult.data?.id) privateThread = { id: threadResult.data.id }; else privateThread = { id: threadId };
+    const profileLoad = loadChatProfiles([userId]); const messageLoad = loadPrivateChatMessages(); await profileLoad;
+    const profile = chatProfiles.get(userId) || {}; const name = chatProfileName(profile) || 'دردشة خاصة';
+    if (pageTitle) pageTitle.textContent = name; if (pageSubtitle) pageSubtitle.textContent = profile.study_stage || 'محادثة خاصة';
+    if (avatar) avatar.innerHTML = profile.avatar_url ? `<img src="${escapeHTML(profile.avatar_url)}" alt="">` : escapeHTML(name.slice(0, 2));
+    startPrivateRealtime(); await messageLoad; await markPrivateThreadRead();
   }
 
   async function initChatPage() {
@@ -2444,7 +2453,7 @@
     messages?.addEventListener('pointercancel', event => { window.clearTimeout(holdTimer); if (activeRow) { activeRow.releasePointerCapture?.(event.pointerId); activeRow.classList.remove('is-swiping'); activeRow.style.setProperty('--swipe-x', '0px'); delete activeRow.dataset.swipeDirection; } activeRow = null; longPressTriggered = false; });
     messages?.addEventListener('dblclick', event => { const row = event.target.closest('[data-chat-message]'); if (!row) return; event.preventDefault(); showChatActionMenu(row.dataset.chatMessage, row, true); });
     document.addEventListener('click', event => { if (!event.target.closest('#chatActionMenu, [data-chat-message]')) closeChatActionMenu(); if (!event.target.closest('#chatReactionMenu, [data-chat-react]')) $('#chatReactionMenu')?.classList.remove('show'); const profileButton = event.target.closest('[data-chat-profile]'); if (profileButton) { event.preventDefault(); void openChatProfile(profileButton.dataset.chatProfile); } const requestButton = event.target.closest('[data-chat-request]'); if (requestButton) void respondChatRequest(requestButton.dataset.chatRequest, requestButton.dataset.chatRequestAccept === 'true'); });
-    $('#chatProfilePanel')?.addEventListener('click', event => { if (event.target.id === 'chatProfilePanel' || event.target.closest('[data-chat-profile-close]')) closeChatProfile(); }); $('#chatPrivateStart')?.addEventListener('click', () => { if (chatProfileTarget?.user_id) void openPrivateChat(chatProfileTarget.user_id); }); $('#chatRequestsButton')?.addEventListener('click', () => { void loadPrivateConversations(); $('#chatConversationsPanel')?.classList.add('show'); }); $('#chatConversationsPanel')?.addEventListener('click', event => { if (event.target.id === 'chatConversationsPanel' || event.target.closest('[data-chat-conversations-close]')) return $('#chatConversationsPanel')?.classList.remove('show'); const conversation = event.target.closest('[data-private-conversation]'); if (conversation) { $('#chatConversationsPanel')?.classList.remove('show'); void openPrivateChat(conversation.dataset.privateConversation); } }); $('#chatOpenRequests')?.addEventListener('click', () => { $('#chatConversationsPanel')?.classList.remove('show'); renderChatRequests(); $('#chatRequestsPanel')?.classList.add('show'); }); $('#chatRequestsPanel')?.addEventListener('click', event => { if (event.target.id === 'chatRequestsPanel' || event.target.closest('[data-chat-requests-close]')) $('#chatRequestsPanel')?.classList.remove('show'); });
+    $('#chatProfilePanel')?.addEventListener('click', event => { if (event.target.id === 'chatProfilePanel' || event.target.closest('[data-chat-profile-close]')) closeChatProfile(); }); $('#chatPrivateStart')?.addEventListener('click', () => { if (chatProfileTarget?.user_id) void openPrivateChat(chatProfileTarget.user_id); }); $('#chatRequestsButton')?.addEventListener('click', () => { window.location.href = 'private-chat.html'; }); $('#chatConversationsPanel')?.addEventListener('click', event => { if (event.target.id === 'chatConversationsPanel' || event.target.closest('[data-chat-conversations-close]')) return $('#chatConversationsPanel')?.classList.remove('show'); const conversation = event.target.closest('[data-private-conversation]'); if (conversation) { $('#chatConversationsPanel')?.classList.remove('show'); void openPrivateChat(conversation.dataset.privateConversation); } }); $('#chatOpenRequests')?.addEventListener('click', () => { $('#chatConversationsPanel')?.classList.remove('show'); renderChatRequests(); $('#chatRequestsPanel')?.classList.add('show'); }); $('#chatRequestsPanel')?.addEventListener('click', event => { if (event.target.id === 'chatRequestsPanel' || event.target.closest('[data-chat-requests-close]')) $('#chatRequestsPanel')?.classList.remove('show'); });
     $('#privateChatForm')?.addEventListener('submit', event => { event.preventDefault(); void sendPrivateChatMessage(event.currentTarget); }); $('[data-private-chat-close]')?.addEventListener('click', () => { $('#privateChatPanel')?.classList.remove('show'); if (privateRealtimeChannel) { supabaseClient?.removeChannel(privateRealtimeChannel); privateRealtimeChannel = null; } });
     $('#chatPrivateSwitch')?.addEventListener('change', async event => { chatSettings.private_chat_enabled = event.target.checked; saveChatState(); if (supabaseClient && currentAuthUser?.id) await supabaseClient.from('chat_settings').upsert({ user_id: currentAuthUser.id, private_chat_enabled: event.target.checked, chat_notifications_enabled: chatSettings.notifications !== false, updated_at: new Date().toISOString() }); toast(event.target.checked ? 'تم السماح بطلبات الدردشة الخاصة.' : 'تم إغلاق طلبات الدردشة الخاصة.'); });
     $('#chatSettingsButton')?.addEventListener('click', openChatSettings); $('#chatSettingsClose')?.addEventListener('click', closeChatSettings); $('#chatSettingsPanel')?.addEventListener('click', event => { if (event.target.id === 'chatSettingsPanel') closeChatSettings(); });
