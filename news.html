@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080d19">
+  <title>نبض التفوق | مجتمع الأخبار</title>
+  <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name=\"theme-color\"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script><link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="nabd-ui.css?v=20260917-material-news">
+  <link rel="stylesheet" href="news-ui.css?v=20260922-repair">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="pwa.js?v=20260827-scroll-recovery" defer></script>
+  <link rel="stylesheet" href="material-ui.css?v=20260917-material3">
+  <script type="module" src="https://esm.run/@material/web/all.js"></script>
+</head>
+<body data-page="news">
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a>
+      <div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div>
+    </header>
+    <div class="layout">
+
+      <main class="main-content news-material-main"><div class="news-loading-state" id="newsLoadingState" role="status" aria-live="polite"><i class="fa-solid fa-spinner fa-spin"></i><span>جارٍ تحميل الأخبار...</span></div>
+        <section class="news-material-hero" aria-labelledby="newsHeroTitle">
+          <div class="news-hero-orb news-hero-orb-one" aria-hidden="true"></div><div class="news-hero-orb news-hero-orb-two" aria-hidden="true"></div>
+          <div class="news-hero-icon"><i class="fa-solid fa-newspaper"></i></div>
+          <div class="news-hero-copy"><span class="eyebrow">مجتمع نبض التفوق</span><h2 id="newsHeroTitle">آخر الأخبار<br><strong>في مكان واحد</strong></h2><p>تابع المستجدات الدراسية، وشارك الحوار مع مجتمعك باحترام.</p></div>
+          <div class="news-hero-meta"><span><i class="fa-solid fa-bolt"></i> تحديثات موثوقة</span><span><i class="fa-solid fa-users"></i> مساحة طلابية</span></div>
+        </section>
+        <div class="news-material-toolbar" aria-label="أدوات الأخبار"><div><span class="news-toolbar-kicker">الموجز اليومي</span><h3>تغذية الأخبار</h3></div><span class="news-live-pill"><i class="fa-solid fa-circle"></i> مباشر</span></div>
+        <div class="news-shell">
+          <section id="feed" aria-live="polite"></section>
+          <div class="news-composer-dock" id="newsComposerDock" aria-label="شريط كتابة خبر جديد">
+            <article class="compose panel" aria-label="نشر خبر إداري">
+              <div class="compose-dock-head"><div class="avatar" id="composerAvatar">ن</div><label for="postText">نشر خبر من المشرف</label><span class="compose-image-status" id="composeImageStatus" aria-live="polite"></span></div>
+              <div class="compose-message-row"><textarea id="postText" maxlength="1200" rows="1" placeholder="اكتب رسالتك..." aria-label="نص الخبر"></textarea><button class="compose-send-button" id="publishPost" type="button" title="نشر الخبر" aria-label="نشر الخبر"><i class="fa-solid fa-paper-plane"></i></button></div>
+              <div class="compose-preview" id="composePreview" aria-live="polite"></div>
+              <div class="compose-dock-tools"><label class="compose-photo-button" title="إضافة حتى صورتين"><i class="fa-regular fa-images"></i><span>إضافة صور</span><input id="postImages" class="hidden" type="file" accept="image/*" multiple></label><button id="clearImages" class="compose-clear-images" title="إزالة الصور" type="button" hidden><i class="fa-solid fa-xmark"></i><span>إزالة الصور</span></button><small><i class="fa-solid fa-shield-heart"></i> شارك محتوى مفيدًا ومحترمًا</small></div>
+            </article>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <nav class="bottom-nav" id="bottomNav"></nav>
+  <div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div>
+  <div class="toast" id="toast"></div>
+  <script src="vendor/supabase/supabase.js"></script><script src="supabase-client.js?v=20260823-session-fix"></script><script src="nabd-app.js?v=20261002-performance-chat"></script>
+  <script src="material-ui.js?v=20260917-material3"></script>
+</body>
+</html>
