@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Readex+Pro:wght@400;500;600;700&display=swap');
 /* قسم الأخبار: روابط قابلة للنقر ونصوص طويلة */
 .post-content{display:block;max-width:100%;line-height:1.9;overflow-wrap:anywhere}
 .post-copy{display:block;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
