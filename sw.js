@@ -1,7 +1,6 @@
-const CACHE_VERSION = '2026-10-29-navy-sky-v2';
+const CACHE_VERSION = '2026-10-30-navy-sky-v3';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
-const FONT_CACHE = `nabd-fonts-${CACHE_VERSION}`;
 
 const APP_SHELL = [
   './',
@@ -28,82 +27,194 @@ const APP_SHELL = [
   './intensive-math.html',
   './intensive-science.html',
   './lessons.html',
+  './library.html',
+  './news.html',
+  './news-ui.css',
+  './nine.html',
+  './notifications.html',
+  './pomodoro.html',
+  './predictions.html',
+  './privacy.html',
+  './profile.html',
+  './saved-items.html',
+  './settings.html',
+  './success-limits.html',
+  './supervision.html',
+  './support-chat.html',
+  './tests.html',
+  './time-organizer.html',
+  './universities.html',
+  './university-admission-2026.html',
+  './university-directory.html',
+  './university-info.html',
+  './university-majors.html',
+  './premium.html',
+  './premium-admin.html',
   './styles.css',
   './nabd-ui.css',
+  './exam-countdown-share.css',
+  './vendor/html2canvas/html2canvas.min.js',
+  './curriculum-cards.css',
+  './channels.css',
+  './chat.css',
+  './notifications.css',
+  './nabd-admin-ui.css',
+  './premium.css',
+  './nabd-app.js',
+  './auth.js',
+  './premium.js',
+  './premium-admin.js',
+  './supabase-client.js',
+  './pwa.js',
+  './sw.js',
+  './manifest.json',
   './material-ui.css',
   './material-ui.js',
-  './app.js',
-  './nabd-app.js'
+  './vendor/fontawesome/css/all.min.css',
+  './vendor/fontawesome/webfonts/fa-brands-400.woff2',
+  './vendor/fontawesome/webfonts/fa-regular-400.woff2',
+  './vendor/fontawesome/webfonts/fa-solid-900.woff2',
+  './vendor/fontawesome/webfonts/fa-v4compatibility.woff2',
+  './vendor/supabase/supabase.js',
+  './assets/nabd-logo.jpg',
+  './assets/icons/icon-192.png',
+  './assets/icons/icon-512.png',
+  './assets/icons/icon-maskable-512.png'
 ];
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => cache.addAll(APP_SHELL))
-  );
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.map((key) => {
-          if (key !== STATIC_CACHE && key !== RUNTIME_CACHE && key !== FONT_CACHE) {
-            return caches.delete(key);
-          }
-        })
-      )
-    )
-  );
-  self.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
-
-  const url = new URL(event.request.url);
-
-  // 1. Cache-First strategy for Google Fonts (Cairo & Readex Pro) for instant typography rendering
-  if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com') {
-    event.respondWith(
-      caches.open(FONT_CACHE).then((cache) =>
-        cache.match(event.request).then((cached) => {
-          const networkFetch = fetch(event.request)
-            .then((response) => {
-              if (response && response.status === 200) {
-                cache.put(event.request, response.clone());
-              }
-              return response;
-            })
-            .catch(() => cached);
-          return cached || networkFetch;
-        })
-      )
-    );
-    return;
-  }
-
-  // 2. Skip caching for live Supabase API requests to preserve real-time student data integrity
-  if (url.hostname.includes('supabase.co') || url.pathname.includes('/rest/v1/') || url.pathname.includes('/auth/v1/')) {
-    return;
-  }
-
-  // 3. Stale-While-Revalidate for local CSS, JS, and HTML shell for fast load + fresh updates
-  if (url.origin === self.location.origin) {
-    event.respondWith(
-      caches.match(event.request).then((cached) => {
-        const networkFetch = fetch(event.request)
-          .then((response) => {
-            if (response && response.status === 200 && response.type === 'basic') {
-              const clone = response.clone();
-              caches.open(RUNTIME_CACHE).then((cache) => cache.put(event.request, clone));
-            }
-            return response;
-          })
-          .catch(() => cached || caches.match('./index.html'));
-
-        return cached || networkFetch;
+    caches.open(STATIC_CACHE)
+      .then(async cache => {
+        await Promise.all(APP_SHELL.map(async asset => {
+          const response = await fetch(new Request(asset, { cache: 'reload' }));
+          if (!response.ok) throw new Error(`تعذر تخزين المورد ${asset}`);
+          await cache.put(asset, response);
+        }));
       })
-    );
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(
+        keys
+          .filter(key => key.startsWith('nabd-static-') || key.startsWith('nabd-runtime-'))
+          .filter(key => key !== STATIC_CACHE && key !== RUNTIME_CACHE)
+          .map(key => caches.delete(key))
+      ))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
+async function cacheFirst(request) {
+  const cached = await caches.match(request, { ignoreSearch: true });
+  if (cached) return cached;
+
+  try {
+    const response = await fetch(request);
+    if (response.ok && response.type === 'basic') {
+      const cache = await caches.open(RUNTIME_CACHE);
+      await cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    return new Response('لا يتوفر هذا المورد دون اتصال.', {
+      status: 503,
+      statusText: 'Offline',
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+    });
   }
+}
+
+const NAVIGATION_REFRESH_TIMEOUT = 8000;
+
+async function fetchWithTimeout(request, timeout = NAVIGATION_REFRESH_TIMEOUT) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    return await fetch(request, { signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function refreshNavigation(request) {
+  const response = await fetchWithTimeout(request);
+  if (response.ok && response.type === 'basic') {
+    const cache = await caches.open(RUNTIME_CACHE);
+    await cache.put(request, response.clone());
+  }
+  return response;
+}
+
+async function networkFirstNavigation(request) {
+  try {
+    return await refreshNavigation(request);
+  } catch (error) {
+    return (await caches.match(request, { ignoreSearch: true }))
+      || (await caches.match('./index.html'))
+      || new Response('لا تتوفر صفحات التطبيق حاليًا.', {
+        status: 503,
+        statusText: 'Offline',
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
+  }
+}
+
+async function staleWhileRevalidateNavigation(request, refresh) {
+  const cached = await caches.match(request, { ignoreSearch: true });
+  if (cached) return cached;
+  return (await refresh)
+    || (await caches.match('./index.html'))
+    || new Response('لا تتوفر صفحات التطبيق حاليًا.', {
+      status: 503,
+      statusText: 'Offline',
+      headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    });
+}
+
+self.addEventListener('fetch', event => {
+  const request = event.request;
+  const url = new URL(request.url);
+
+  if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+
+  if (/\.(?:css|js)$/i.test(url.pathname)) {
+    event.respondWith((async () => {
+      try {
+        const response = await fetch(request, { cache: 'no-store' });
+        if (response.ok && response.type === 'basic') {
+          const cache = await caches.open(RUNTIME_CACHE);
+          await cache.put(request, response.clone());
+        }
+        return response;
+      } catch (error) {
+        return (await caches.match(request, { ignoreSearch: true })) || new Response('لا يتوفر ملف التصميم أو الشيفرة حاليًا.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+      }
+    })());
+    return;
+  }
+
+  if (request.mode === 'navigate') {
+    const forceRefresh = url.searchParams.has('__sw_refresh');
+    if (forceRefresh) {
+      // بعد تفعيل عامل جديد، اطلب HTML من الشبكة حتى لا تعود الصفحة القديمة من الكاش.
+      event.respondWith(networkFirstNavigation(request));
+    } else {
+      const refresh = refreshNavigation(request).catch(() => null);
+      // اعرض الصفحة المحلية فورًا في الاستخدام المعتاد، وحدّثها في الخلفية للعمل دون اتصال.
+      event.waitUntil(refresh);
+      event.respondWith(staleWhileRevalidateNavigation(request, refresh));
+    }
+    return;
+  }
+
+  event.respondWith(cacheFirst(request));
 });
