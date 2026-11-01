@@ -38,6 +38,9 @@ for html_path in glob.glob("*.html"):
         html = html.replace("</head>", FONT_HEAD_LINKS + "\n</head>", 1)
     if "nabd-theme.css" not in html and "</head>" in html:
         html = html.replace("</head>", '  <link rel="stylesheet" href="nabd-theme.css?v=20261101-unified">\n</head>', 1)
+    if not re.search(r'<link[^>]+href=["\'][^"\']*vendor/fontawesome/css/all\.min\.css', html, flags=re.I) and "</head>" in html:
+        html = html.replace("</head>", '  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css?v=20261101-icons">\n</head>', 1)
+    html = html.replace("url(../webfonts/", "url(vendor/fontawesome/webfonts/")
     with open(html_path, "w", encoding="utf-8") as f:
         f.write(html)
 
