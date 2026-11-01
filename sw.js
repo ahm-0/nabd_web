@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-10-30-navy-sky-v3';
+const CACHE_VERSION = '2026-11-01-unified-theme-v1';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -51,6 +51,7 @@ const APP_SHELL = [
   './premium.html',
   './premium-admin.html',
   './styles.css',
+  './nabd-theme.css',
   './nabd-ui.css',
   './exam-countdown-share.css',
   './vendor/html2canvas/html2canvas.min.js',
