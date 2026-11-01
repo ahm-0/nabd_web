@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-01-modular-v1';
+const CACHE_VERSION = '2026-11-01-chat-color-v2';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
