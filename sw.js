@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-01-unified-theme-v1';
+const CACHE_VERSION = '2026-11-01-modular-v1';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -51,10 +51,13 @@ const APP_SHELL = [
   './premium.html',
   './premium-admin.html',
   './styles.css',
+  './screening-exam.css',
   './nabd-theme.css',
+  './nabd-navigation.js',
   './nabd-ui.css',
   './exam-countdown-share.css',
   './vendor/html2canvas/html2canvas.min.js',
+  './vendor/chart/chart.umd.js',
   './curriculum-cards.css',
   './channels.css',
   './chat.css',
