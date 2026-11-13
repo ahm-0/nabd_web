@@ -1066,6 +1066,7 @@ body[data-page="home"] .home-studio > .home-studio-section{border-inline-start:0
 </script>
 <meta name="nabd-single-file" content="true">
 <link rel="stylesheet" href="nabd-pro.css">
+<link rel="stylesheet" href="nabd-home.css">
 <script src="nabd-smooth.js" defer></script>
 </head>
 <body data-page="home">
@@ -1104,38 +1105,37 @@ body[data-page="home"] .home-studio > .home-studio-section{border-inline-start:0
           <i class="home-focus-orbit orbit-a"></i><i class="home-focus-orbit orbit-b"></i>
         </a>
 
-        <section class="home-studio-section home-journey-section">
-          <header class="home-studio-section-head"><div><span>اختر وجهتك</span><h3>مسارات الدراسة</h3></div><i class="fa-solid fa-route"></i></header>
-          <div class="home-journey-grid">
-            <a class="journey-card journey-science" href="curriculum.html"><span class="journey-card-icon"><i class="fa-solid fa-graduation-cap"></i></span><span><b>البكالوريا</b><small>مواد ومراجعات</small></span><i class="fa-solid fa-chevron-left"></i></a>
-            <a class="journey-card journey-nine" href="nine.html"><span class="journey-card-icon"><i class="fa-solid fa-school"></i></span><span><b>التاسع</b><small>دروس منظمة</small></span><i class="fa-solid fa-chevron-left"></i></a>
-            <a class="journey-card journey-university" href="universities.html"><span class="journey-card-icon"><i class="fa-solid fa-building-columns"></i></span><span><b>الجامعات</b><small>بحث ومقارنة</small></span><i class="fa-solid fa-chevron-left"></i></a>
-            <a class="journey-card journey-sites" href="educational-sites.html"><span class="journey-card-icon"><i class="fa-solid fa-globe"></i></span><span><b>المواقع التعليمية</b><small>مصادر موثوقة ومفيدة</small></span><i class="fa-solid fa-chevron-left"></i></a>
-          </div>
-          <a class="premium-card premium-home-card" href="premium.html"><span class="premium-card-icon"><i class="fa-solid fa-crown"></i></span><span class="premium-card-copy"><b>بكالوريا القسم المميز</b><small>اختر الفرع والأستاذ والمادة للوصول إلى الملفات الخاصة.</small></span><i class="fa-solid fa-arrow-left"></i></a>
-          <a class="premium-card premium-home-card premium-admin-home-shortcut hidden" id="premiumAdminHomeShortcut" href="premium-admin.html"><span class="premium-card-icon"><i class="fa-solid fa-shield-halved"></i></span><span class="premium-card-copy"><b>إدارة القسم المميز</b><small>إضافة وتعديل وحذف الفروع والأساتذة والمواد والملفات والأكواد.</small></span><i class="fa-solid fa-arrow-left"></i></a>
-        </section>
-
-        <section class="home-studio-section">
-          <header class="home-studio-section-head"><div><span>اليوم الدراسي</span><h3>نظّم وراقب تقدمك</h3></div><a href="time-organizer.html">كل خططك <i class="fa-solid fa-arrow-left"></i></a></header>
-          <div class="home-tool-grid">
-            <a class="home-tool-card tool-schedule" href="time-organizer.html"><span class="home-tool-icon"><i class="fa-solid fa-calendar-days"></i></span><b>الجدول الدراسي</b><small id="serviceStatusSchedule">أضف أول مهمة</small></a>
-            <a class="home-tool-card tool-grade" href="grade-calculator.html"><span class="home-tool-icon"><i class="fa-solid fa-calculator"></i></span><b>حاسبة المعدل</b><small id="serviceStatusGrade">احسب معدلك</small></a>
-            <a class="home-tool-card tool-tests" href="tests.html"><span class="home-tool-icon"><i class="fa-solid fa-clipboard-check"></i></span><b>الاختبارات</b><small id="serviceStatusTests">نماذج ونتائج</small></a>
+        <section class="hm-section" aria-labelledby="hmToolsTitle">
+          <header class="hm-head"><h3 id="hmToolsTitle">أدواتك اليومية</h3><a href="time-organizer.html">الكل</a></header>
+          <div class="hm-tools">
+            <a class="hm-tool tool-schedule" href="time-organizer.html"><span class="hm-ico"><i class="fa-solid fa-calendar-days"></i></span><b>الجدول</b><small id="serviceStatusSchedule">أضف أول مهمة</small></a>
+            <a class="hm-tool tool-grade" href="grade-calculator.html"><span class="hm-ico"><i class="fa-solid fa-calculator"></i></span><b>المعدل</b><small id="serviceStatusGrade">احسب معدلك</small></a>
+            <a class="hm-tool tool-tests" href="tests.html"><span class="hm-ico"><i class="fa-solid fa-clipboard-check"></i></span><b>الاختبارات</b><small id="serviceStatusTests">نماذج ونتائج</small></a>
           </div>
         </section>
 
-        <section class="home-studio-section home-collection-section">
-          <header class="home-studio-section-head"><div><span>مساحة إنجازك</span><h3>وثّق ما تتعلمه</h3></div><i class="fa-solid fa-layer-group"></i></header>
-          <div class="home-collection-grid">
-            <a class="home-collection-card collection-completion" href="completion-program.html"><span><i class="fa-solid fa-list-check"></i></span><div><b>برنامج الختم</b><small id="serviceStatusCompletion">أنشئ خطة</small></div><i class="fa-solid fa-arrow-left"></i></a><a class="home-collection-card collection-saved" href="saved-items.html"><span><i class="fa-solid fa-bookmark"></i></span><div><b>المحفوظات</b><small>كتب ودروس وبرامج مفضلة</small></div><i class="fa-solid fa-arrow-left"></i></a>
+        <section class="hm-section" aria-labelledby="hmPathsTitle">
+          <header class="hm-head"><h3 id="hmPathsTitle">مساراتك الدراسية</h3></header>
+          <div class="hm-list">
+            <a class="hm-row journey-science" href="curriculum.html"><span class="hm-ico"><i class="fa-solid fa-graduation-cap"></i></span><span class="hm-txt"><b>البكالوريا</b><small>مواد ومراجعات</small></span><i class="fa-solid fa-chevron-left hm-go"></i></a>
+            <a class="hm-row journey-nine" href="nine.html"><span class="hm-ico"><i class="fa-solid fa-school"></i></span><span class="hm-txt"><b>التاسع</b><small>دروس منظمة</small></span><i class="fa-solid fa-chevron-left hm-go"></i></a>
+            <a class="hm-row journey-university" href="universities.html"><span class="hm-ico"><i class="fa-solid fa-building-columns"></i></span><span class="hm-txt"><b>الجامعات</b><small>بحث ومقارنة</small></span><i class="fa-solid fa-chevron-left hm-go"></i></a>
+            <a class="hm-row journey-sites" href="educational-sites.html"><span class="hm-ico"><i class="fa-solid fa-globe"></i></span><span class="hm-txt"><b>المواقع التعليمية</b><small>مصادر موثوقة ومفيدة</small></span><i class="fa-solid fa-chevron-left hm-go"></i></a>
+          </div>
+          <div class="hm-premium-wrap">
+            <a class="premium-card premium-home-card" href="premium.html"><span class="premium-card-icon"><i class="fa-solid fa-crown"></i></span><span class="premium-card-copy"><b>بكالوريا القسم المميز</b><small>اختر الفرع والأستاذ والمادة للوصول إلى الملفات الخاصة.</small></span><i class="fa-solid fa-arrow-left"></i></a>
+            <a class="premium-card premium-home-card premium-admin-home-shortcut hidden" id="premiumAdminHomeShortcut" href="premium-admin.html"><span class="premium-card-icon"><i class="fa-solid fa-shield-halved"></i></span><span class="premium-card-copy"><b>إدارة القسم المميز</b><small>إضافة وتعديل وحذف الفروع والأساتذة والمواد والملفات والأكواد.</small></span><i class="fa-solid fa-arrow-left"></i></a>
           </div>
         </section>
 
-
-        <section class="home-access-row" aria-label="موارد إضافية">
-          <a class="home-access-card access-elite" href="elite.html"><span><i class="fa-solid fa-crown"></i></span><div><b>النخبة</b><small>محتوى مميز</small></div><i class="fa-solid fa-arrow-left"></i></a>
-          <a class="home-access-card access-free" href="free-channels.html"><span><i class="fa-solid fa-bullhorn"></i></span><div><b>القنوات</b><small>موارد مجانية</small></div><i class="fa-solid fa-arrow-left"></i></a>
+        <section class="hm-section" aria-labelledby="hmSpaceTitle">
+          <header class="hm-head"><h3 id="hmSpaceTitle">مساحتك</h3></header>
+          <div class="hm-grid">
+            <a class="hm-tile collection-completion" href="completion-program.html"><span class="hm-ico"><i class="fa-solid fa-list-check"></i></span><span class="hm-txt"><b>برنامج الختم</b><small id="serviceStatusCompletion">أنشئ خطة</small></span></a>
+            <a class="hm-tile collection-saved" href="saved-items.html"><span class="hm-ico"><i class="fa-solid fa-bookmark"></i></span><span class="hm-txt"><b>المحفوظات</b><small>كتب ودروس وبرامج</small></span></a>
+            <a class="hm-tile access-elite" href="elite.html"><span class="hm-ico"><i class="fa-solid fa-crown"></i></span><span class="hm-txt"><b>النخبة</b><small>محتوى مميز</small></span></a>
+            <a class="hm-tile access-free" href="free-channels.html"><span class="hm-ico"><i class="fa-solid fa-bullhorn"></i></span><span class="hm-txt"><b>القنوات</b><small>موارد مجانية</small></span></a>
+          </div>
         </section>
       </div>
     </main></div>

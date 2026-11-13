@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-12-pro-smooth-v1';
+const CACHE_VERSION = '2026-11-13-home-v2';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -55,6 +55,7 @@ const APP_SHELL = [
   './nabd-theme.css',
   './nabd-navigation.js',
   './nabd-pro.css',
+  './nabd-home.css',
   './nabd-smooth.js',
   './nabd-ui.css',
   './exam-countdown-share.css',

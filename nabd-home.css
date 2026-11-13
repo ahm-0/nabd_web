@@ -1,0 +1,117 @@
+/* ==========================================================================
+   Nabd Home — هيكل الصفحة الرئيسية الجديد (تخطيط تطبيق جوال)
+   يعتمد على متغيرات nabd-pro.css (الألوان والظلال والحدود)
+   ========================================================================== */
+
+body[data-page="home"] .home-studio {
+  width: min(100%, 640px);
+  margin-inline: auto;
+  display: grid;
+  gap: 22px;
+  padding: 0 max(16px, env(safe-area-inset-right)) calc(104px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+
+/* ---------- عناوين الأقسام ---------- */
+body[data-page="home"] .hm-section { display: grid; gap: 10px; }
+body[data-page="home"] .hm-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 0 2px;
+}
+body[data-page="home"] .hm-head h3 {
+  margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -.1px; color: var(--nabd-text);
+}
+body[data-page="home"] .hm-head > a {
+  font-size: 12px; font-weight: 700; color: var(--nabd-primary); text-decoration: none;
+}
+
+/* ---------- ألوان كل مسار وأداة ---------- */
+.journey-science, .tool-grade        { --pc: #5b8cff; --pc2: #7a6bff; }
+.journey-nine, .tool-schedule        { --pc: #14c9a3; --pc2: #2fa8e8; }
+.journey-university, .tool-tests     { --pc: #c25bff; --pc2: #ff5fa8; }
+.journey-sites                       { --pc: #1fb6e8; --pc2: #5b7cff; }
+.collection-completion               { --pc: #ffb547; --pc2: #ff7a45; }
+.collection-saved                    { --pc: #ff6b9a; --pc2: #c25bff; }
+.access-elite                        { --pc: #ffb547; --pc2: #ff7a45; }
+.access-free                         { --pc: #14c9a3; --pc2: #5b7cff; }
+
+/* ---------- أيقونة موحدة ---------- */
+body[data-page="home"] .hm-ico {
+  width: 36px; height: 36px; flex: none;
+  display: grid; place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--pc, #5b7cff), var(--pc2, #a763ff));
+  color: #fff; font-size: 15px; line-height: 1;
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--pc, #5b7cff) 30%, transparent);
+}
+
+/* ---------- الأدوات: ثلاث بطاقات متساوية ---------- */
+body[data-page="home"] .hm-tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+body[data-page="home"] .hm-tool {
+  display: grid; gap: 8px; align-content: start;
+  padding: 13px 11px; min-width: 0;
+  background: var(--pro-card); border: 1px solid var(--pro-hair); border-radius: 18px;
+  box-shadow: var(--pro-shadow); color: var(--nabd-text); text-decoration: none;
+  transition: transform .12s ease-out, border-color .12s ease-out;
+}
+body[data-page="home"] .hm-tool b { font-size: 13.5px; font-weight: 800; line-height: 1.3; }
+body[data-page="home"] .hm-tool small { font-size: 10.5px; line-height: 1.4; color: var(--nabd-muted); }
+
+/* ---------- قائمة المسارات ---------- */
+body[data-page="home"] .hm-list {
+  display: grid;
+  background: var(--pro-card); border: 1px solid var(--pro-hair); border-radius: 20px;
+  box-shadow: var(--pro-shadow); overflow: hidden;
+}
+body[data-page="home"] .hm-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 13px; min-height: 64px;
+  color: var(--nabd-text); text-decoration: none;
+  transition: background .12s ease-out;
+}
+body[data-page="home"] .hm-row + .hm-row { border-top: 1px solid var(--pro-hair); }
+body[data-page="home"] .hm-row:active { background: var(--pro-card-2); }
+body[data-page="home"] .hm-txt { display: grid; gap: 1px; flex: 1; min-width: 0; }
+body[data-page="home"] .hm-txt b { font-size: 14.5px; font-weight: 800; line-height: 1.3; }
+body[data-page="home"] .hm-txt small { font-size: 11px; color: var(--nabd-muted); line-height: 1.4; }
+body[data-page="home"] .hm-go { color: var(--nabd-muted); font-size: 12px; flex: none; }
+
+/* ---------- البطاقة المميزة تحت القائمة ---------- */
+body[data-page="home"] .hm-premium-wrap { display: grid; gap: 10px; margin-top: 10px; }
+body[data-page="home"] .hm-premium-wrap .premium-home-card { margin: 0; }
+body[data-page="home"] .hm-premium-wrap .premium-home-card.hidden { display: none !important; }
+
+/* ---------- مساحتك: شبكة 2×2 ---------- */
+body[data-page="home"] .hm-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+body[data-page="home"] .hm-tile {
+  display: flex; align-items: center; gap: 10px;
+  min-height: 68px; padding: 11px 12px; min-width: 0;
+  background: var(--pro-card); border: 1px solid var(--pro-hair); border-radius: 18px;
+  box-shadow: var(--pro-shadow); color: var(--nabd-text); text-decoration: none;
+  transition: transform .12s ease-out, border-color .12s ease-out;
+}
+body[data-page="home"] .hm-tile .hm-txt b { font-size: 13.5px; }
+body[data-page="home"] .hm-tile .hm-txt small { font-size: 10.5px; }
+
+/* ---------- ضغطة واحدة متسقة ---------- */
+body[data-page="home"] :is(.hm-tool, .hm-tile, .hm-row):active { transform: scale(.97); }
+body[data-page="home"] .hm-row:active { transform: none; }
+
+/* ---------- شاشات ضيقة جداً ---------- */
+@media (max-width: 360px) {
+  body[data-page="home"] .hm-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body[data-page="home"] .hm-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-page="home"] :is(.hm-tool, .hm-tile, .hm-row) { transition: none; }
+}
+
+/* تجاوز قواعد الواجهة القديمة التي كانت تلوّن أي span مباشر داخل البطاقات */
+body[data-page="home"] .hm-tile > .hm-txt,
+body[data-page="home"] .hm-row > .hm-txt {
+  background: none !important; box-shadow: none !important; padding: 0 !important; border: 0 !important; color: inherit !important;
+}
+body[data-page="home"] .hm-ico {
+  background: linear-gradient(135deg, var(--pc, #5b7cff), var(--pc2, #a763ff)) !important;
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--pc, #5b7cff) 30%, transparent) !important;
+}
