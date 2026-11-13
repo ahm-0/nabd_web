@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-13-home-v2';
+const CACHE_VERSION = '2026-11-13-app-v3';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 

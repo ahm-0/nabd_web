@@ -404,3 +404,41 @@ body[data-page="home"] .hp-hero h2 { font-size: 23px; }
 body[data-page="home"] .home-studio > * { animation-duration: .24s !important; }
 body .bottom-nav .bottom-link span { line-height: 1 !important; margin-top: 0 !important; }
 body .bottom-nav .bottom-link { padding: 3px 0 !important; }
+
+/* ==========================================================================
+   طبقة التطبيق كله (كل الصفحات): سلاسة أعلى وأداء أخف
+   ========================================================================== */
+
+/* 1) الحركات المتكررة إلى ما لا نهاية تستهلك المعالج والبطارية؛ نُبقي المؤشرات والتحميل فقط */
+*:not([class*="spin"]):not([class*="load"]):not([class*="skeleton"]):not([class*="pulse-dot"]) {
+  animation-iteration-count: 1 !important;
+}
+
+/* 2) تأثيرات الضبابية تُكلّف كثيراً على الهواتف، ونستبدلها بخلفية مصمتة قريبة */
+*, *::before, *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* 3) انتقالات خفيفة ومحددة بدل transition: all */
+a, button, [role="button"], .card, .btn {
+  transition-property: background-color, color, border-color, transform, opacity, box-shadow !important;
+  transition-duration: .16s !important;
+  transition-timing-function: cubic-bezier(.22, 1, .36, 1) !important;
+}
+
+/* 4) ضغطة موحدة لكل عنصر تفاعلي على الهاتف */
+a:active, button:active, [role="button"]:active { transform: scale(.975); }
+
+/* 5) تقليل الحركة لمن يفضّلها */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 6) تمرير أنعم على الهاتف وعدم قفز الصفحة عند فتح لوحة المفاتيح */
+html { scroll-behavior: smooth; overscroll-behavior-y: none; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
