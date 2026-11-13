@@ -372,3 +372,35 @@ html.reduced-motion body[data-page="home"] .home-studio > * { animation: none !i
 @media (min-width: 720px) {
   body .bottom-nav { max-width: 480px; }
 }
+
+/* ==========================================================================
+   تحسينات الجوال: أيقونات أصغر، حواف أهدأ، ضغطة أسرع
+   ========================================================================== */
+body[data-page="home"] .home-studio { gap: 16px; }
+body[data-page="home"] :is(.journey-card-icon, .home-tool-icon, .home-collection-card > span, .home-access-card > span) {
+  width: 38px !important; height: 38px !important; border-radius: 12px !important; font-size: 15px !important;
+}
+body[data-page="home"] .home-focus-symbol { width: 46px !important; height: 46px !important; border-radius: 15px !important; font-size: 19px !important; }
+body[data-page="home"] .premium-card-icon { width: 40px !important; height: 40px !important; border-radius: 13px !important; font-size: 17px !important; }
+body[data-page="home"] .home-focus-card { min-height: 96px !important; padding: 15px !important; border-radius: 22px !important; }
+body[data-page="home"] .home-focus-content b { font-size: 17px !important; }
+body[data-page="home"] .journey-card { min-height: 112px !important; padding: 13px !important; gap: 10px !important; border-radius: 18px !important; }
+body[data-page="home"] .journey-card b { font-size: 15px !important; }
+body[data-page="home"] .journey-card small { font-size: 11px !important; }
+body[data-page="home"] .journey-card > i:last-child { width: 22px !important; height: 22px !important; border-radius: 8px !important; inset-block-start: 13px !important; inset-inline-end: 13px !important; }
+body[data-page="home"] .home-tool-card { min-height: 104px !important; padding: 12px 10px !important; border-radius: 18px !important; }
+body[data-page="home"] .home-collection-card, body[data-page="home"] .home-access-card { min-height: 64px !important; padding: 11px !important; border-radius: 18px !important; }
+body[data-page="home"] .premium-home-card { border-radius: 18px !important; padding: 13px !important; }
+body[data-page="home"] .home-studio-section-head h3 { font-size: 16px !important; }
+body[data-page="home"] :is(.journey-card, .home-tool-card, .home-collection-card, .home-access-card, .premium-home-card) { transition: transform .12s ease-out, border-color .12s ease-out !important; }
+body[data-page="home"] :is(.journey-card, .home-tool-card, .home-collection-card, .home-access-card, .premium-home-card):active { transform: scale(.97) !important; }
+body .bottom-nav .bottom-link i { font-size: 17px !important; }
+body .bottom-nav .bottom-link span { font-size: 9.5px !important; }
+body .bottom-nav { height: 60px !important; min-height: 60px !important; border-radius: 22px !important; }
+body .bottom-nav .bottom-link { border-radius: 16px !important; }
+body .topbar .icon-button { width: 40px !important; height: 40px !important; border-radius: 13px !important; }
+body[data-page="home"] .hp-hero h2 { font-size: 23px; }
+/* لا حركة دخول مع كل تنقل؛ الظهور الأولي فقط */
+body[data-page="home"] .home-studio > * { animation-duration: .24s !important; }
+body .bottom-nav .bottom-link span { line-height: 1 !important; margin-top: 0 !important; }
+body .bottom-nav .bottom-link { padding: 3px 0 !important; }

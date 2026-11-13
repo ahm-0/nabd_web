@@ -34,17 +34,24 @@
 
   const installSpeculation = () => {
     if (document.getElementById('nabd-speculation')) return;
-    const urls = collect();
-    if (!urls.length) return;
+    const nav = [...document.querySelectorAll('#bottomNav a[href$=".html"]')]
+      .map(a => toURL(a.getAttribute('href'))).filter(u => u && u !== toURL(here));
+    const navSet = new Set(nav);
+    const rest = collect().filter(u => !navSet.has(u));
+    if (!nav.length && !rest.length) return;
     if (HTMLScriptElement.supports?.('speculationrules')) {
+      // صفحات الشريط السفلي: تُحمَّل كاملة في الخلفية عند أول لمس، فيصبح الانتقال لحظياً
+      const rules = {
+        prerender: nav.length ? [{ source: 'list', urls: nav, eagerness: 'conservative' }] : [],
+        prefetch: rest.length ? [{ source: 'list', urls: rest, eagerness: 'moderate' }] : []
+      };
       const script = document.createElement('script');
       script.type = 'speculationrules';
       script.id = 'nabd-speculation';
-      script.textContent = JSON.stringify({ prefetch: [{ source: 'list', urls, eagerness: 'moderate' }] });
+      script.textContent = JSON.stringify(rules);
       document.head.appendChild(script);
     } else {
-      // بديل للمتصفحات التي لا تدعم القواعد: prefetch عادي بعد خمول المتصفح
-      urls.slice(0, 5).forEach(href => {
+      [...nav, ...rest].slice(0, 5).forEach(href => {
         const link = document.createElement('link');
         link.rel = 'prefetch'; link.as = 'document'; link.href = href;
         document.head.appendChild(link);
