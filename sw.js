@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-01-chat-color-v2';
+const CACHE_VERSION = '2026-11-12-pro-smooth-v1';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -54,6 +54,8 @@ const APP_SHELL = [
   './screening-exam.css',
   './nabd-theme.css',
   './nabd-navigation.js',
+  './nabd-pro.css',
+  './nabd-smooth.js',
   './nabd-ui.css',
   './exam-countdown-share.css',
   './vendor/html2canvas/html2canvas.min.js',
@@ -137,6 +139,24 @@ async function cacheFirst(request) {
   }
 }
 
+
+async function staleWhileRevalidateAsset(request, event) {
+  const cached = await caches.match(request, { ignoreSearch: true });
+  const refresh = fetch(request).then(async response => {
+    if (response.ok && response.type === 'basic') {
+      const cache = await caches.open(RUNTIME_CACHE);
+      await cache.put(request, response.clone());
+    }
+    return response;
+  }).catch(() => null);
+  if (cached) { event.waitUntil(refresh); return cached; }
+  return (await refresh) || new Response('لا يتوفر ملف التصميم أو الشيفرة حاليًا.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+}
+
+// لا نعيد تنزيل صفحة HTML الكبيرة عند كل تنقل: نحدّثها في الخلفية مرة كل 5 دقائق كحد أقصى.
+const NAVIGATION_REVALIDATE_MS = 5 * 60 * 1000;
+const lastNavigationRefresh = new Map();
+
 const NAVIGATION_REFRESH_TIMEOUT = 8000;
 
 async function fetchWithTimeout(request, timeout = NAVIGATION_REFRESH_TIMEOUT) {
@@ -191,18 +211,7 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
 
   if (/\.(?:css|js)$/i.test(url.pathname)) {
-    event.respondWith((async () => {
-      try {
-        const response = await fetch(request, { cache: 'no-store' });
-        if (response.ok && response.type === 'basic') {
-          const cache = await caches.open(RUNTIME_CACHE);
-          await cache.put(request, response.clone());
-        }
-        return response;
-      } catch (error) {
-        return (await caches.match(request, { ignoreSearch: true })) || new Response('لا يتوفر ملف التصميم أو الشيفرة حاليًا.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
-      }
-    })());
+    event.respondWith(staleWhileRevalidateAsset(request, event));
     return;
   }
 
@@ -212,10 +221,16 @@ self.addEventListener('fetch', event => {
       // بعد تفعيل عامل جديد، اطلب HTML من الشبكة حتى لا تعود الصفحة القديمة من الكاش.
       event.respondWith(networkFirstNavigation(request));
     } else {
-      const refresh = refreshNavigation(request).catch(() => null);
-      // اعرض الصفحة المحلية فورًا في الاستخدام المعتاد، وحدّثها في الخلفية للعمل دون اتصال.
-      event.waitUntil(refresh);
-      event.respondWith(staleWhileRevalidateNavigation(request, refresh));
+      const key = url.pathname;
+      const fresh = Date.now() - (lastNavigationRefresh.get(key) || 0) < NAVIGATION_REVALIDATE_MS;
+      event.respondWith((async () => {
+        const cached = await caches.match(request, { ignoreSearch: true });
+        if (cached && fresh) return cached; // فوري تماماً، دون أي طلب شبكة
+        lastNavigationRefresh.set(key, Date.now());
+        const refresh = refreshNavigation(request).catch(() => null);
+        event.waitUntil(refresh);
+        return staleWhileRevalidateNavigation(request, refresh);
+      })());
     }
     return;
   }
