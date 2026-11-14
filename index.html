@@ -1076,18 +1076,23 @@ body[data-page="home"] .home-studio > .home-studio-section{border-inline-start:0
     <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
     <div class="layout"><main class="main-content">
       <div class="home-studio nx-home">
-        <nav class="nx-actions" aria-label="أدوات التطبيق">
-          <a class="nx-act" href="notifications.html"><i class="fa-regular fa-bell"></i><span>الإشعارات</span></a>
-          <button class="nx-act" type="button" id="nxShare"><i class="fa-solid fa-share-nodes"></i><span>مشاركة</span></button>
-          <a class="nx-act" href="support-chat.html"><i class="fa-solid fa-headset"></i><span>الدعم</span></a>
-          <a class="nx-act" href="about.html"><i class="fa-solid fa-circle-info"></i><span>عن التطبيق</span></a>
-          <a class="nx-act" href="settings.html"><i class="fa-solid fa-gear"></i><span>الإعدادات</span></a>
-        </nav>
-        <section class="nx-carousel" aria-label="أبرز الأقسام">
+        <a class="nx-exam" href="exam-countdown.html" aria-label="عداد الامتحانات">
+          <span class="nx-exam-ico"><i class="fa-solid fa-hourglass-half"></i></span>
+          <span class="nx-exam-copy"><small>العد التنازلي</small><b>عداد الامتحانات</b><em>تابع الوقت المتبقي واضبط هدفك</em></span>
+          <i class="fa-solid fa-chevron-left nx-go" aria-hidden="true"></i>
+        </a>
+
+        <section class="nx-core-row" aria-label="المراحل الدراسية">
+          <a class="nx-core nx-g-teal" href="nine.html" style="--i:0"><span class="nx-ico"><i class="fa-solid fa-school"></i></span><b>التاسع</b><small>دروس منظمة</small></a>
+          <a class="nx-core nx-g-violet" href="curriculum.html" style="--i:1"><span class="nx-ico"><i class="fa-solid fa-graduation-cap"></i></span><b>البكالوريا</b><small>مواد ومراجعات</small></a>
+          <a class="nx-core nx-g-pink" href="universities.html" style="--i:2"><span class="nx-ico"><i class="fa-solid fa-building-columns"></i></span><b>الجامعات</b><small>دليل الكليات</small></a>
+        </section>
+
+        <section class="nx-carousel" aria-label="المكثفات">
           <div class="nx-track" id="nxTrack">
-            <a class="nx-slide nx-slide--blue" href="intensive-math.html"><i class="fa-solid fa-fire nx-flame" aria-hidden="true"></i><span class="nx-badge">دورة مكثفة 2027</span><span class="nx-slide-copy"><b>مكثفة الرياضيات والتحليل</b><small>شرح كافة النماذج المؤتمتة وطرق الحل السريع</small></span><span class="nx-cta">ابدأ الآن <i class="fa-solid fa-arrow-left"></i></span><i class="fa-solid fa-square-root-variable nx-slide-deco" aria-hidden="true"></i></a>
-            <a class="nx-slide nx-slide--navy" href="exam-countdown.html"><i class="fa-solid fa-fire nx-flame" aria-hidden="true"></i><span class="nx-badge">العد التنازلي</span><span class="nx-slide-copy"><b>عداد الامتحانات</b><small>تابع الوقت المتبقي واضبط هدفك</small></span><span class="nx-cta">ابدأ الآن <i class="fa-solid fa-arrow-left"></i></span><i class="fa-solid fa-hourglass-half nx-slide-deco" aria-hidden="true"></i></a>
-            <a class="nx-slide nx-slide--teal" href="baccalaureate-science.html"><i class="fa-solid fa-fire nx-flame" aria-hidden="true"></i><span class="nx-badge">مكثفة</span><span class="nx-slide-copy"><b>بكالوريا علمي</b><small>مراجعة شاملة لكل المواد العلمية</small></span><span class="nx-cta">ابدأ المراجعة <i class="fa-solid fa-arrow-left"></i></span><i class="fa-solid fa-flask nx-slide-deco" aria-hidden="true"></i></a>
+            <a class="nx-slide nx-slide--blue" href="intensive-math.html"><span class="nx-badge">مكثفة</span><span class="nx-slide-copy"><b>مكثفة الرياضيات والتحليل</b><small>شرح النماذج وطرق الحل السريع</small></span><i class="fa-solid fa-square-root-variable nx-slide-deco" aria-hidden="true"></i></a>
+            <a class="nx-slide nx-slide--teal" href="intensive-science.html"><span class="nx-badge">مكثفة</span><span class="nx-slide-copy"><b>مكثفة العلوم</b><small>مراجعة شاملة للمواد العلمية</small></span><i class="fa-solid fa-flask nx-slide-deco" aria-hidden="true"></i></a>
+            <a class="nx-slide nx-slide--violet" href="intensive-arabic.html"><span class="nx-badge">مكثفة</span><span class="nx-slide-copy"><b>مكثفة اللغة العربية</b><small>نصوص ومهارات الكتابة والفهم</small></span><i class="fa-solid fa-book-open nx-slide-deco" aria-hidden="true"></i></a>
           </div>
           <div class="nx-dots" id="nxDots"><button class="nx-dot is-active" type="button" aria-label="الشريحة 1"></button><button class="nx-dot" type="button" aria-label="الشريحة 2"></button><button class="nx-dot" type="button" aria-label="الشريحة 3"></button></div>
         </section>
@@ -1129,19 +1134,6 @@ body[data-page="home"] .home-studio > .home-studio-section{border-inline-start:0
           });
         });
         track.addEventListener('scroll', function () { window.requestAnimationFrame(paint); }, { passive: true });
-      })();
-      </script>
-<script>
-      (function () {
-        var btn = document.getElementById('nxShare');
-        if (!btn) return;
-        btn.addEventListener('click', function () {
-          var data = { title: 'نبض التفوق', text: 'منصتي الدراسية', url: location.origin + '/' };
-          if (navigator.share) { navigator.share(data).catch(function () {}); return; }
-          var label = btn.querySelector('span');
-          var done = function () { label.textContent = 'تم نسخ الرابط'; setTimeout(function () { label.textContent = 'مشاركة'; }, 1600); };
-          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(data.url).then(done, function () {});
-        });
       })();
       </script>
     </main></div>
