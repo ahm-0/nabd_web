@@ -41,8 +41,15 @@
     if (!nav.length && !rest.length) return;
     if (HTMLScriptElement.supports?.('speculationrules')) {
       // صفحات الشريط السفلي: تُحمَّل كاملة في الخلفية عند أول لمس، فيصبح الانتقال لحظياً
+      // صفحة "حسابي" تُجهَّز فوراً (eager) لأنها الأثقل، والبقية عند اللمس.
+      const profileURL = toURL('profile.html');
+      const eagerNav = profileURL && navSet.has(profileURL) && here !== 'profile.html' ? [profileURL] : [];
+      const lazyNav = nav.filter(u => !eagerNav.includes(u));
       const rules = {
-        prerender: nav.length ? [{ source: 'list', urls: nav, eagerness: 'conservative' }] : [],
+        prerender: [
+          ...(eagerNav.length ? [{ source: 'list', urls: eagerNav, eagerness: 'eager' }] : []),
+          ...(lazyNav.length ? [{ source: 'list', urls: lazyNav, eagerness: 'conservative' }] : [])
+        ],
         prefetch: rest.length ? [{ source: 'list', urls: rest, eagerness: 'moderate' }] : []
       };
       const script = document.createElement('script');
@@ -59,13 +66,14 @@
     }
   };
 
+  // نبدأ عند جاهزية الـDOM (لا بعد تحميل كل الموارد) حتى تبدأ الجلب المسبق مبكراً.
   const start = () => {
-    if ('requestIdleCallback' in window) requestIdleCallback(installSpeculation, { timeout: 1500 });
-    else setTimeout(installSpeculation, 600);
+    if ('requestIdleCallback' in window) requestIdleCallback(installSpeculation, { timeout: 300 });
+    else setTimeout(installSpeculation, 150);
   };
 
-  if (document.readyState === 'complete') start();
-  else window.addEventListener('load', start, { once: true });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+  else start();
 
   // استعادة الصفحة فوراً عند الرجوع (bfcache) دون وميض
   window.addEventListener('pageshow', event => {
