@@ -112,10 +112,8 @@ body[data-page="home"] .nx-home {
 .nx-dot.is-active { width: 28px; background: var(--nx-accent); }
 
 /* ---------- 5) الشبكة 3×3 ---------- */
-.nx-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
-.nx-grid > .nx-tile { grid-column: span 2; }
-.nx-grid > .nx-tile:nth-child(7) { grid-column: 2 / span 2; }
-.nx-grid > .nx-tile:nth-child(8) { grid-column: 4 / span 2; }
+.nx-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.nx-grid > .nx-tile { flex: 0 0 calc((100% - 20px) / 3); }
 .nx-tile {
   --g1: #5b8cff; --g2: #3b5bdb;
   position: relative; overflow: hidden; isolation: isolate;
@@ -142,7 +140,7 @@ body[data-page="home"] .nx-home {
 }
 .nx-tile:active { transform: scale(.955); }
 .nx-ico {
-  width: 38px; height: 38px; flex: none; border-radius: 13px;
+  width: 34px; height: 34px; flex: none; border-radius: 10px;
   display: grid; place-items: center; margin-bottom: 4px;
   background: linear-gradient(145deg, var(--g1), var(--g2));
   box-shadow: 0 8px 18px color-mix(in srgb, var(--g1) 38%, transparent), inset 0 1px 0 rgba(255, 255, 255, .25);
@@ -160,6 +158,22 @@ body[data-page="home"] .nx-home {
 .nx-g-cyan     { --g1: #67e8f9; --g2: #0891b2; }
 .nx-g-indigo   { --g1: #818cf8; --g2: #4338ca; }
 .nx-g-amber    { --g1: #fcd34d; --g2: #d97706; }
+.nx-g-violet   { --g1: #c4b5fd; --g2: #6d28d9; }
+.nx-g-sky      { --g1: #7dd3fc; --g2: #0369a1; }
+.nx-g-gold     { --g1: #fde68a; --g2: #b45309; }
+
+/* شريط أدوات التطبيق أسفل الترويسة */
+.nx-actions { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 1px; }
+.nx-actions::-webkit-scrollbar { display: none; }
+.nx-act {
+  flex: none; display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 14px; border-radius: 999px; cursor: pointer;
+  background: var(--nx-card-b); border: 1px solid var(--nx-line);
+  color: var(--nx-text); font: 700 12.5px/1 inherit; font-family: inherit; text-decoration: none;
+  transition: transform .14s ease, background-color .14s ease;
+}
+.nx-act i { color: var(--nx-accent); font-size: 13px; }
+.nx-act:active { transform: scale(.96); background: var(--nx-card-a); }
 
 /* ---------- 6) القسم المميز: ذهبي ---------- */
 .nx-vip {
@@ -245,7 +259,7 @@ body[data-page="home"] .bottom-nav .bottom-link.active:not(:nth-child(3)) { colo
 
 /* صورة تنظيم الصور: أصغر من بقية البطاقات */
 .nx-tile--sm { gap: 4px; padding: 8px 4px; }
-.nx-tile--sm .nx-ico { width: 32px; height: 32px; border-radius: 11px; font-size: 14px; margin-bottom: 2px; }
+.nx-tile--sm .nx-ico { width: 28px; height: 28px; border-radius: 8px; font-size: 12px; margin-bottom: 2px; }
 .nx-tile--sm b { font-size: 11.5px; }
 .nx-tile--sm small { display: none; }
 

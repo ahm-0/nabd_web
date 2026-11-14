@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-14-auth-v8';
+const CACHE_VERSION = '2026-11-14-actions-v9';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
