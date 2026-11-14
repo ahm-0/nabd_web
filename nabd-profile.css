@@ -1,0 +1,284 @@
+/* ==========================================================================
+   Nabd Profile — الملف الشخصي بهوية الصفحة الرئيسية
+   نفس الكحلي والشبكة النقطية، بطاقات زجاجية، أيقونات متدرجة،
+   وحركة دخول متتابعة بنفس منحنيات الرئيسية.
+   ========================================================================== */
+
+/* ---------- 1) الرموز والخلفية ---------- */
+body[data-page="profile"] {
+  --np-bg: #070b1a;
+  --np-card-a: #141d3d;
+  --np-card-b: #0c1330;
+  --np-line: rgba(150, 170, 255, .12);
+  --np-text: #f5f7ff;
+  --np-muted: rgba(200, 212, 255, .64);
+  --np-accent: #6cb4ff;
+  --np-accent-2: #7b6cff;
+  --np-ok: #5ee0a8;
+  background-color: var(--np-bg) !important;
+  background-image:
+    radial-gradient(rgba(130, 160, 255, .15) 1px, transparent 1.2px),
+    radial-gradient(70% 30% at 50% -4%, rgba(60, 110, 255, .28), transparent 72%) !important;
+  background-size: 22px 22px, 100% 100% !important;
+  background-repeat: repeat, no-repeat !important;
+  color: var(--np-text);
+}
+html[data-theme="light"] body[data-page="profile"] {
+  --np-bg: #eef2fb;
+  --np-card-a: #ffffff;
+  --np-card-b: #f5f8ff;
+  --np-line: rgba(40, 60, 140, .12);
+  --np-text: #141a33;
+  --np-muted: #5b6588;
+  --np-accent: #2f6fe0;
+  --np-accent-2: #6a4ff0;
+  --np-ok: #12946a;
+  background-image:
+    radial-gradient(rgba(60, 90, 200, .10) 1px, transparent 1.2px),
+    radial-gradient(70% 30% at 50% -4%, rgba(60, 110, 255, .14), transparent 72%) !important;
+}
+body[data-page="profile"] .app,
+body[data-page="profile"] .main-content,
+body[data-page="profile"] .layout { background: transparent !important; }
+
+/* ---------- 2) الترويسة: شفافة بلا شريط أخضر ---------- */
+body[data-page="profile"] .profile-appbar,
+body[data-page="profile"] .profile-mobile-appbar {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  color: var(--np-text) !important;
+}
+body[data-page="profile"] .profile-appbar h1,
+body[data-page="profile"] .profile-appbar h2,
+body[data-page="profile"] .profile-appbar strong { color: var(--np-text) !important; font-weight: 800 !important; }
+body[data-page="profile"] .profile-appbar button,
+body[data-page="profile"] .profile-appbar .icon-button,
+body[data-page="profile"] .profile-appbar a {
+  width: 40px !important; height: 40px !important; border-radius: 14px !important;
+  background: var(--np-card-b) !important; border: 1px solid var(--np-line) !important;
+  color: var(--np-text) !important; box-shadow: none !important;
+  transition: transform .14s ease, background-color .14s ease;
+}
+body[data-page="profile"] .profile-appbar button:active,
+body[data-page="profile"] .profile-appbar a:active { transform: scale(.94); }
+
+/* ---------- 3) البطاقات الزجاجية الموحّدة ---------- */
+body[data-page="profile"] .panel,
+body[data-page="profile"] .profile-card,
+body[data-page="profile"] .profile-hero-card,
+body[data-page="profile"] .profile-data,
+body[data-page="profile"] .student-progress-panel,
+body[data-page="profile"] .student-profile-services > *,
+body[data-page="profile"] .profile-stats > * {
+  background: linear-gradient(180deg, var(--np-card-a), var(--np-card-b)) !important;
+  border: 1px solid var(--np-line) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, .28) !important;
+  color: var(--np-text) !important;
+  background-image: none;
+}
+html[data-theme="light"] body[data-page="profile"] .panel,
+html[data-theme="light"] body[data-page="profile"] .profile-card,
+html[data-theme="light"] body[data-page="profile"] .profile-hero-card {
+  box-shadow: 0 12px 26px rgba(40, 55, 150, .10) !important;
+}
+
+/* ---------- 4) الهوية: بطاقة الملف ---------- */
+body[data-page="profile"] .profile-hero-card {
+  padding: 18px !important;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(91, 124, 255, .25), transparent 60%),
+    linear-gradient(180deg, var(--np-card-a), var(--np-card-b)) !important;
+}
+body[data-page="profile"] .profile-hero-card h1,
+body[data-page="profile"] .profile-hero-card h2,
+body[data-page="profile"] #profileName { color: var(--np-text) !important; font-weight: 800 !important; font-size: 22px !important; letter-spacing: -.2px; }
+body[data-page="profile"] #profileHandle,
+body[data-page="profile"] .profile-hero-card small { color: var(--np-muted) !important; }
+body[data-page="profile"] #profileBio,
+body[data-page="profile"] .profile-hero-card p { color: var(--np-muted) !important; line-height: 1.7 !important; }
+body[data-page="profile"] .profile-hero-card img,
+body[data-page="profile"] #profileAvatar {
+  border-radius: 50% !important;
+  box-shadow: 0 0 0 3px var(--np-bg), 0 0 0 5px transparent, 0 12px 26px rgba(80, 110, 255, .35) !important;
+  background: linear-gradient(145deg, #7fb8ff, #5b5cf0 60%, #7b6cff) !important;
+}
+
+/* ---------- 5) تنبيه إكمال البيانات: كبسولة بلون أزرق ---------- */
+body[data-page="profile"] .profile-complete,
+body[data-page="profile"] #completeProfile {
+  border-radius: 20px !important;
+  background: linear-gradient(135deg, rgba(91, 124, 255, .18), rgba(123, 108, 255, .12)) !important;
+  border: 1px solid rgba(120, 150, 255, .28) !important;
+  color: var(--np-text) !important;
+}
+
+/* ---------- 6) بطاقات الإحصاءات: مربعات بأيقونات متدرجة ---------- */
+body[data-page="profile"] .profile-stats {
+  display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 10px !important;
+}
+body[data-page="profile"] .profile-stats > * {
+  display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;
+  aspect-ratio: 1 / 1; padding: 10px 6px !important; text-align: center !important; gap: 4px;
+  animation: np-rise .42s cubic-bezier(.05, .7, .1, 1) both;
+  animation-delay: calc(var(--i, 0) * 60ms + 80ms);
+}
+body[data-page="profile"] .profile-stats > *:nth-child(2) { --i: 1; }
+body[data-page="profile"] .profile-stats > *:nth-child(3) { --i: 2; }
+body[data-page="profile"] .profile-stats > * > :first-child {
+  width: 38px !important; height: 38px !important; border-radius: 12px !important;
+  display: grid !important; place-items: center;
+  background: linear-gradient(145deg, #7fb8ff, #5b5cf0) !important; color: #fff !important;
+  box-shadow: 0 8px 16px rgba(80, 110, 255, .35) !important;
+}
+body[data-page="profile"] .profile-stats > * strong,
+body[data-page="profile"] .profile-stats > * b { color: var(--np-text) !important; font-size: 20px !important; font-weight: 800 !important; }
+body[data-page="profile"] .profile-stats > * span,
+body[data-page="profile"] .profile-stats > * small { color: var(--np-muted) !important; font-size: 11px !important; }
+
+/* ---------- 7) التبويبات: حبوب زجاجية مع مؤشر متدرج ---------- */
+body[data-page="profile"] .profile-tabs,
+body[data-page="profile"] .profile-tab-bar,
+body[data-page="profile"] [role="tablist"] {
+  display: flex !important; gap: 6px !important; padding: 5px !important;
+  border-radius: 999px !important; background: var(--np-card-b) !important; border: 1px solid var(--np-line) !important;
+}
+body[data-page="profile"] [role="tablist"] > *,
+body[data-page="profile"] .profile-tabs > *,
+body[data-page="profile"] .profile-tab-bar > * {
+  flex: 1 !important; border-radius: 999px !important; border: 0 !important;
+  background: transparent !important; color: var(--np-muted) !important;
+  font-weight: 700 !important; font-size: 13px !important; box-shadow: none !important;
+  transition: background-color .25s ease, color .25s ease, transform .14s ease;
+}
+body[data-page="profile"] [role="tablist"] > [aria-selected="true"],
+body[data-page="profile"] .profile-tabs > .is-active,
+body[data-page="profile"] .profile-tab-bar > .is-active {
+  background: linear-gradient(135deg, var(--np-accent), var(--np-accent-2)) !important;
+  color: #fff !important; box-shadow: 0 8px 18px rgba(91, 110, 255, .35) !important;
+}
+/* إزالة المؤشّر الأخضر القديم أسفل التبويبات */
+body[data-page="profile"] .profile-tabs::after,
+body[data-page="profile"] .profile-tab-bar::after { display: none !important; }
+
+/* ---------- 8) بطاقات الخدمات: مثل أدوات الرئيسية ---------- */
+body[data-page="profile"] .student-profile-services {
+  display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important;
+}
+body[data-page="profile"] .student-profile-services > * {
+  display: flex !important; align-items: center !important; gap: 12px !important; padding: 14px !important;
+  min-height: 84px; text-decoration: none;
+  animation: np-rise .42s cubic-bezier(.05, .7, .1, 1) both;
+  animation-delay: calc(var(--i, 0) * 60ms + 160ms);
+  transition: transform .14s cubic-bezier(.2, 0, 0, 1), border-color .2s ease;
+}
+body[data-page="profile"] .student-profile-services > *:active { transform: scale(.97); }
+body[data-page="profile"] .student-profile-services b { color: var(--np-text) !important; font-size: 14px !important; font-weight: 800 !important; }
+body[data-page="profile"] .student-profile-services small,
+body[data-page="profile"] .student-profile-services span:not([class*="ico"]) { color: var(--np-muted) !important; font-size: 11.5px !important; }
+body[data-page="profile"] .student-profile-services i:first-child,
+body[data-page="profile"] .student-profile-services [class*="icon"]:first-child {
+  width: 40px !important; height: 40px !important; flex: none; border-radius: 13px !important;
+  display: grid !important; place-items: center; color: #fff !important;
+  background: linear-gradient(145deg, var(--np-accent), var(--np-accent-2)) !important;
+  box-shadow: 0 8px 16px rgba(91, 110, 255, .3) !important;
+}
+
+/* ---------- 9) الأزرار الرئيسية والحقول ---------- */
+body[data-page="profile"] .primary-button,
+body[data-page="profile"] button[type="submit"]:not(.icon-button) {
+  border-radius: 16px !important; border: 0 !important; min-height: 46px !important;
+  background: linear-gradient(135deg, var(--np-accent), var(--np-accent-2)) !important;
+  color: #fff !important; font-weight: 800 !important; box-shadow: 0 10px 22px rgba(91, 110, 255, .32) !important;
+}
+body[data-page="profile"] input,
+body[data-page="profile"] textarea,
+body[data-page="profile"] select {
+  border-radius: 16px !important; background: var(--np-card-b) !important; color: var(--np-text) !important;
+  border: 1px solid var(--np-line) !important;
+}
+body[data-page="profile"] input:focus,
+body[data-page="profile"] textarea:focus {
+  border-color: var(--np-accent) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--np-accent) 20%, transparent) !important;
+  outline: none !important;
+}
+
+/* ---------- 10) حركة الدخول ---------- */
+@keyframes np-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+body[data-page="profile"] .profile-hero-card,
+body[data-page="profile"] .student-progress-panel {
+  animation: np-rise .45s cubic-bezier(.05, .7, .1, 1) both;
+}
+body[data-page="profile"] .student-progress-panel { animation-delay: .12s; }
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-page="profile"] * { animation: none !important; transition: none !important; }
+}
+
+/* ---------- 11) إزالة الأخضر الموروث: كل الألوان المميزة بلون الرئيسية ---------- */
+body[data-page="profile"] *,
+body[data-page="profile"] {
+  --student-green: #6cb4ff;
+  --student-green-dark: #5b6cf0;
+  --success: #7fb8ff;
+  --service-accent: #7b6cff;
+}
+html[data-theme="light"] body[data-page="profile"] *,
+html[data-theme="light"] body[data-page="profile"] {
+  --student-green: #2f6fe0;
+  --student-green-dark: #3a48d6;
+  --success: #2f6fe0;
+}
+body[data-page="profile"] [style*="color:#1"],
+body[data-page="profile"] [style*="color: #1"] { color: var(--np-accent) !important; }
+
+/* ---------- 12) مسافات الجوال: لا تلتصق البطاقات بالحواف ---------- */
+body[data-page="profile"] .app {
+  padding-inline: 16px !important;
+  padding-bottom: calc(118px + env(safe-area-inset-bottom)) !important;
+}
+body[data-page="profile"] .main-content { width: 100% !important; max-width: 560px; margin-inline: auto !important; }
+
+/* ---------- 13) نصوص الخدمات: لا تُقص ---------- */
+body[data-page="profile"] .student-profile-services > * { min-width: 0 !important; }
+body[data-page="profile"] .student-profile-services b,
+body[data-page="profile"] .student-profile-services small,
+body[data-page="profile"] .student-profile-services span {
+  overflow-wrap: anywhere; min-width: 0;
+}
+body[data-page="profile"] .student-profile-services small {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* ---------- 14) شريط التقدم: مسار داكن بدل الأبيض ---------- */
+body[data-page="profile"] .student-progress-panel progress,
+body[data-page="profile"] .student-progress-panel [class*="track"],
+body[data-page="profile"] .student-progress-panel [class*="bar"]:not([class*="fill"]) {
+  background: var(--np-card-b) !important;
+  border-radius: 999px !important; height: 8px !important; border: 0 !important;
+}
+body[data-page="profile"] .student-progress-panel [class*="fill"] {
+  background: linear-gradient(90deg, var(--np-accent), var(--np-accent-2)) !important;
+  border-radius: 999px !important;
+}
+
+/* ---------- 15) بطاقات الخدمات: أيقونة فوق النص كما في الرئيسية ---------- */
+body[data-page="profile"] .student-profile-services > * {
+  flex-direction: column !important; align-items: flex-start !important; justify-content: space-between !important;
+  gap: 8px !important; min-height: 118px !important; padding: 12px !important;
+}
+body[data-page="profile"] .student-profile-services > * > * { max-width: 100%; }
+
+/* ---------- 16) إزالة الخلفيات الخضراء الموروثة من الأقسام الحاوية ---------- */
+body[data-page="profile"] :is(section, main, article, header, div):not(.panel):not(.profile-card):not(.profile-hero-card):not(.profile-data):not(.profile-stats > *):not(.student-profile-services > *):not(.nx-tile):not(.topbar):not(.bottom-nav):not(.bottom-link):not(.profile-appbar) {
+  background-color: transparent;
+}
+
+/* ---------- 17) نموذج إضافة المهام: داكن بدل الأبيض ---------- */
+body[data-page="profile"] form {
+  background: var(--np-card-b) !important; border: 1px solid var(--np-line) !important;
+  border-radius: 20px !important; color: var(--np-text) !important;
+}
+body[data-page="profile"] form input::placeholder { color: var(--np-muted) !important; }
