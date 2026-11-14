@@ -1,0 +1,170 @@
+/* ==========================================================================
+   Nabd Auth — تسجيل الدخول وإنشاء الحساب بهوية الصفحة الرئيسية
+   تصميم جوال نظيف: خلفية مطوّر بنقاط وتوهج، بطاقة زجاجية، حقول عريضة،
+   وزر تدرّج واضح. لا يغيّر منطق النموذج أو معرّفاته.
+   ========================================================================== */
+
+/* ---------- 1) الخلفية والرموز ---------- */
+body:has(.auth-page) {
+  --na-bg: #070b1a;
+  --na-card-a: #141d3e;
+  --na-card-b: #0c1431;
+  --na-line: rgba(150, 170, 255, .14);
+  --na-text: #f5f7ff;
+  --na-muted: rgba(200, 212, 255, .66);
+  --na-field: rgba(255, 255, 255, .045);
+  --na-accent: #6cb4ff;
+  --na-accent-2: #7b6cff;
+  background: var(--na-bg) !important;
+  background-image:
+    radial-gradient(rgba(130, 160, 255, .15) 1px, transparent 1.2px),
+    radial-gradient(70% 34% at 50% -4%, rgba(60, 110, 255, .30), transparent 72%) !important;
+  background-size: 22px 22px, 100% 100% !important;
+  background-repeat: repeat, no-repeat !important;
+  color: var(--na-text);
+}
+html[data-theme="light"] body:has(.auth-page) {
+  --na-bg: #eef2fb;
+  --na-card-a: #ffffff;
+  --na-card-b: #f6f8ff;
+  --na-line: rgba(40, 60, 140, .12);
+  --na-text: #141a33;
+  --na-muted: #5b6588;
+  --na-field: #f3f6ff;
+  --na-accent: #2f6fe0;
+  --na-accent-2: #6a4ff0;
+  background-image:
+    radial-gradient(rgba(60, 90, 200, .10) 1px, transparent 1.2px),
+    radial-gradient(70% 34% at 50% -4%, rgba(60, 110, 255, .14), transparent 72%) !important;
+}
+
+/* ---------- 2) إخفاء الزخرفة الثقيلة والإطار الكبير ---------- */
+body .auth-page::before,
+body .auth-page::after,
+body .auth-page .auth-orb,
+body .auth-page .auth-visual-grid,
+body .auth-page .auth-login-emblem,
+body .auth-page .auth-topline { display: none !important; }
+
+body .auth-page {
+  background: transparent !important;
+  min-height: 100dvh;
+  padding: 0 !important;
+}
+body .auth-page .auth-shell {
+  width: min(100%, 440px) !important;
+  margin: 0 auto !important;
+  padding: calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)) !important;
+  display: block !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: none !important;
+}
+
+/* ---------- 3) الشعار المصغّر ---------- */
+body .auth-page .auth-mobile-brand {
+  display: flex !important; align-items: center; gap: 12px;
+  margin: 6px 4px 18px !important;
+  color: var(--na-text) !important;
+}
+
+
+/* ---------- 4) البطاقة الزجاجية ---------- */
+body .auth-page .auth-form-wrap {
+  position: relative; overflow: hidden;
+  padding: 22px 18px 18px !important;
+  border-radius: 26px !important;
+  border: 1px solid var(--na-line) !important;
+  background: linear-gradient(180deg, var(--na-card-a), var(--na-card-b)) !important;
+  box-shadow: 0 22px 50px rgba(0, 0, 0, .40) !important;
+  color: var(--na-text) !important;
+}
+
+/* ---------- 5) شريط التقدم ---------- */
+body .auth-page .auth-progress { margin: 0 0 18px !important; }
+body .auth-page .auth-progress-head { color: var(--na-muted) !important; font-size: 12px !important; font-weight: 700 !important; }
+body .auth-page .auth-progress-track { height: 6px !important; border-radius: 999px !important; background: var(--na-field) !important; overflow: hidden; }
+body .auth-page .auth-progress-track > * { background: linear-gradient(90deg, var(--na-accent), var(--na-accent-2)) !important; border-radius: 999px; }
+
+/* ---------- 6) العناوين ---------- */
+body .auth-page h1#authTitle {
+  font-size: 24px !important; font-weight: 800 !important; line-height: 1.3 !important;
+  color: var(--na-text) !important; margin: 0 0 6px !important; text-align: start !important;
+}
+body .auth-page #authSubtitle { color: var(--na-muted) !important; font-size: 13.5px !important; line-height: 1.6 !important; margin: 0 0 18px !important; }
+body .auth-page .auth-step-heading { margin: 4px 0 12px !important; }
+body .auth-page .auth-step-heading h2 { font-size: 16px !important; font-weight: 800 !important; color: var(--na-text) !important; }
+body .auth-page .auth-step-heading p { color: var(--na-muted) !important; font-size: 12.5px !important; }
+body .auth-page .auth-step-number {
+  width: 40px !important; height: 40px !important; border-radius: 14px !important;
+  background: var(--na-field) !important; color: var(--na-accent) !important; border: 1px solid var(--na-line) !important;
+  font-weight: 800 !important;
+}
+
+/* ---------- 7) الحقول ---------- */
+body .auth-page .auth-grid { gap: 12px !important; }
+body .auth-page .auth-input-wrap { gap: 6px !important; }
+body .auth-page .auth-input-wrap label,
+body .auth-page .auth-input-wrap > span {
+  color: var(--na-muted) !important; font-size: 12.5px !important; font-weight: 700 !important;
+}
+body .auth-page .auth-input-wrap input,
+body .auth-page .auth-input-wrap select {
+  width: 100% !important; height: 52px !important; min-height: 52px !important;
+  padding: 0 16px !important; border-radius: 16px !important;
+  border: 1px solid var(--na-line) !important;
+  background: var(--na-field) !important; color: var(--na-text) !important;
+  font-size: 15px !important; font-family: inherit !important;
+  box-shadow: none !important; outline: none !important;
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease !important;
+}
+body .auth-page .auth-input-wrap input::placeholder { color: var(--na-muted) !important; opacity: .7; }
+body .auth-page .auth-input-wrap input:focus,
+body .auth-page .auth-input-wrap select:focus {
+  border-color: var(--na-accent) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--na-accent) 20%, transparent) !important;
+}
+
+/* ---------- 8) الأزرار ---------- */
+body .auth-page .primary-button {
+  height: 54px !important; min-height: 54px !important; border-radius: 18px !important;
+  border: 0 !important; width: 100% !important;
+  background: linear-gradient(135deg, var(--na-accent), var(--na-accent-2)) !important;
+  color: #fff !important; font-size: 16px !important; font-weight: 800 !important; font-family: inherit !important;
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--na-accent-2) 40%, transparent) !important;
+  transition: transform .14s ease, box-shadow .14s ease !important;
+}
+body .auth-page .primary-button:active { transform: scale(.98); }
+body .auth-page .auth-actions { display: grid !important; gap: 10px !important; margin-top: 14px !important; }
+body .auth-page .auth-back {
+  height: 46px !important; border-radius: 16px !important; border: 1px solid var(--na-line) !important;
+  background: transparent !important; color: var(--na-muted) !important; font-weight: 700 !important; font-family: inherit !important;
+}
+
+/* ---------- 9) الرسائل والتنقل بين الوضعين ---------- */
+body .auth-page .auth-message { font-size: 13px !important; color: var(--na-muted) !important; min-height: 0; margin: 8px 0 0 !important; }
+body .auth-page .auth-switch {
+  margin: 16px 0 0 !important; text-align: center !important;
+  color: var(--na-muted) !important; font-size: 13.5px !important;
+}
+body .auth-page #authModeToggle {
+  background: none !important; border: 0 !important; color: var(--na-accent) !important;
+  font-weight: 800 !important; font-family: inherit !important; padding: 0 4px !important; cursor: pointer;
+}
+body .auth-page .auth-footer-note {
+  margin-top: 14px !important; text-align: center; font-size: 12px !important; color: var(--na-muted) !important;
+  opacity: .85;
+}
+
+/* ---------- 10) الحركة ---------- */
+body .auth-page .auth-form-wrap { animation: na-rise .5s cubic-bezier(.05, .7, .1, 1) both; }
+@keyframes na-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  body .auth-page .auth-form-wrap { animation: none !important; }
+  body .auth-page .primary-button { transition: none !important; }
+}
+
+/* ---------- 11) الشاشات الكبيرة: بطاقة وسط الشاشة ---------- */
+@media (min-width: 900px) {
+  body .auth-page .auth-shell { width: min(100%, 460px) !important; padding-top: 48px !important; }
+}
