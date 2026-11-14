@@ -1,0 +1,252 @@
+/* ==========================================================================
+   Nabd Showcase — الصفحة الرئيسية بتصميم الشاشة المرجعية
+   داكنة زرقاء، شريحة أبرز أقسام قابلة للتمرير، شبكة بطاقات ملونة،
+   قسم مميز ذهبي، وشريط تنقل عائم مع زر رئيسي مرتفع.
+   ========================================================================== */
+
+/* ---------- 1) الرموز ---------- */
+body[data-page="home"] {
+  --nx-bg: #070b1a;
+  --nx-bg-glow: rgba(43, 92, 230, .30);
+  --nx-tile-a: #161d38;
+  --nx-tile-b: #0f1530;
+  --nx-tile-line: rgba(160, 180, 255, .10);
+  --nx-muted: rgba(205, 215, 255, .62);
+  --nx-text: #f4f6ff;
+  --nx-nav: #111a36;
+  --nx-nav-muted: #8d97bd;
+  --nx-accent: #5ab4f5;
+  --nx-slide-a: #2a63d8;
+  --nx-slide-b: #173a92;
+  background: var(--nx-bg) !important;
+  color: var(--nx-text);
+}
+html[data-theme="light"] body[data-page="home"] {
+  --nx-bg: #eef2fb;
+  --nx-bg-glow: rgba(60, 110, 240, .14);
+  --nx-tile-a: #ffffff;
+  --nx-tile-b: #f7f9ff;
+  --nx-tile-line: rgba(40, 60, 140, .10);
+  --nx-muted: #5b6588;
+  --nx-text: #141a33;
+  --nx-nav: #ffffff;
+  --nx-nav-muted: #6a7394;
+  --nx-accent: #2f6fe0;
+}
+
+body[data-page="home"] .app {
+  background:
+    radial-gradient(90% 46% at 50% -6%, var(--nx-bg-glow), transparent 70%),
+    var(--nx-bg) !important;
+  background-image: none !important;
+}
+
+/* ---------- 2) الشريط العلوي ---------- */
+body[data-page="home"] .topbar { background: transparent !important; }
+body[data-page="home"] .topbar .brand h1 { color: var(--nx-text) !important; }
+body[data-page="home"] .topbar .brand small { color: var(--nx-muted) !important; }
+body[data-page="home"] .topbar .icon-button { color: var(--nx-text) !important; }
+
+/* ---------- 3) تخطيط الصفحة ---------- */
+body[data-page="home"] .nx-home {
+  width: min(100%, 640px);
+  margin-inline: auto;
+  display: grid;
+  gap: 18px;
+  padding: 4px max(16px, env(safe-area-inset-right)) calc(118px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+
+/* ---------- 4) شريحة أبرز الأقسام ---------- */
+.nx-carousel { display: grid; gap: 12px; }
+.nx-track {
+  display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+}
+.nx-track::-webkit-scrollbar { display: none; }
+.nx-slide {
+  flex: 0 0 100%; scroll-snap-align: center; scroll-snap-stop: always;
+  position: relative; overflow: hidden;
+  min-height: 178px; padding: 18px 20px;
+  display: grid; align-content: space-between; gap: 14px;
+  border-radius: 26px; border: 1px solid rgba(255, 255, 255, .10);
+  background: linear-gradient(135deg, var(--nx-slide-a), var(--nx-slide-b));
+  box-shadow: 0 18px 38px rgba(20, 60, 170, .35);
+  color: #fff; text-decoration: none;
+  transition: transform .2s cubic-bezier(.2, 0, 0, 1);
+}
+.nx-slide:active { transform: scale(.985); }
+.nx-slide--teal { --nx-slide-a: #0f9bb0; --nx-slide-b: #0b5b78; box-shadow: 0 18px 38px rgba(10, 130, 160, .32); }
+.nx-slide--violet { --nx-slide-a: #7b4ae0; --nx-slide-b: #3b2287; box-shadow: 0 18px 38px rgba(90, 50, 200, .34); }
+.nx-slide--blue { background: linear-gradient(135deg, #2a63d8, #173a92); }
+.nx-badge {
+  justify-self: start; padding: 6px 14px; border-radius: 999px;
+  background: rgba(255, 255, 255, .18); font-size: 12px; font-weight: 700; color: #fff;
+  backdrop-filter: none;
+}
+.nx-slide-copy { display: grid; gap: 4px; position: relative; z-index: 1; }
+.nx-slide-copy b { font-size: 22px; font-weight: 800; line-height: 1.25; }
+.nx-slide-copy small { font-size: 13px; color: rgba(255, 255, 255, .82); line-height: 1.5; }
+.nx-cta {
+  justify-self: start; position: relative; z-index: 1;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 999px;
+  background: #fff; color: #0b1430; font-size: 13.5px; font-weight: 800;
+}
+.nx-cta i { font-size: 12px; }
+.nx-slide-deco {
+  position: absolute; inset-inline-end: -18px; inset-block-end: -26px;
+  font-size: 150px; color: rgba(255, 255, 255, .10); transform: rotate(-10deg); pointer-events: none;
+}
+
+.nx-dots { display: flex; justify-content: center; gap: 8px; }
+.nx-dot {
+  width: 8px; height: 8px; padding: 0; border: 0; border-radius: 999px;
+  background: rgba(150, 170, 230, .35); cursor: pointer;
+  transition: width .35s cubic-bezier(.2, 0, 0, 1), background-color .35s ease;
+}
+.nx-dot.is-active { width: 28px; background: var(--nx-accent); }
+html[data-theme="light"] body[data-page="home"] .nx-dot { background: rgba(60, 80, 160, .25); }
+
+/* ---------- 5) شبكة البطاقات 3×4 ---------- */
+.nx-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.nx-tile {
+  --g1: #5b8cff; --g2: #3b5bdb;
+  position: relative; overflow: hidden; isolation: isolate;
+  display: grid; justify-items: center; align-content: start; gap: 5px;
+  padding: 16px 8px 14px; min-width: 0;
+  border-radius: 22px; border: 1px solid var(--nx-tile-line);
+  background: linear-gradient(180deg, var(--nx-tile-a), var(--nx-tile-b));
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .28);
+  color: var(--nx-text); text-decoration: none; text-align: center;
+  animation: nx-rise .5s cubic-bezier(.05, .7, .1, 1) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+  transition: transform .18s cubic-bezier(.2, 0, 0, 1);
+}
+/* وهج لوني خلف الزاوية العلوية، كما في المرجع */
+.nx-tile::before {
+  content: ""; position: absolute; z-index: -1;
+  inset-inline-end: -34px; inset-block-start: -34px;
+  width: 120px; height: 120px; border-radius: 50%;
+  background: radial-gradient(circle, var(--g1) 0%, transparent 68%);
+  opacity: .30; pointer-events: none;
+}
+.nx-tile:active { transform: scale(.955); }
+.nx-ico {
+  width: 56px; height: 56px; border-radius: 18px;
+  display: grid; place-items: center; margin-bottom: 4px;
+  background: linear-gradient(145deg, var(--g1), var(--g2));
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--g1) 40%, transparent);
+  color: #fff; font-size: 22px; line-height: 1;
+}
+.nx-tile b { font-size: 14px; font-weight: 800; line-height: 1.3; color: var(--nx-text); }
+.nx-tile small { font-size: 11px; line-height: 1.35; color: var(--nx-muted); }
+
+.nx-g-lime     { --g1: #a3e635; --g2: #16a34a; }
+.nx-g-orange   { --g1: #fb923c; --g2: #ef4444; }
+.nx-g-blue     { --g1: #60a5fa; --g2: #2563eb; }
+.nx-g-purple   { --g1: #c084fc; --g2: #7c3aed; }
+.nx-g-teal     { --g1: #2dd4bf; --g2: #0f766e; }
+.nx-g-pink     { --g1: #f0abfc; --g2: #db2777; }
+.nx-g-cyan     { --g1: #67e8f9; --g2: #0891b2; }
+.nx-g-indigo   { --g1: #a5b4fc; --g2: #4338ca; }
+.nx-g-amber    { --g1: #fcd34d; --g2: #d97706; }
+.nx-g-rose     { --g1: #fda4af; --g2: #e11d48; }
+.nx-g-emerald  { --g1: #6ee7b7; --g2: #059669; }
+.nx-g-sky      { --g1: #7dd3fc; --g2: #0369a1; }
+
+/* ---------- 6) القسم المميز: ذهبي ---------- */
+.nx-vip {
+  position: relative; overflow: hidden;
+  border-radius: 24px; padding: 14px;
+  background: linear-gradient(135deg, #2b1f08, #3f2c0c 60%, #5a3d0f);
+  border: 1px solid rgba(255, 190, 80, .35);
+  box-shadow: 0 14px 30px rgba(255, 160, 40, .14);
+}
+html[data-theme="light"] body[data-page="home"] .nx-vip {
+  background: linear-gradient(135deg, #fff4dc, #ffe7b5); border-color: rgba(214, 140, 20, .4);
+}
+body[data-page="home"] .nx-vip .premium-home-card {
+  margin: 0 !important; padding: 0 !important; border: 0 !important;
+  background: transparent !important; box-shadow: none !important;
+}
+body[data-page="home"] .nx-vip .premium-card-icon {
+  background: linear-gradient(145deg, #ffd46b, #ff9a3c) !important; color: #3a2204 !important;
+}
+body[data-page="home"] .nx-vip .premium-card-copy b { color: #ffe2ad !important; }
+body[data-page="home"] .nx-vip .premium-card-copy small { color: rgba(255, 226, 173, .8) !important; }
+.nx-vip .premium-home-card::after { display: none !important; }
+.nx-vip .premium-home-card.hidden,
+.nx-vip .premium-admin-home-shortcut.hidden { display: none !important; }
+
+/* ---------- 7) شريط التنقل العائم مع زر رئيسي مرتفع ---------- */
+body[data-page="home"] .bottom-nav {
+  background: var(--nx-nav) !important;
+  border: 1px solid var(--nx-tile-line) !important;
+  border-radius: 30px !important;
+  height: 70px !important; min-height: 70px !important;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .45) !important;
+  padding: 8px 8px !important;
+  inset-inline: 14px !important;
+  inset-block-end: calc(12px + env(safe-area-inset-bottom)) !important;
+  max-width: 560px; margin-inline: auto !important;
+  overflow: visible !important;
+}
+body[data-page="home"] .bottom-nav .bottom-link {
+  background: transparent !important; box-shadow: none !important; border-radius: 0 !important;
+  color: var(--nx-nav-muted) !important; transform: none !important; gap: 4px !important;
+}
+body[data-page="home"] .bottom-nav .bottom-link i {
+  width: auto !important; height: auto !important; background: transparent !important;
+  color: inherit !important; font-size: 18px !important; box-shadow: none !important;
+  transition: transform .3s cubic-bezier(.2, 0, 0, 1) !important;
+}
+body[data-page="home"] .bottom-nav .bottom-link span {
+  font-size: 10.5px !important; font-weight: 700 !important; color: inherit !important;
+}
+/* الزر الرئيسي في المنتصف: دائرة زرقاء مرتفعة */
+body[data-page="home"] .bottom-nav .bottom-link:nth-child(3) { overflow: visible; }
+body[data-page="home"] .bottom-nav .bottom-link:nth-child(3).active { color: var(--nx-text) !important; }
+body[data-page="home"] .bottom-nav .bottom-link:nth-child(3).active i {
+  width: 50px !important; height: 50px !important; border-radius: 50% !important;
+  display: grid !important; place-items: center;
+  background: linear-gradient(145deg, #8fd0ff, #3b82f6) !important;
+  color: #fff !important; font-size: 19px !important;
+  box-shadow: 0 8px 18px rgba(59, 130, 246, .5) !important;
+  transform: none !important;
+}
+body[data-page="home"] .bottom-nav .bottom-link:nth-child(3).active span {
+  opacity: 0; font-size: 0 !important;
+}
+body[data-page="home"] .bottom-nav .bottom-link.active:not(:nth-child(3)) { color: var(--nx-text) !important; }
+body[data-page="home"] .bottom-nav .bottom-link.active:not(:nth-child(3)) i { transform: translateY(-1px); }
+
+/* ---------- 8) الحركة ---------- */
+@keyframes nx-rise {
+  from { opacity: 0; transform: translateY(14px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
+body[data-page="home"] .nx-carousel {
+  animation: nx-rise .5s cubic-bezier(.05, .7, .1, 1) both;
+}
+body[data-page="home"] .nx-vip {
+  animation: nx-rise .5s cubic-bezier(.05, .7, .1, 1) .3s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-page="home"] .nx-tile,
+  body[data-page="home"] .nx-carousel,
+  body[data-page="home"] .nx-vip { animation: none !important; }
+  .nx-dot, .nx-slide, .nx-tile { transition: none !important; }
+}
+
+/* ---------- 9) شاشات ضيقة ---------- */
+@media (max-width: 360px) {
+  .nx-ico { width: 50px; height: 50px; border-radius: 16px; font-size: 20px; }
+  .nx-tile b { font-size: 13px; }
+  .nx-slide-copy b { font-size: 20px; }
+}
+
+/* إزالة توهّج الرابط النشط القديم خلف الزر الرئيسي */
+body[data-page="home"] .bottom-nav .bottom-link:nth-child(3).active {
+  background: transparent !important; box-shadow: none !important; overflow: visible !important;
+}

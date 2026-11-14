@@ -1068,77 +1068,125 @@ body[data-page="home"] .home-studio > .home-studio-section{border-inline-start:0
 <link rel="stylesheet" href="nabd-pro.css">
 <link rel="stylesheet" href="nabd-home.css">
 <link rel="stylesheet" href="nabd-material.css">
+<link rel="stylesheet" href="nabd-showcase.css">
 <script src="nabd-smooth.js" defer></script>
 </head>
 <body data-page="home">
   <div class="app">
     <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
     <div class="layout"><main class="main-content">
-      <div class="home-studio">
-        <section class="hp-hero" aria-label="الترحيب">
-          <span class="hp-date"><i class="fa-regular fa-calendar" aria-hidden="true"></i><span id="hpDate"></span></span>
-          <h2>أهلًا <span class="hp-name" id="hpName">بك</span></h2>
-          <p>ماذا تريد أن تنجز اليوم؟</p>
-          <script>
-          (() => {
-            const dateEl = document.getElementById('hpDate');
-            const nameEl = document.getElementById('hpName');
-            try {
-              if (dateEl) dateEl.textContent = new Intl.DateTimeFormat('ar', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
-            } catch { if (dateEl) dateEl.parentElement.hidden = true; }
-            const paintName = () => {
-              try {
-                const raw = localStorage.getItem('nabd_v3_student') || localStorage.getItem('nabd_v2_student');
-                const first = raw ? String(JSON.parse(raw)?.first || '').trim() : '';
-                if (nameEl && first) nameEl.textContent = first;
-              } catch { /* يبقى الترحيب العام */ }
-            };
-            paintName();
-            window.addEventListener('load', () => setTimeout(paintName, 1200), { once: true });
-            window.addEventListener('pageshow', paintName);
-          })();
-          </script>
-        </section>
-        <a class="home-focus-card" href="exam-countdown.html">
-          <span class="home-focus-symbol"><i class="fa-solid fa-hourglass-half"></i></span>
-          <span class="home-focus-content"><small>المحطة القادمة</small><b>عداد الامتحانات</b><em>تابع الوقت المتبقي واضبط هدفك الخاص.</em></span>
-          <span class="home-focus-arrow"><i class="fa-solid fa-arrow-left"></i></span>
-          <i class="home-focus-orbit orbit-a"></i><i class="home-focus-orbit orbit-b"></i>
-        </a>
-
-        <section class="hm-section" aria-labelledby="hmToolsTitle">
-          <header class="hm-head"><h3 id="hmToolsTitle">أدواتك اليومية</h3><a href="time-organizer.html">الكل</a></header>
-          <div class="hm-tools">
-            <a class="hm-tool tool-schedule" href="time-organizer.html"><span class="hm-ico"><i class="fa-solid fa-calendar-days"></i></span><b>الجدول</b><small id="serviceStatusSchedule">أضف أول مهمة</small></a>
-            <a class="hm-tool tool-grade" href="grade-calculator.html"><span class="hm-ico"><i class="fa-solid fa-calculator"></i></span><b>المعدل</b><small id="serviceStatusGrade">احسب معدلك</small></a>
-            <a class="hm-tool tool-tests" href="tests.html"><span class="hm-ico"><i class="fa-solid fa-clipboard-check"></i></span><b>الاختبارات</b><small id="serviceStatusTests">نماذج ونتائج</small></a>
+      <div class="home-studio nx-home">
+        <section class="nx-carousel" aria-label="أبرز الأقسام">
+          <div class="nx-track" id="nxTrack">
+            <a class="nx-slide nx-slide--blue" href="exam-countdown.html">
+              <span class="nx-badge">العد التنازلي</span>
+              <span class="nx-slide-copy"><b>عداد الامتحانات</b><small>تابع الوقت المتبقي واضبط هدفك</small></span>
+              <span class="nx-cta">ابدأ الآن <i class="fa-solid fa-arrow-left"></i></span>
+              <i class="fa-solid fa-hourglass-half nx-slide-deco" aria-hidden="true"></i>
+            </a>
+            <a class="nx-slide nx-slide--teal" href="baccalaureate-science.html">
+              <span class="nx-badge">مكثفة</span>
+              <span class="nx-slide-copy"><b>بكالوريا علمي</b><small>مراجعة شاملة لكل المواد</small></span>
+              <span class="nx-cta">ابدأ المراجعة <i class="fa-solid fa-arrow-left"></i></span>
+              <i class="fa-solid fa-flask nx-slide-deco" aria-hidden="true"></i>
+            </a>
+            <a class="nx-slide nx-slide--violet" href="university-admission-2026.html">
+              <span class="nx-badge">2026</span>
+              <span class="nx-slide-copy"><b>القبول الجامعي</b><small>شروط القبول ودليل الكليات</small></span>
+              <span class="nx-cta">استكشف الآن <i class="fa-solid fa-arrow-left"></i></span>
+              <i class="fa-solid fa-building-columns nx-slide-deco" aria-hidden="true"></i>
+            </a>
           </div>
+          <div class="nx-dots" id="nxDots"><button class="nx-dot is-active" type="button" aria-label="الشريحة 1"></button><button class="nx-dot" type="button" aria-label="الشريحة 2"></button><button class="nx-dot" type="button" aria-label="الشريحة 3"></button></div>
         </section>
 
-        <section class="hm-section" aria-labelledby="hmPathsTitle">
-          <header class="hm-head"><h3 id="hmPathsTitle">مساراتك الدراسية</h3></header>
-          <div class="hm-list">
-            <a class="hm-row journey-science" href="curriculum.html"><span class="hm-ico"><i class="fa-solid fa-graduation-cap"></i></span><span class="hm-txt"><b>البكالوريا</b><small>مواد ومراجعات</small></span><i class="fa-solid fa-chevron-left hm-go"></i></a>
-            <a class="hm-row journey-nine" href="nine.html"><span class="hm-ico"><i class="fa-solid fa-school"></i></span><span class="hm-txt"><b>التاسع</b><small>دروس منظمة</small></span><i class="fa-solid fa-chevron-left hm-go"></i></a>
-            <a class="hm-row journey-university" href="universities.html"><span class="hm-ico"><i class="fa-solid fa-building-columns"></i></span><span class="hm-txt"><b>الجامعات</b><small>بحث ومقارنة</small></span><i class="fa-solid fa-chevron-left hm-go"></i></a>
-            <a class="hm-row journey-sites" href="educational-sites.html"><span class="hm-ico"><i class="fa-solid fa-globe"></i></span><span class="hm-txt"><b>المواقع التعليمية</b><small>مصادر موثوقة ومفيدة</small></span><i class="fa-solid fa-chevron-left hm-go"></i></a>
-          </div>
-          <div class="hm-premium-wrap">
-            <a class="premium-card premium-home-card" href="premium.html"><span class="premium-card-icon"><i class="fa-solid fa-crown"></i></span><span class="premium-card-copy"><b>بكالوريا القسم المميز</b><small>اختر الفرع والأستاذ والمادة للوصول إلى الملفات الخاصة.</small></span><i class="fa-solid fa-arrow-left"></i></a>
-            <a class="premium-card premium-home-card premium-admin-home-shortcut hidden" id="premiumAdminHomeShortcut" href="premium-admin.html"><span class="premium-card-icon"><i class="fa-solid fa-shield-halved"></i></span><span class="premium-card-copy"><b>إدارة القسم المميز</b><small>إضافة وتعديل وحذف الفروع والأساتذة والمواد والملفات والأكواد.</small></span><i class="fa-solid fa-arrow-left"></i></a>
-          </div>
+        <section class="nx-grid" aria-label="الأقسام">
+          <a class="nx-tile nx-g-lime" href="completion-program.html" style="--i:0">
+            <span class="nx-ico"><i class="fa-solid fa-list-check"></i></span>
+            <b>برنامج الختم</b>
+            <small id="serviceStatusCompletion">أنشئ خطتك</small>
+          </a>
+          <a class="nx-tile nx-g-orange" href="time-organizer.html" style="--i:1">
+            <span class="nx-ico"><i class="fa-solid fa-calendar-check"></i></span>
+            <b>تنظيم الوقت</b>
+            <small id="serviceStatusSchedule">جدول المهام</small>
+          </a>
+          <a class="nx-tile nx-g-blue" href="saved-items.html" style="--i:2">
+            <span class="nx-ico"><i class="fa-solid fa-bookmark"></i></span>
+            <b>المحفوظات</b>
+            <small>دروس وكتب</small>
+          </a>
+          <a class="nx-tile nx-g-purple" href="assistant.html" style="--i:3">
+            <span class="nx-ico"><i class="fa-solid fa-brain"></i></span>
+            <b>المساعد الذكي</b>
+            <small>إجابات فورية</small>
+          </a>
+          <a class="nx-tile nx-g-teal" href="curriculum.html" style="--i:4">
+            <span class="nx-ico"><i class="fa-solid fa-graduation-cap"></i></span>
+            <b>تاسع وبكالوريا</b>
+            <small>المناهج والملخصات</small>
+          </a>
+          <a class="nx-tile nx-g-pink" href="universities.html" style="--i:5">
+            <span class="nx-ico"><i class="fa-solid fa-building-columns"></i></span>
+            <b>الجامعات</b>
+            <small>دليل الكليات</small>
+          </a>
+          <a class="nx-tile nx-g-cyan" href="predictions.html" style="--i:6">
+            <span class="nx-ico"><i class="fa-solid fa-bullseye"></i></span>
+            <b>التوقعات</b>
+            <small>أسئلة متوقعة</small>
+          </a>
+          <a class="nx-tile nx-g-indigo" href="lessons.html" style="--i:7">
+            <span class="nx-ico"><i class="fa-solid fa-circle-play"></i></span>
+            <b>الدروس</b>
+            <small>شروحات مبسطة</small>
+          </a>
+          <a class="nx-tile nx-g-amber" href="library.html" style="--i:8">
+            <span class="nx-ico"><i class="fa-solid fa-book-open"></i></span>
+            <b>المكتبة</b>
+            <small>مصادر وملخصات</small>
+          </a>
+          <a class="nx-tile nx-g-rose" href="tests.html" style="--i:9">
+            <span class="nx-ico"><i class="fa-solid fa-clipboard-check"></i></span>
+            <b>الاختبارات</b>
+            <small id="serviceStatusTests">نماذج ونتائج</small>
+          </a>
+          <a class="nx-tile nx-g-emerald" href="grade-calculator.html" style="--i:10">
+            <span class="nx-ico"><i class="fa-solid fa-calculator"></i></span>
+            <b>المعدل</b>
+            <small id="serviceStatusGrade">احسب معدلك</small>
+          </a>
+          <a class="nx-tile nx-g-sky" href="free-channels.html" style="--i:11">
+            <span class="nx-ico"><i class="fa-solid fa-bullhorn"></i></span>
+            <b>القنوات</b>
+            <small>موارد مجانية</small>
+          </a>
         </section>
 
-        <section class="hm-section" aria-labelledby="hmSpaceTitle">
-          <header class="hm-head"><h3 id="hmSpaceTitle">مساحتك</h3></header>
-          <div class="hm-grid">
-            <a class="hm-tile collection-completion" href="completion-program.html"><span class="hm-ico"><i class="fa-solid fa-list-check"></i></span><span class="hm-txt"><b>برنامج الختم</b><small id="serviceStatusCompletion">أنشئ خطة</small></span></a>
-            <a class="hm-tile collection-saved" href="saved-items.html"><span class="hm-ico"><i class="fa-solid fa-bookmark"></i></span><span class="hm-txt"><b>المحفوظات</b><small>كتب ودروس وبرامج</small></span></a>
-            <a class="hm-tile access-elite" href="elite.html"><span class="hm-ico"><i class="fa-solid fa-crown"></i></span><span class="hm-txt"><b>النخبة</b><small>محتوى مميز</small></span></a>
-            <a class="hm-tile access-free" href="free-channels.html"><span class="hm-ico"><i class="fa-solid fa-bullhorn"></i></span><span class="hm-txt"><b>القنوات</b><small>موارد مجانية</small></span></a>
-          </div>
+        <section class="nx-vip" aria-label="القسم المميز">
+          <a class="premium-card premium-home-card" href="premium.html"><span class="premium-card-icon"><i class="fa-solid fa-crown"></i></span><span class="premium-card-copy"><b>بكالوريا القسم المميز</b><small>اختر الفرع والأستاذ والمادة للوصول إلى الملفات الخاصة.</small></span><i class="fa-solid fa-arrow-left"></i></a>
+          <a class="premium-card premium-home-card premium-admin-home-shortcut hidden" id="premiumAdminHomeShortcut" href="premium-admin.html"><span class="premium-card-icon"><i class="fa-solid fa-shield-halved"></i></span><span class="premium-card-copy"><b>إدارة القسم المميز</b><small>إضافة وتعديل وحذف الفروع والأساتذة والمواد والملفات والأكواد.</small></span><i class="fa-solid fa-arrow-left"></i></a>
         </section>
       </div>
+      <script>
+      (function () {
+        var track = document.getElementById('nxTrack');
+        var dots = Array.prototype.slice.call(document.querySelectorAll('#nxDots .nx-dot'));
+        if (!track || !dots.length) return;
+        var rtl = getComputedStyle(track).direction === 'rtl';
+        function current() { return Math.round(Math.abs(track.scrollLeft) / Math.max(track.clientWidth, 1)); }
+        function paint() {
+          var i = Math.min(current(), dots.length - 1);
+          dots.forEach(function (d, k) { d.classList.toggle('is-active', k === i); });
+        }
+        dots.forEach(function (d, k) {
+          d.addEventListener('click', function () {
+            track.scrollTo({ left: (rtl ? -1 : 1) * k * track.clientWidth, behavior: 'smooth' });
+          });
+        });
+        track.addEventListener('scroll', function () { window.requestAnimationFrame(paint); }, { passive: true });
+      })();
+      </script>
     </main></div>
   </div>
   <nav class="bottom-nav" id="bottomNav"></nav><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modalContent"></div></div><div class="toast" id="toast"></div><script data-bundled-from="vendor/supabase/supabase.js">
