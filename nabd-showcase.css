@@ -353,4 +353,22 @@ body[data-page="home"] .topbar .icon-button, body[data-page="profile"] .topbar .
   color: var(--nx-text) !important; box-shadow: none !important;
 }
 body[data-page="home"] .topbar .notification-dot, body[data-page="profile"] .topbar .notification-dot { inset-inline-end: 7px; inset-block-start: 7px; }
-body[data-page="home"] .main-content, body[data-page="profile"] .main-content { padding-top: calc(60px + env(safe-area-inset-top)) !important; }
+body[data-page="home"] .main-content, body[data-page="profile"] .main-content { padding-top: 0 !important; }
+
+/* ---------- 9) سطر الترحيب أسفل الشريط العلوي ---------- */
+body[data-page="home"] .greet-row, body[data-page="profile"] .greet-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  min-height: 44px; box-sizing: border-box; margin: calc(82px + env(safe-area-inset-top)) 2px 12px; padding: 0 6px;
+}
+body[data-page="home"] .greet-row .greet-text, body[data-page="profile"] .greet-row .greet-text {
+  margin: 0; font-size: 14px; color: var(--nx-muted); font-weight: 600; line-height: 1.4;
+}
+body[data-page="home"] .greet-row .greet-text b, body[data-page="profile"] .greet-row .greet-text b {
+  color: var(--nx-text); font-weight: 800;
+}
+body[data-page="profile"] .greet-row .greet-actions { display: flex; gap: 6px; }
+body[data-page="profile"] .greet-row .icon-button {
+  width: 40px !important; height: 40px !important; border-radius: 14px !important;
+  background: rgba(255, 255, 255, .06) !important; border: 1px solid var(--nx-line) !important;
+  color: var(--nx-text) !important; box-shadow: none !important; display: grid; place-items: center;
+}
