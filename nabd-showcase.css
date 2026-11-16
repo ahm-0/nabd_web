@@ -372,3 +372,6 @@ body[data-page="profile"] .greet-row .icon-button {
   background: rgba(255, 255, 255, .06) !important; border: 1px solid var(--nx-line) !important;
   color: var(--nx-text) !important; box-shadow: none !important; display: grid; place-items: center;
 }
+html body[data-page="home"] .app { transform: none !important; filter: none !important; perspective: none !important; }
+/* إيقاف حركة دخول الحاوية: حركة تنتهي بتعبئة (fill) تُبقي حاوية الصفحة كـ"حاوية تحويل" فيتحرك الشريط الثابت مع التمرير */
+html body[data-page="home"] .app { animation: none !important; }

@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-16-hero-v17';
+const CACHE_VERSION = '2026-11-16-fixed-bar-v18';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 

@@ -430,3 +430,6 @@ html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card 
   flex-direction: row !important; aspect-ratio: auto !important; height: auto !important; min-height: 0 !important;
   justify-content: flex-start !important;
 }
+/* الشريط العلوي الثابت: لا يجوز أن تُنشئ حاوية الصفحة تحويلاً (transform) يثبّته نسبياً إليها */
+html body[data-page="profile"] .app, html body[data-page="home"] .app { transform: none !important; filter: none !important; perspective: none !important; }
+html body[data-page="profile"] .app { animation: none !important; }
