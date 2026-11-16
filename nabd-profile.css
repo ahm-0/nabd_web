@@ -372,3 +372,61 @@ html[data-theme] body[data-page="profile"] .greet-row .greet-actions { display: 
 html[data-theme] body[data-page="profile"] .greet-row { margin: calc(82px + env(safe-area-inset-top)) 2px 12px !important; }
 /* منع انهيار هامش سطر الترحيب إلى الأعلى حتى يبقى الشريط الثابت في موضعه الصحيح */
 html[data-theme] body[data-page="profile"] .app { display: flow-root !important; }
+
+/* ---------- 22) بطاقة الهوية بتصميم المرجع: الاسم بالأعلى، الصورة والإحصائيات، ومعرّف قابل للنسخ ---------- */
+html[data-theme] body[data-page="profile"] .profile-hero-card {
+  text-align: center; padding: 20px 16px 18px !important; margin-top: 0 !important;
+}
+html[data-theme] body[data-page="profile"] .profile-name-top {
+  margin: 0 0 14px; font-size: 24px; font-weight: 800; color: var(--np-text); line-height: 1.3;
+}
+html[data-theme] body[data-page="profile"] .profile-hero-row {
+  display: grid; grid-template-columns: 138px minmax(0, 1fr); gap: 14px; align-items: center;
+}
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap { width: 138px; height: 138px; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar {
+  width: 132px !important; height: 132px !important; font-size: 52px !important;
+  border: 3px solid var(--np-accent) !important; box-shadow: 0 0 0 5px rgba(108, 180, 255, .12), 0 14px 30px rgba(0, 0, 0, .35) !important;
+  overflow: hidden;
+}
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .avatar-edit {
+  width: 40px !important; height: 40px !important; border-radius: 50% !important;
+  bottom: 4px !important; inset-inline-start: 6px !important; inset-inline-end: auto !important;
+  background: linear-gradient(135deg, var(--np-accent), var(--np-accent-2)) !important;
+  border: 3px solid var(--np-card-b) !important; color: #fff !important; display: grid; place-items: center;
+}
+/* الإحصائيات كعمود داخل البطاقة */
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stats {
+  display: grid !important; grid-template-columns: 1fr !important; gap: 8px !important; margin: 0 !important; padding: 0 !important;
+  background: transparent !important; border: 0 !important; box-shadow: none !important; order: 0 !important;
+}
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card {
+  display: flex !important; align-items: center; gap: 10px; padding: 9px 12px !important; min-height: 0 !important;
+  border-radius: 16px !important; text-align: start;
+}
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card > i:last-child { display: none !important; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-icon { width: 34px !important; height: 34px !important; border-radius: 12px !important; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card b { font-size: 17px !important; }
+/* معرّف الطالب مع زر النسخ */
+html[data-theme] body[data-page="profile"] .profile-id-row {
+  display: flex; align-items: center; justify-content: center; gap: 8px; margin: 16px 0 8px; flex-wrap: wrap;
+}
+html[data-theme] body[data-page="profile"] .profile-id-label { font-size: 12px; color: var(--np-muted); font-weight: 700; }
+html[data-theme] body[data-page="profile"] #profileHandle {
+  font-size: 17px; font-weight: 800; color: var(--np-text); letter-spacing: .6px; direction: ltr; font-variant-numeric: tabular-nums;
+}
+html[data-theme] body[data-page="profile"] .profile-copy-id {
+  width: 34px; height: 34px; border-radius: 12px; border: 1px solid var(--np-line);
+  background: var(--np-card-a); color: var(--np-accent); display: grid; place-items: center; cursor: pointer;
+}
+html[data-theme] body[data-page="profile"] .profile-stage {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px;
+  background: rgba(108, 180, 255, .12); color: var(--np-accent); font-size: 12.5px; font-weight: 700;
+}
+html[data-theme] body[data-page="profile"] .profile-bio { margin: 12px 0 0; color: var(--np-muted); font-size: 13.5px; line-height: 1.7; }
+html[data-theme] body[data-page="profile"] .profile-hero-card .profile-completion { margin-top: 14px; width: 100%; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card {
+  flex-direction: row !important; aspect-ratio: auto !important; height: auto !important; min-height: 0 !important;
+  justify-content: flex-start !important;
+}

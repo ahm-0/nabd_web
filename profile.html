@@ -1101,21 +1101,19 @@ body[data-page="profile"] .student-profile-services{order:6!important;display:gr
 
 
         <section class="profile-card panel profile-hero-card">
-          <span class="profile-hero-orbit orbit-one"></span><span class="profile-hero-orbit orbit-two"></span>
-          <div class="profile-hero-topline"><span class="profile-live-pill"><i class="fa-solid fa-circle"></i> حساب نشط</span><span class="profile-hero-label"><i class="fa-solid fa-sparkles"></i> نبض التفوق</span></div>
-          <div class="profile-identity">
-            <div class="avatar-wrap profile-avatar-wrap"><div class="profile-avatar" id="profileAvatar">ن</div><label for="avatarInput" class="avatar-edit" title="تعديل الصورة"><i class="fa-solid fa-camera"></i></label><input class="hidden" id="avatarInput" type="file" accept="image/*"></div>
-            <div class="profile-title"><span class="profile-status"><i class="fa-solid fa-graduation-cap"></i> رحلتك التعليمية</span><h2 id="profileName">الطالب</h2><p id="profileHandle">@nabd_student</p><span class="profile-stage" id="profileStage"><i class="fa-solid fa-book-open"></i> المرحلة الدراسية</span></div>
-          </div>
-          <p class="profile-bio" id="profileBio">أضف نبذة بسيطة لتظهر في مجتمع الأخبار.</p>
-          <button class="profile-completion hidden" id="completeProfile"><i class="fa-solid fa-sparkles"></i><span><b>أكمل بيانات ملفك الشخصي</b><small>أضف الاسم ورقم الهاتف والمعلومات الأساسية لتخصيص التطبيق.</small></span><i class="fa-solid fa-arrow-left"></i></button>
-          <div class="profile-hero-actions"><button class="primary-button" id="editProfileSmall"><i class="fa-solid fa-pen"></i> تعديل الملف</button><a class="profile-ghost-button" href="settings.html"><i class="fa-solid fa-gear"></i><span>الإعدادات</span><i class="fa-solid fa-chevron-left"></i></a></div>
-        </section>
-
-        <section class="profile-stats profile-stat-cards" aria-label="ملخص النشاط الدراسي">
+          <h2 class="profile-name-top" id="profileName">الطالب</h2>
+          <div class="profile-hero-row">
+            <div class="avatar-wrap profile-avatar-wrap"><div class="profile-avatar" id="profileAvatar">ن</div><label for="avatarInput" class="avatar-edit" title="رفع صورة الملف الشخصي" aria-label="رفع صورة الملف الشخصي"><i class="fa-solid fa-plus"></i></label><input class="hidden" id="avatarInput" type="file" accept="image/*"></div>
+            <section class="profile-stats profile-stat-cards" aria-label="ملخص النشاط الدراسي">
           <a class="profile-stat-card stat-news" href="news.html"><span class="profile-stat-icon"><i class="fa-solid fa-fire-flame-curved"></i></span><span><b id="profilePosts">0</b><small>نقاط التفوق</small></span><i class="fa-solid fa-arrow-left"></i></a>
           <a class="profile-stat-card stat-tasks" href="time-organizer.html"><span class="profile-stat-icon"><i class="fa-solid fa-stopwatch"></i></span><span><b id="profileActiveTasks">0</b><small>جلسة مذاكرة</small></span><i class="fa-solid fa-arrow-left"></i></a>
           <a class="profile-stat-card stat-grade" href="grade-calculator.html"><span class="profile-stat-icon"><i class="fa-solid fa-bullseye"></i></span><span><b id="profileStudyAverage">—</b><small>الهدف الامتحاني</small></span><i class="fa-solid fa-arrow-left"></i></a>
+        </section>
+          </div>
+          <div class="profile-id-row"><span class="profile-id-label">معرّف الطالب</span><b id="profileHandle">—</b><button type="button" class="profile-copy-id" id="copyStudentId" aria-label="نسخ معرّف الطالب" title="نسخ المعرّف"><i class="fa-regular fa-copy"></i></button></div>
+          <span class="profile-stage" id="profileStage"><i class="fa-solid fa-book-open"></i> المرحلة الدراسية</span>
+          <p class="profile-bio" id="profileBio">أضف نبذة بسيطة لتظهر في مجتمع الأخبار.</p>
+          <button class="profile-completion hidden" id="completeProfile"><i class="fa-solid fa-sparkles"></i><span><b>أكمل بيانات ملفك الشخصي</b><small>أضف الاسم ورقم الهاتف والمعلومات الأساسية لتخصيص التطبيق.</small></span><i class="fa-solid fa-arrow-left"></i></button>
         </section>
         <section class="profile-section-grid" aria-label="أقسام الملف">
           <a href="saved-items.html"><span><i class="fa-solid fa-bookmark"></i></span><b>المحفوظات</b></a>
@@ -1944,7 +1942,7 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
       profileFather: student.father || '—',
       profileStageData: student.stage || '—',
       profileEmail: currentAuthUser?.email || '—',
-      profileHandle: '@' + fullName().replaceAll(' ', '_'),
+      profileHandle: student.studentId || '—',
       profileBio: student.bio || 'أضف نبذة بسيطة لتظهر في مجتمع الأخبار.',
       profilePhone: student.phone || '—',
       profileCity: student.city || '—',
@@ -4276,6 +4274,12 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
       if (event.target.id === 'postEditForm') { event.preventDefault(); savePostEdit(event.target); }
     });
 
+    $('#copyStudentId')?.addEventListener('click', async () => {
+      const id = String(student.studentId || '');
+      if (!id) return toast('لا يوجد معرّف بعد.');
+      try { await navigator.clipboard.writeText(id); toast('تم نسخ معرّف الطالب.'); }
+      catch { const area = document.createElement('textarea'); area.value = id; document.body.appendChild(area); area.select(); const ok = document.execCommand('copy'); area.remove(); toast(ok ? 'تم نسخ معرّف الطالب.' : 'تعذر النسخ، انسخه يدوياً.'); }
+    });
     $('#avatarInput')?.addEventListener('change', event => {
       const file = event.target.files?.[0];
       if (!file) return;
