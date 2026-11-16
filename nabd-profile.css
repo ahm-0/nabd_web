@@ -433,3 +433,55 @@ html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card 
 /* الشريط العلوي الثابت: لا يجوز أن تُنشئ حاوية الصفحة تحويلاً (transform) يثبّته نسبياً إليها */
 html body[data-page="profile"] .app, html body[data-page="home"] .app { transform: none !important; filter: none !important; perspective: none !important; }
 html body[data-page="profile"] .app { animation: none !important; }
+
+/* ---------- 23) مطابقة المرجع: إحصائيات أفقية بجانب الصورة، وثلاث بطاقات ملونة، وتبويب الأقسام ---------- */
+html[data-theme] body[data-page="profile"] .profile-hero-row { grid-template-columns: 124px minmax(0, 1fr); gap: 12px; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap { width: 124px; height: 124px; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar { width: 118px !important; height: 118px !important; font-size: 46px !important; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 6px !important;
+  padding: 12px 8px !important; border-radius: 20px !important;
+  background: linear-gradient(180deg, var(--np-card-a), var(--np-card-b)) !important;
+  border: 1px solid var(--np-line) !important; align-self: stretch; align-items: center;
+}
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card {
+  flex-direction: column !important; text-align: center; justify-content: center !important;
+  gap: 4px; padding: 6px 2px !important; background: transparent !important; border: 0 !important; box-shadow: none !important;
+}
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-icon { display: none !important; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card b { font-size: 20px !important; color: var(--np-text) !important; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card span:not(.profile-stat-icon) small { font-size: 10.5px !important; color: var(--np-muted) !important; line-height: 1.3; }
+
+html[data-theme] body[data-page="profile"] .profile-feature-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0 14px 16px; order: 4 !important; }
+html[data-theme] body[data-page="profile"] .profile-feature {
+  display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 8px 12px; border-radius: 22px; text-decoration: none;
+  border: 1px solid var(--np-line); background: linear-gradient(180deg, var(--np-card-a), var(--np-card-b)); color: var(--np-text); text-align: center;
+}
+html[data-theme] body[data-page="profile"] .profile-feature-icon { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; color: #fff; font-size: 19px; }
+html[data-theme] body[data-page="profile"] .profile-feature b { font-size: 20px; font-weight: 800; }
+html[data-theme] body[data-page="profile"] .profile-feature small { font-size: 11px; color: var(--np-muted); font-weight: 700; }
+html[data-theme] body[data-page="profile"] .feature-goal .profile-feature-icon { background: linear-gradient(145deg, #7ee8b0, #2fbf8a); }
+html[data-theme] body[data-page="profile"] .feature-focus .profile-feature-icon { background: linear-gradient(145deg, #7fd4ff, #3a8ef0); }
+html[data-theme] body[data-page="profile"] .feature-record .profile-feature-icon { background: linear-gradient(145deg, #ffb07a, #ff6b6b); }
+html[data-theme] body[data-page="profile"] .profile-section-grid { order: 5 !important; }
+html[data-theme] body[data-page="profile"] .student-progress-panel { order: 6 !important; }
+html[data-theme] body[data-page="profile"] .profile-data { order: 7 !important; }
+
+/* ---------- 24) إصلاح التداخل: تسميات الإحصائيات، الحلقة المزدوجة للصورة، ترويسة بيانات الحساب ---------- */
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card { min-width: 0; overflow: hidden; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card span:not(.profile-stat-icon) small {
+  white-space: normal; overflow-wrap: anywhere; font-size: 10px !important; line-height: 1.35; display: block;
+}
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar::before,
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar::after,
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap::before,
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap::after { display: none !important; content: none !important; }
+html[data-theme] body[data-page="profile"] .profile-details-card .profile-section-head {
+  display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 10px;
+}
+html[data-theme] body[data-page="profile"] .profile-details-tools { display: flex !important; align-items: center; gap: 8px; }
+html[data-theme] body[data-page="profile"] .profile-details-card .avatar-edit,
+html[data-theme] body[data-page="profile"] .profile-details-card .profile-details-tools button { flex: 0 0 auto; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap {
+  background: transparent !important; box-shadow: none !important; padding: 0 !important; display: grid; place-items: center; justify-self: center;
+}

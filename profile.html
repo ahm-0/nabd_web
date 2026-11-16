@@ -1115,6 +1115,11 @@ body[data-page="profile"] .student-profile-services{order:6!important;display:gr
           <p class="profile-bio" id="profileBio">أضف نبذة بسيطة لتظهر في مجتمع الأخبار.</p>
           <button class="profile-completion hidden" id="completeProfile"><i class="fa-solid fa-sparkles"></i><span><b>أكمل بيانات ملفك الشخصي</b><small>أضف الاسم ورقم الهاتف والمعلومات الأساسية لتخصيص التطبيق.</small></span><i class="fa-solid fa-arrow-left"></i></button>
         </section>
+        <section class="profile-feature-cards" aria-label="أهداف الطالب">
+          <a class="profile-feature feature-goal" href="grade-calculator.html"><span class="profile-feature-icon"><i class="fa-solid fa-bullseye"></i></span><b id="featureGoalValue">—</b><small>الهدف الامتحاني</small></a>
+          <a class="profile-feature feature-focus" href="time-organizer.html"><span class="profile-feature-icon"><i class="fa-solid fa-stopwatch"></i></span><b id="featureTasksValue">0</b><small>مهام نشطة</small></a>
+          <a class="profile-feature feature-record" href="news.html"><span class="profile-feature-icon"><i class="fa-solid fa-fire-flame-curved"></i></span><b>+10</b><small>نقاط مع كل إنجاز</small></a>
+        </section>
         <section class="profile-section-grid" aria-label="أقسام الملف">
           <a href="saved-items.html"><span><i class="fa-solid fa-bookmark"></i></span><b>المحفوظات</b></a>
           <a href="free-channels.html"><span><i class="fa-solid fa-tower-broadcast"></i></span><b>قنواتنا</b></a>
@@ -1129,7 +1134,7 @@ body[data-page="profile"] .student-profile-services{order:6!important;display:gr
           <p class="student-empty-task"><i class="fa-regular fa-calendar-check"></i> لا توجد مهام دراسية بعد، أضف مهمتك الأولى بالأعلى.</p>
         </section>
         <section class="profile-data panel profile-details-card">
-          <header class="profile-section-head profile-section-heading"><div><span>بيانات الحساب</span><h3 class="section-title"><i class="fa-regular fa-id-card"></i> معلومات الطالب</h3></div><div class="profile-details-tools"><button class="profile-details-toggle" id="profileDetailsToggle" type="button" aria-expanded="false"><span>عرض</span><i class="fa-solid fa-chevron-down"></i></button><button class="icon-button" id="profileDataUpdate" type="button" title="تعديل البيانات" aria-label="تعديل البيانات"><i class="fa-solid fa-pen"></i></button></div></header>
+          <header class="profile-section-head profile-section-heading"><div><span>بيانات الحساب</span><h3 class="section-title"><i class="fa-regular fa-id-card"></i> معلومات الطالب</h3></div><div class="profile-details-tools"><button class="profile-details-toggle" id="profileDetailsToggle" type="button" aria-expanded="false"><span>عرض</span><i class="fa-solid fa-chevron-down"></i></button></div></header>
           <div class="profile-details-body" id="profileDetailsBody"><div class="info-row"><span><i class="fa-solid fa-user"></i> الاسم الكامل</span><b id="profileNameData">—</b></div><div class="info-row"><span><i class="fa-solid fa-user-tie"></i> اسم الأب</span><b id="profileFather">—</b></div><div class="info-row"><span><i class="fa-solid fa-graduation-cap"></i> المرحلة الدراسية</span><b id="profileStageData">—</b></div><div class="info-row"><span><i class="fa-solid fa-envelope"></i> البريد الإلكتروني</span><b id="profileEmail">—</b></div><div class="info-row"><span><i class="fa-solid fa-phone"></i> رقم الهاتف</span><b id="profilePhone">—</b></div><div class="info-row"><span><i class="fa-solid fa-location-dot"></i> المنطقة</span><b id="profileCity">—</b></div><div class="info-row"><span><i class="fa-solid fa-cake-candles"></i> تاريخ الميلاد</span><b id="profileBirth">—</b></div></div>
         </section>
 
@@ -1949,6 +1954,8 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
       profileStudentId: student.studentId,
       profilePosts: posts.filter(post => post.mine).length,
       profileActiveTasks: activeTaskCount,
+      featureTasksValue: String(activeTaskCount),
+      featureGoalValue: Number.isFinite(savedAverage) ? `${savedAverage.toFixed(0)}%` : '—',
       profileStudyAverage: Number.isFinite(savedAverage) ? `${savedAverage.toFixed(1)}%` : '—',
       homeGreeting: `أهلاً ${student.first || 'بك'}، لنصنع يومًا دراسيًا رائعًا`
     };
