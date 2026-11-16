@@ -208,7 +208,7 @@ body[data-page="home"] .bottom-nav .bottom-link:active i { transform: scale(.92)
 
 /* ---------- 9) حركة الدخول: تبدأ الأقسام تباعاً بمنحنيات M3 ---------- */
 body[data-page="home"] .home-studio > * {
-  animation: m3-enter .5s var(--m3-ease-emph-decel) both !important;
+  animation: m3-enter .3s var(--m3-ease-emph-decel) both !important;
 }
 body[data-page="home"] .home-studio > *:nth-child(2) { animation-delay: .05s !important; }
 body[data-page="home"] .home-studio > *:nth-child(3) { animation-delay: .10s !important; }

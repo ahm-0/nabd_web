@@ -282,3 +282,50 @@ body[data-page="profile"] form {
   border-radius: 20px !important; color: var(--np-text) !important;
 }
 body[data-page="profile"] form input::placeholder { color: var(--np-muted) !important; }
+
+/* ---------- 18) إصلاحات الخلفية والمكوّنات المتبقية ---------- */
+/* خلفية كحلية موحّدة بدل الأخضر الموروث من إعدادات الثيم الداكن */
+html[data-theme] body[data-page="profile"] {
+  background-color: var(--np-bg) !important;
+  color: var(--np-text) !important;
+}
+/* إزالة الشريط الداكن خلف الإحصائيات */
+body[data-page="profile"] .profile-stats { background: transparent !important; }
+/* إدخال المهام الداكن بدل الأبيض */
+body[data-page="profile"] .student-task-entry {
+  background: var(--np-card-b) !important; border: 1px solid var(--np-line) !important;
+  color: var(--np-muted) !important;
+}
+body[data-page="profile"] .student-task-entry b {
+  background: linear-gradient(135deg, var(--np-accent), var(--np-accent-2)) !important; color: #fff !important;
+}
+
+/* ---------- 19) الشريط العلوي للملف: نفس الشريط الزجاجي العائم للرئيسية ---------- */
+html[data-theme] body[data-page="profile"] .profile-appbar {
+  position: fixed !important;
+  top: calc(10px + env(safe-area-inset-top)) !important;
+  inset-inline: 14px !important;
+  max-width: 560px; margin-inline: auto !important;
+  z-index: 60;
+  height: 64px !important; min-height: 64px !important;
+  padding: 0 10px 0 12px !important; box-sizing: border-box;
+  display: flex !important; align-items: center !important; justify-content: space-between !important;
+  background: var(--np-card-b) !important;
+  border: 1px solid var(--np-line) !important; border-radius: 30px !important;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .5) !important;
+}
+/* إحصائيات: بلا خلفية خضراء موروثة */
+html[data-theme] body[data-page="profile"] .profile-stats { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+html[data-theme] body[data-page="profile"] .profile-stats > * {
+  background: linear-gradient(180deg, var(--np-card-a), var(--np-card-b)) !important;
+  border: 1px solid var(--np-line) !important;
+}
+/* ---------- 20) إزالة الخضرة المتبقية من البطاقات والتبويبات + مسافة الشريط العلوي ---------- */
+html[data-theme] body[data-page="profile"] :is(.profile-hero-card, .student-progress-panel) {
+  background: linear-gradient(180deg, var(--np-card-a), var(--np-card-b)) !important;
+  border: 1px solid var(--np-line) !important;
+}
+html[data-theme] body[data-page="profile"] .profile-hero-card { margin-top: calc(78px + env(safe-area-inset-top)) !important; }
+html[data-theme] body[data-page="profile"] .student-profile-tabs {
+  background: transparent !important; border-color: var(--np-line) !important; box-shadow: none !important;
+}
