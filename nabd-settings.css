@@ -1,0 +1,84 @@
+/* ==========================================================================
+   نبض التفوق — صفحة الإعدادات (تصميم نظيف بأصناف st- )
+   نفس لغة الصفحة الرئيسية والملف الشخصي: كحلي داكن + شبكة نقاط + بطاقات زجاجية.
+   بلا أنيميشن دخول ولا content-visibility حتى تفتح الصفحة فوراً.
+   ========================================================================== */
+body[data-page="settings"] {
+  --st-bg: #070b1a; --st-a: #141d3d; --st-b: #0c1330; --st-line: rgba(150,170,255,.12);
+  --st-text: #f5f7ff; --st-muted: rgba(200,212,255,.64); --st-accent: #6cb4ff;
+  background-color: var(--st-bg) !important;
+  background-image: radial-gradient(rgba(130,160,255,.15) 1px, transparent 1.2px), radial-gradient(70% 30% at 50% -4%, rgba(60,110,255,.28), transparent 72%) !important;
+  background-size: 22px 22px, 100% 100% !important; background-repeat: repeat, no-repeat !important;
+  color: var(--st-text);
+}
+html[data-theme="light"] body[data-page="settings"] {
+  --st-bg: #eef2fb; --st-a: #ffffff; --st-b: #f5f8ff; --st-line: rgba(40,60,140,.12);
+  --st-text: #141a33; --st-muted: #5b6588; --st-accent: #2f6fe0;
+  background-image: radial-gradient(rgba(60,90,200,.10) 1px, transparent 1.2px), radial-gradient(70% 30% at 50% -4%, rgba(60,110,255,.14), transparent 72%) !important;
+}
+/* لا حركة دخول: الصفحة تظهر فوراً */
+html body[data-page="settings"] .app { animation: none !important; transform: none !important; opacity: 1 !important; background: transparent !important; }
+body[data-page="settings"] .layout, body[data-page="settings"] .main-content { background: transparent !important; padding: 0 !important; }
+body[data-page="settings"] .topbar { display: none !important; }
+
+/* شريط علوي ثابت */
+body[data-page="settings"] .st-bar {
+  position: fixed; top: calc(10px + env(safe-area-inset-top)); inset-inline: 12px; z-index: 40; height: 54px; max-width: 736px; margin-inline: auto;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 8px;
+  border-radius: 22px; border: 1px solid var(--st-line); background: color-mix(in srgb, var(--st-b) 88%, transparent);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+}
+body[data-page="settings"] .st-bar h1 { margin: 0; font-size: 17px; font-weight: 800; color: var(--st-text); }
+body[data-page="settings"] .st-back, body[data-page="settings"] .st-bar-sp { width: 38px; height: 38px; flex: none; }
+body[data-page="settings"] .st-back { display: grid; place-items: center; border-radius: 13px; background: var(--st-a); border: 1px solid var(--st-line); color: var(--st-text); text-decoration: none; }
+
+/* الصفحة */
+body[data-page="settings"] .st-page {
+  width: min(100%, 640px); margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px;
+  padding: calc(84px + env(safe-area-inset-top)) 16px calc(112px + env(safe-area-inset-bottom)) !important;
+}
+body[data-page="settings"] .st-group h3 { margin: 0 4px 8px; font-size: 12.5px; font-weight: 700; color: var(--st-muted); letter-spacing: .3px; }
+body[data-page="settings"] .st-card { border-radius: 22px; border: 1px solid var(--st-line); background: linear-gradient(180deg, var(--st-a), var(--st-b)); overflow: hidden; }
+body[data-page="settings"] .st-row {
+  width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 13px 14px; min-height: 64px;
+  background: none; border: 0; border-top: 1px solid var(--st-line); font-family: inherit; text-align: start; color: var(--st-text); text-decoration: none; cursor: pointer;
+}
+body[data-page="settings"] .st-card > :first-child { border-top: 0; }
+body[data-page="settings"] .st-row:active { background: color-mix(in srgb, var(--st-accent) 10%, transparent); }
+body[data-page="settings"] .st-static { cursor: default; }
+body[data-page="settings"] .st-ico { width: 40px; height: 40px; flex: none; border-radius: 13px; display: grid; place-items: center; font-size: 16px; color: #fff; }
+body[data-page="settings"] .st-ico.blue { background: linear-gradient(145deg,#6cb4ff,#3a6fe0); }
+body[data-page="settings"] .st-ico.violet { background: linear-gradient(145deg,#a98bff,#6a4ff0); }
+body[data-page="settings"] .st-ico.mint { background: linear-gradient(145deg,#6fe6b8,#1fae80); }
+body[data-page="settings"] .st-ico.sun { background: linear-gradient(145deg,#ffd36b,#ff9f3d); }
+body[data-page="settings"] .st-ico.amber { background: linear-gradient(145deg,#ffcf5c,#f09a1a); }
+body[data-page="settings"] .st-ico.slate { background: linear-gradient(145deg,#8a9bc4,#55648a); }
+body[data-page="settings"] .st-ico.coral { background: linear-gradient(145deg,#ff8a9b,#e0405c); }
+body[data-page="settings"] .st-txt { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+body[data-page="settings"] .st-txt b { font-size: 14.5px; font-weight: 700; line-height: 1.35; color: var(--st-text); }
+body[data-page="settings"] .st-txt small { font-size: 11.5px; line-height: 1.5; color: var(--st-muted); }
+body[data-page="settings"] .st-arrow { flex: none; font-size: 12px; color: var(--st-muted); }
+body[data-page="settings"] #studentLogout .st-txt b { color: #ff6b82; }
+
+/* اختيار المظهر */
+body[data-page="settings"] .st-theme { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 14px 14px; }
+body[data-page="settings"] .theme-choice {
+  display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; border-radius: 14px; font-family: inherit; font-size: 14px; cursor: pointer;
+  border: 1.5px solid var(--st-line); background: var(--st-b); color: var(--st-muted);
+}
+body[data-page="settings"] .theme-choice b { font-weight: 700; color: inherit; }
+body[data-page="settings"] .theme-choice.active { border-color: var(--st-accent); color: var(--st-accent); background: color-mix(in srgb, var(--st-accent) 12%, transparent); }
+
+/* بوابة المشرفين: أول عنصر وبلون مميز (ذهبي/بنفسجي) — تظهر للمشرف فقط */
+body[data-page="settings"] .st-admin {
+  display: flex; align-items: center; gap: 12px; padding: 15px 14px; border-radius: 22px; text-decoration: none; color: #fff;
+  background: linear-gradient(135deg, #7b3ff2 0%, #d6409f 55%, #ff8a3d 100%); box-shadow: 0 10px 26px rgba(150,60,220,.35);
+}
+body[data-page="settings"] .st-admin.hidden { display: none !important; }
+body[data-page="settings"] .st-admin-ico { width: 46px; height: 46px; flex: none; border-radius: 15px; display: grid; place-items: center; font-size: 20px; background: rgba(255,255,255,.22); }
+body[data-page="settings"] .st-admin .st-txt b { color: #fff; font-size: 16px; font-weight: 800; }
+body[data-page="settings"] .st-admin .st-txt small { color: rgba(255,255,255,.85); }
+body[data-page="settings"] .st-admin .st-arrow { color: #fff; }
+
+body[data-page="settings"] .st-foot { display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 12px; color: var(--st-muted); }
+body[data-page="settings"] .st-foot b { direction: ltr; letter-spacing: .4px; }

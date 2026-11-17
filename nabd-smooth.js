@@ -43,7 +43,10 @@
       // صفحات الشريط السفلي: تُحمَّل كاملة في الخلفية عند أول لمس، فيصبح الانتقال لحظياً
       // صفحة "حسابي" تُجهَّز فوراً (eager) لأنها الأثقل، والبقية عند اللمس.
       const profileURL = toURL('profile.html');
-      const eagerNav = profileURL && navSet.has(profileURL) && here !== 'profile.html' ? [profileURL] : [];
+      let eagerNav = profileURL && navSet.has(profileURL) && here !== 'profile.html' ? [profileURL] : [];
+      // من صفحة الملف الشخصي: تجهيز الإعدادات فوراً حتى تُفتح دون انتظار
+      const settingsURL = toURL('settings.html');
+      if (here === 'profile.html' && settingsURL) eagerNav.push(settingsURL);
       const lazyNav = nav.filter(u => !eagerNav.includes(u));
       const rules = {
         prerender: [

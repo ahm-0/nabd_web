@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-17-profile-clean-v22';
+const CACHE_VERSION = '2026-11-17-settings-clean-v23';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -60,6 +60,7 @@ const APP_SHELL = [
   './nabd-showcase.css',
   './nabd-auth.css',
   './nabd-profile.css',
+  './nabd-settings.css',
   './nabd-smooth.js',
   './nabd-ui.css',
   './exam-countdown-share.css',
