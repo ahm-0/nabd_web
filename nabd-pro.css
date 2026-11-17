@@ -442,3 +442,22 @@ a:active, button:active, [role="button"]:active { transform: scale(.975); }
 /* 6) تمرير أنعم على الهاتف وعدم قفز الصفحة عند فتح لوحة المفاتيح */
 html { scroll-behavior: smooth; overscroll-behavior-y: none; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* ==== شارة التوثيق: ختم متعرج بتدرج أزرق ولمعان ==== */
+html .verified-badge {
+  position: relative; display: inline-grid; place-items: center; width: 17px; height: 17px; margin-inline-start: 5px; vertical-align: -3px; flex: none; color: #fff; font-size: 9px; line-height: 1;
+  clip-path: polygon(50% 0%,60% 7%,72% 4%,78% 15%,90% 18%,92% 30%,100% 40%,95% 50%,100% 60%,92% 70%,90% 82%,78% 85%,72% 96%,60% 93%,50% 100%,40% 93%,28% 96%,22% 85%,10% 82%,8% 70%,0% 60%,5% 50%,0% 40%,8% 30%,10% 18%,22% 15%,28% 4%,40% 7%);
+  background: radial-gradient(circle at 30% 25%, #8fe0ff 0%, #2aa6ff 40%, #0b5fd8 100%); box-shadow: none; filter: drop-shadow(0 1px 3px rgba(11,95,216,.5));
+}
+html .verified-badge::before { display: none !important; }
+html .verified-badge i { font-size: 9px; font-weight: 900; transform: none; text-shadow: 0 1px 1px rgba(0,40,120,.4); }
+html .profile-main .verified-badge, html .pf-name .verified-badge { width: 22px; height: 22px; font-size: 12px; vertical-align: -4px; }
+html .pf-name .verified-badge i { font-size: 12px; }
+html .verified-badge.big { width: 64px; height: 64px; margin: 0; font-size: 30px; }
+html .verified-badge.big i { font-size: 30px; }
+.verify-state { display: grid; justify-items: center; gap: 10px; text-align: center; padding: 6px 2px 2px; }
+.verify-state b { font-size: 17px; font-weight: 800; }
+.verify-state p { margin: 0; font-size: 13.5px; line-height: 1.8; opacity: .8; }
+.verify-state form { width: 100%; display: grid; gap: 10px; text-align: start; }
+.verify-state textarea { width: 100%; box-sizing: border-box; margin-top: 6px; padding: 10px 12px; border-radius: 14px; font-family: inherit; font-size: 14px; resize: none; }
+.verify-wait { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-size: 28px; color: #ffb84d; background: rgba(255,184,77,.14); }

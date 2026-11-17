@@ -1076,6 +1076,7 @@ body[data-page="home"] .home-studio > .home-studio-section{border-inline-start:0
         <button class="st-row" type="button" data-profile-edit id="profileDataUpdate"><span class="st-ico blue"><i class="fa-solid fa-user-pen"></i></span><span class="st-txt"><b>معلومات الطالب</b><small>الاسم والمرحلة والمنطقة</small></span><i class="fa-solid fa-chevron-left st-arrow"></i></button>
         <button class="st-row" type="button" data-password-change><span class="st-ico violet"><i class="fa-solid fa-key"></i></span><span class="st-txt"><b>تغيير كلمة السر</b><small>عيّن كلمة سر جديدة مباشرة</small></span><i class="fa-solid fa-chevron-left st-arrow"></i></button>
         <a class="st-row" href="privacy.html"><span class="st-ico mint"><i class="fa-solid fa-shield-halved"></i></span><span class="st-txt"><b>الخصوصية والأمان</b><small>إدارة بياناتك ومعلومات حسابك</small></span><i class="fa-solid fa-chevron-left st-arrow"></i></a>
+        <button class="st-row" type="button" id="verifyRow" data-verify-open><span class="st-ico blue"><i class="fa-solid fa-circle-check"></i></span><span class="st-txt"><b>طلب توثيق الحساب</b><small id="verifyStatusText">احصل على شارة التوثيق بجانب اسمك</small></span><i class="fa-solid fa-chevron-left st-arrow"></i></button>
       </div></section>
 
       <section class="st-group" aria-labelledby="stApp"><h3 id="stApp">التطبيق</h3><div class="st-card">
@@ -1645,7 +1646,20 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
     return verified ? '<span class="verified-badge" role="img" aria-label="حساب موثّق" title="حساب موثّق"><i class="fa-solid fa-check"></i></span>' : '';
   }
 
+  let verifiedSynced = false;
+  async function syncVerifiedFlag() {
+    if (verifiedSynced || !supabaseClient || !currentAuthUser?.id) return;
+    verifiedSynced = true;
+    try {
+      const { data, error } = await supabaseClient.from('student_profiles').select('is_verified').eq('user_id', currentAuthUser.id).maybeSingle();
+      if (error || !data) return; // العمود غير موجود بعد: نبقى على الحالة المحلية
+      const status = data.is_verified === true ? 'approved' : (student.verificationStatus === 'approved' ? '' : student.verificationStatus);
+      if (status !== student.verificationStatus) { student.verificationStatus = status; saveState(); updateProfileUI?.(); }
+    } catch { /* تجاهل */ }
+  }
+
   async function revealPremiumAdminShortcut() {
+    void syncVerifiedFlag();
     const shortcuts = $$('#premiumAdminHomeShortcut, #adminPortalShortcut');
     if (!shortcuts.length || adminShortcutChecked || !supabaseClient || !currentAuthUser) return;
     try {
@@ -1853,6 +1867,23 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
     openModal(`<div class="confirm-sheet"><span class="confirm-sheet-icon"><i class="fa-solid fa-triangle-exclamation"></i></span><h3>${escapeHTML(title)}</h3><p>${escapeHTML(message)}</p><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button type="button" class="danger-button" data-confirm-action>${escapeHTML(confirmLabel)}</button></div></div>`);
   }
 
+  async function submitVerification(form) {
+    const reason = String(new FormData(form).get('reason') || '').trim();
+    if (!(supabaseClient && currentAuthUser?.id)) return toast('سجّل الدخول أولاً لإرسال طلب التوثيق.');
+    const button = form.querySelector('button[type=submit]'); if (button) button.disabled = true;
+    ensureStudentId();
+    const text = `طلب توثيق حساب\nالاسم: ${fullName()}\nمعرّف الطالب: ${student.studentId}\n` + (reason ? `السبب: ${reason}` : 'السبب: غير مذكور');
+    const { error } = await supabaseClient.rpc('support_send_message', { p_category: 'طلب توثيق', p_body: text.slice(0, 700) });
+    if (button) button.disabled = false;
+    if (error) { console.warn('تعذر إرسال طلب التوثيق', error); return toast('تعذر إرسال الطلب الآن. حاول مرة أخرى.'); }
+    student.verificationRequested = true; saveState(); refreshVerifyStatus(); openNamedModal('verify'); toast('تم إرسال طلب التوثيق.');
+  }
+
+  function refreshVerifyStatus() {
+    const el = $('#verifyStatusText'); if (!el) return;
+    el.textContent = student.verificationStatus === 'approved' ? 'حسابك موثّق ✓' : student.verificationRequested ? 'طلبك قيد المراجعة' : 'احصل على شارة التوثيق بجانب اسمك';
+  }
+
   async function changePassword(form) {
     const password = String(new FormData(form).get('password') || '');
     const confirm = String(new FormData(form).get('confirm_password') || '');
@@ -1867,6 +1898,16 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
 
   function openNamedModal(name) {
     if (name === 'contact') { window.location.href = 'support-chat.html'; return; }
+    if (name === 'verify') {
+      const st = student.verificationStatus === 'approved' ? 'approved' : (student.verificationRequested ? 'pending' : 'none');
+      const body = st === 'approved'
+        ? '<div class="verify-state ok"><span class="verified-badge big" role="img" aria-label="حساب موثّق"><i class="fa-solid fa-check"></i></span><b>حسابك موثّق</b><p>تظهر شارة التوثيق بجانب اسمك في الملف الشخصي والمجتمع.</p></div>'
+        : st === 'pending'
+        ? '<div class="verify-state wait"><span class="verify-wait"><i class="fa-regular fa-clock"></i></span><b>طلبك قيد المراجعة</b><p>أرسلنا طلبك إلى فريق الإشراف، وسنوافيك بالرد داخل محادثة الدعم.</p></div>'
+        : '<div class="verify-state"><span class="verified-badge big" role="img" aria-label="شارة التوثيق"><i class="fa-solid fa-check"></i></span><b>وثّق حسابك</b><p>تُمنح الشارة للحسابات الحقيقية والنشطة. بعد مراجعة طلبك من فريق الإشراف تظهر الشارة بجانب اسمك.</p><form id="verifyForm"><label>سبب طلب التوثيق (اختياري)<textarea name="reason" maxlength="300" rows="3" placeholder="مثال: أستاذ، صانع محتوى تعليمي، طالب متميز..."></textarea></label><button class="primary-button" type="submit"><i class="fa-solid fa-paper-plane"></i> إرسال طلب التوثيق</button></form></div>';
+      openModal('<div class="modal-head"><div><span class="eyebrow">الحساب</span><h3>طلب توثيق الحساب</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div>' + body);
+      return;
+    }
     if (name === 'password') { openModal(`<div class="modal-head"><div><span class="eyebrow">أمان الحساب</span><h3>تغيير كلمة السر</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><form id="passwordForm"><div class="form-group"><label>كلمة السر الجديدة<input name="password" type="password" minlength="6" required autocomplete="new-password" placeholder="6 محارف على الأقل"></label></div><div class="form-group" style="margin-top:12px"><label>تأكيد كلمة السر<input name="confirm_password" type="password" minlength="6" required autocomplete="new-password"></label></div><p class="onboarding-note"><i class="fa-solid fa-circle-info"></i> لا تحتاج إلى كتابة كلمة السر القديمة.</p><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">حفظ كلمة السر</button></div></form>`); return; }
     const modals = {
       edit: `<div class="modal-head"><h3>تعديل الملف الشخصي</h3><button class="close-modal" aria-label="إغلاق">×</button></div>
@@ -1926,6 +1967,7 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
     setAvatar('composerAvatar', 'avatar');
     renderShell();
     revealPremiumAdminShortcut();
+    refreshVerifyStatus();
   }
 
   const homeExams = {
@@ -4152,6 +4194,7 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
       if (adminButton) handleAdminAction(adminButton);
       if (event.target.closest('#openEditProfile, #editProfileSmall, #completeProfile, #profileDataUpdate, [data-profile-edit]')) openNamedModal('edit');
       if (event.target.closest('[data-password-change]')) openNamedModal('password');
+      if (event.target.closest('[data-verify-open]')) openNamedModal('verify');
       if (event.target.closest('#sharePlatform')) sharePlatform();
       const pinButton = event.target.closest('[data-chat-pin]');
       if (pinButton) { event.preventDefault(); void toggleChatPin(pinButton.dataset.chatPin); return; }
@@ -4221,6 +4264,7 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
     document.addEventListener('submit', event => {
       if (event.target.id === 'adminNotificationForm') { event.preventDefault(); void sendAdminNotification(event.target); }
       if (event.target.id === 'editForm') { event.preventDefault(); handleProfileSave(event.target); }
+      if (event.target.id === 'verifyForm') { event.preventDefault(); void submitVerification(event.target); }
       if (event.target.id === 'passwordForm') { event.preventDefault(); void changePassword(event.target); }
       if (event.target.id === 'newsModeratorForm') { event.preventDefault(); void setNewsModerator(event.target); }
       if (event.target.id === 'customCountdownForm') { event.preventDefault(); handleCountdownSave(event.target); }

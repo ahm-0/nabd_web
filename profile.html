@@ -1142,6 +1142,7 @@ body[data-page="profile"] .student-profile-services{order:6!important;display:gr
           <header class="profile-section-head profile-section-heading"><div><span>بيانات الحساب</span><h3 class="section-title"><i class="fa-regular fa-id-card"></i> معلومات الطالب</h3></div><div class="profile-details-tools"><button class="profile-details-toggle" id="profileDetailsToggle" type="button" aria-expanded="false"><span>عرض</span><i class="fa-solid fa-chevron-down"></i></button></div></header>
           <div class="profile-details-body" id="profileDetailsBody"><div class="info-row"><span><i class="fa-solid fa-user"></i> الاسم الكامل</span><b id="profileNameData">—</b></div><div class="info-row"><span><i class="fa-solid fa-user-tie"></i> اسم الأب</span><b id="profileFather">—</b></div><div class="info-row"><span><i class="fa-solid fa-graduation-cap"></i> المرحلة الدراسية</span><b id="profileStageData">—</b></div><div class="info-row"><span><i class="fa-solid fa-envelope"></i> البريد الإلكتروني</span><b id="profileEmail">—</b></div><div class="info-row"><span><i class="fa-solid fa-phone"></i> رقم الهاتف</span><b id="profilePhone">—</b></div><div class="info-row"><span><i class="fa-solid fa-location-dot"></i> المنطقة</span><b id="profileCity">—</b></div><div class="info-row"><span><i class="fa-solid fa-cake-candles"></i> تاريخ الميلاد</span><b id="profileBirth">—</b></div></div>
         </section>
+        <button class="pf-dev" type="button" id="devCredit" data-dev-open><img src="assets/nabd-logo.jpg" alt=""><span>تم تطوير التطبيق بواسطة <b>Ali Haj Hussuin</b></span><i class="fa-solid fa-chevron-left"></i></button>
 
       </div>
     </main></div>
@@ -1708,7 +1709,20 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
     return verified ? '<span class="verified-badge" role="img" aria-label="حساب موثّق" title="حساب موثّق"><i class="fa-solid fa-check"></i></span>' : '';
   }
 
+  let verifiedSynced = false;
+  async function syncVerifiedFlag() {
+    if (verifiedSynced || !supabaseClient || !currentAuthUser?.id) return;
+    verifiedSynced = true;
+    try {
+      const { data, error } = await supabaseClient.from('student_profiles').select('is_verified').eq('user_id', currentAuthUser.id).maybeSingle();
+      if (error || !data) return; // العمود غير موجود بعد: نبقى على الحالة المحلية
+      const status = data.is_verified === true ? 'approved' : (student.verificationStatus === 'approved' ? '' : student.verificationStatus);
+      if (status !== student.verificationStatus) { student.verificationStatus = status; saveState(); updateProfileUI?.(); }
+    } catch { /* تجاهل */ }
+  }
+
   async function revealPremiumAdminShortcut() {
+    void syncVerifiedFlag();
     const shortcuts = $$('#premiumAdminHomeShortcut, #adminPortalShortcut');
     if (!shortcuts.length || adminShortcutChecked || !supabaseClient || !currentAuthUser) return;
     try {
@@ -1930,6 +1944,10 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
 
   function openNamedModal(name) {
     if (name === 'contact') { window.location.href = 'support-chat.html'; return; }
+    if (name === 'developer') {
+      openModal('<div class="modal-head"><div><span class="eyebrow">المطوّر</span><h3>Ali Haj Hussuin</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><div class="dev-card"><p class="dev-lead">تم تطوير التطبيق بواسطة المطوّر <b>Ali Haj Hussuin</b>. نقدّم الخدمات التالية:</p><ol class="dev-list"><li>تطوير تطبيقات ومواقع إلكترونية</li><li>تصميم فيديوهات موشن جرافيك مؤثرة</li><li>تصميم دروس قصيرة باستخدام الأنيميشن</li><li>كافة خدماتنا تعليمية</li></ol><p class="dev-cta">إذا كنت أستاذًا أو تمتلك منصة تعليمية، اطلب خدمتك الآن وتواصل معنا:</p><div class="dev-actions"><a class="dev-btn wa" href="https://wa.me/963956783552" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> واتساب</a><a class="dev-btn ig" href="https://www.instagram.com/b_xl.rs?psln=YnpncXExeGJmN3c1" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-instagram"></i> إنستغرام</a></div></div>');
+      return;
+    }
     if (name === 'password') { openModal(`<div class="modal-head"><div><span class="eyebrow">أمان الحساب</span><h3>تغيير كلمة السر</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div><form id="passwordForm"><div class="form-group"><label>كلمة السر الجديدة<input name="password" type="password" minlength="6" required autocomplete="new-password" placeholder="6 محارف على الأقل"></label></div><div class="form-group" style="margin-top:12px"><label>تأكيد كلمة السر<input name="confirm_password" type="password" minlength="6" required autocomplete="new-password"></label></div><p class="onboarding-note"><i class="fa-solid fa-circle-info"></i> لا تحتاج إلى كتابة كلمة السر القديمة.</p><div class="form-actions"><button type="button" class="outline-button close-modal">إلغاء</button><button class="primary-button" type="submit">حفظ كلمة السر</button></div></form>`); return; }
     const modals = {
       edit: `<div class="modal-head"><h3>تعديل الملف الشخصي</h3><button class="close-modal" aria-label="إغلاق">×</button></div>
@@ -4217,6 +4235,7 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
       if (adminButton) handleAdminAction(adminButton);
       if (event.target.closest('#openEditProfile, #editProfileSmall, #completeProfile, #profileDataUpdate, [data-profile-edit]')) openNamedModal('edit');
       if (event.target.closest('[data-password-change]')) openNamedModal('password');
+      if (event.target.closest('[data-dev-open]')) openNamedModal('developer');
       if (event.target.closest('#sharePlatform')) sharePlatform();
       const pinButton = event.target.closest('[data-chat-pin]');
       if (pinButton) { event.preventDefault(); void toggleChatPin(pinButton.dataset.chatPin); return; }

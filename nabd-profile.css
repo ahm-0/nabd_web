@@ -468,3 +468,25 @@ body[data-page="profile"] .pf-tabs .is-active::after { content: ""; position: ab
   body[data-page="profile"] .topbar .share-platform, body[data-page="home"] .topbar .share-platform { display: none !important; }
   body[data-page="profile"] .topbar .brand, body[data-page="home"] .topbar .brand { min-width: 0; flex: 1 1 auto; }
 }
+
+/* ---------- 24) بطاقة المطوّر ---------- */
+html[data-theme] body[data-page="profile"] .pf-dev { order: 8 !important; }
+body[data-page="profile"] .pf-dev {
+  width: 100%; max-width: 640px; margin: 4px auto 0; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  border-radius: 18px; border: 1px solid var(--np-line); background: linear-gradient(180deg, var(--np-card-a), var(--np-card-b)); color: var(--np-muted);
+  font-family: inherit; font-size: 12.5px; cursor: pointer; text-align: start;
+}
+body[data-page="profile"] .pf-dev img { width: 30px; height: 30px; border-radius: 10px; object-fit: cover; flex: none; }
+body[data-page="profile"] .pf-dev span { flex: 1; }
+body[data-page="profile"] .pf-dev b { color: var(--np-text); font-weight: 800; direction: ltr; unicode-bidi: isolate; }
+body[data-page="profile"] .pf-dev i { font-size: 11px; }
+.dev-card { display: grid; gap: 12px; padding: 4px 2px 2px; text-align: start; }
+.dev-card p { margin: 0; line-height: 1.8; font-size: 14px; }
+.dev-list { margin: 0; padding: 0; list-style: none; counter-reset: d; display: grid; gap: 8px; }
+.dev-list li { counter-increment: d; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: rgba(108,180,255,.10); border: 1px solid rgba(108,180,255,.18); font-size: 13.5px; font-weight: 600; }
+.dev-list li::before { content: counter(d); width: 24px; height: 24px; flex: none; border-radius: 50%; display: grid; place-items: center; background: #3a6fe0; color: #fff; font-size: 12px; font-weight: 800; }
+.dev-cta { font-weight: 700; }
+.dev-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dev-btn { display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; border-radius: 14px; color: #fff !important; font-weight: 800; font-size: 14px; text-decoration: none; }
+.dev-btn.wa { background: linear-gradient(135deg, #2fd16f, #128c4a); }
+.dev-btn.ig { background: linear-gradient(135deg, #feda75, #d62976 55%, #4f5bd5); }
