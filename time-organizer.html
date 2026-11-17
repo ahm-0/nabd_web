@@ -1899,8 +1899,8 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
   }
 
   const homeExams = {
-    bac: { title: 'امتحانات البكالوريا', badge: 'الثانوية العامة', note: 'موعد الفحص: 6 يونيو 2027 · رتّب خطتك اليومية لتصل إلى الموعد بثقة.', target: new Date('2027-06-06T08:00:00').getTime() },
-    nine: { title: 'امتحانات التاسع', badge: 'التعليم الأساسي', note: 'موعد الفحص: 2 يونيو 2027 · اجعل المراجعة اليومية عادة ثابتة قبل الموعد.', target: new Date('2027-06-02T08:00:00').getTime() },
+    bac: { title: 'امتحانات البكالوريا', badge: 'الثانوية العامة', note: 'موعد الفحص: 6 يونيو 2027 · رتّب خطتك اليومية لتصل إلى الموعد بثقة.', target: (() => { try { const v = Date.parse(JSON.parse(localStorage.getItem('nabd_exam_dates') || '{}').bac); return Number.isFinite(v) ? v : null; } catch { return null; } })() ?? new Date('2027-06-06T08:00:00').getTime() },
+    nine: { title: 'امتحانات التاسع', badge: 'التعليم الأساسي', note: 'موعد الفحص: 2 يونيو 2027 · اجعل المراجعة اليومية عادة ثابتة قبل الموعد.', target: (() => { try { const v = Date.parse(JSON.parse(localStorage.getItem('nabd_exam_dates') || '{}').nine); return Number.isFinite(v) ? v : null; } catch { return null; } })() ?? new Date('2027-06-02T08:00:00').getTime() },
     custom: { title: customCountdown.title, badge: 'عداد مخصص', note: 'اضبط اسم هدفك وموعده ليظهر عدادك الخاص هنا.', target: customCountdown.target }
   };
 

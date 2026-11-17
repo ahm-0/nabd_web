@@ -7,6 +7,19 @@
 
   const CORE_PAGES = ['index.html', 'chat.html', 'news.html', 'profile.html', 'exam-countdown.html'];
   const MAX_URLS = 14;
+
+  // مواعيد الامتحانات المحدّثة من لوحة الإشراف: تُجلب وتُخزَّن لتقرأها الصفحات عند فتحها
+  try {
+    const last = Number(localStorage.getItem('nabd_exam_dates_at') || 0);
+    const url = window.NABD_SUPABASE_URL, anon = window.NABD_SUPABASE_ANON_KEY;
+    if (url && anon && Date.now() - last > 30 * 60 * 1000) {
+      localStorage.setItem('nabd_exam_dates_at', String(Date.now()));
+      fetch(`${url}/rest/v1/rpc/get_exam_dates`, { method: 'POST', headers: { apikey: anon, Authorization: `Bearer ${anon}`, 'Content-Type': 'application/json' }, body: '{}' })
+        .then(r => (r.ok ? r.json() : []))
+        .then(rows => { if (Array.isArray(rows)) { const map = {}; rows.forEach(row => { if (row?.key && row?.target) map[row.key] = row.target; }); localStorage.setItem('nabd_exam_dates', JSON.stringify(map)); } })
+        .catch(() => {});
+    }
+  } catch { /* تجاهل */ }
   const connection = navigator.connection || {};
   const saveData = connection.saveData === true || /(^|-)2g$/.test(connection.effectiveType || '');
   if (saveData) return; // لا نستهلك بيانات المستخدم على الشبكات الضعيفة

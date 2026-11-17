@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-17-admin-portal-v25';
+const CACHE_VERSION = '2026-11-18-admin-single-page-v26';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
