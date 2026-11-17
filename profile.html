@@ -1102,34 +1102,37 @@ body[data-page="profile"] .student-profile-services{order:6!important;display:gr
       <div class="profile-social profile-mobile-shell">
 
 
-        <section class="profile-card panel profile-hero-card">
-          <div class="profile-hero-row">
-            <div class="profile-hero-info">
-              <h2 class="profile-name-top" id="profileName">الطالب</h2>
-              <div class="profile-id-row"><span class="profile-id-label">معرّف الطالب</span><b id="profileHandle">—</b><button type="button" class="profile-copy-id" id="copyStudentId" aria-label="نسخ معرّف الطالب" title="نسخ المعرّف"><i class="fa-regular fa-copy"></i></button></div>
-              <section class="profile-stats profile-stat-cards" aria-label="ملخص النشاط الدراسي">
-                <a class="profile-stat-card" href="time-organizer.html"><b id="profileStreak">1</b><small>أيام التزام <i class="fa-solid fa-fire" style="color:#ff8a3d"></i></small></a>
-                <a class="profile-stat-card" href="time-organizer.html"><b id="profileActiveTasks">0</b><small>جلسة مذاكرة</small></a>
-                <a class="profile-stat-card" href="news.html"><b id="profilePosts">0</b><small>نقطة تفوق</small></a>
-              </section>
+        <section class="pf-head" aria-label="الملف الشخصي">
+          <div class="pf-main">
+            <div class="pf-info">
+              <h2 class="pf-name" id="profileName">الطالب</h2>
+              <div class="pf-id"><span>معرّف الطالب</span><b id="profileHandle">—</b><button type="button" class="pf-copy" id="copyStudentId" aria-label="نسخ معرّف الطالب" title="نسخ المعرّف"><i class="fa-regular fa-copy"></i></button></div>
+              <div class="pf-stats">
+                <a class="pf-stat" href="time-organizer.html"><b id="profileStreak">1</b><small>أيام التزام <i class="fa-solid fa-fire" style="color:#ff8a3d"></i></small></a>
+                <a class="pf-stat" href="time-organizer.html"><b id="profileActiveTasks">0</b><small>جلسة مذاكرة</small></a>
+                <a class="pf-stat" href="news.html"><b id="profilePosts">0</b><small>نقطة تفوق</small></a>
+              </div>
             </div>
-            <div class="avatar-wrap profile-avatar-wrap"><button class="profile-note-bubble" type="button" data-profile-edit>تحدث عن ما جرى</button><div class="profile-avatar" id="profileAvatar">ن</div><label for="avatarInput" class="avatar-edit" title="رفع صورة الملف الشخصي" aria-label="رفع صورة الملف الشخصي"><i class="fa-solid fa-plus"></i></label><input class="hidden" id="avatarInput" type="file" accept="image/*"></div>
+            <div class="pf-avatar">
+              <button class="pf-note" type="button" data-profile-edit>تحدث عن ما جرى</button>
+              <div class="pf-ring"><div class="profile-avatar" id="profileAvatar">ن</div><label for="avatarInput" class="pf-plus" title="رفع صورة الملف الشخصي" aria-label="رفع صورة الملف الشخصي"><i class="fa-solid fa-plus"></i></label><input class="hidden" id="avatarInput" type="file" accept="image/*"></div>
+            </div>
           </div>
-          <span class="profile-stage" id="profileStage"><i class="fa-solid fa-location-dot"></i> المرحلة الدراسية</span>
-          <p class="profile-bio" id="profileBio">أضف نبذة بسيطة لتظهر في مجتمع الأخبار.</p>
+          <p class="pf-location" id="profileStage"><i class="fa-solid fa-location-dot"></i> المرحلة الدراسية</p>
+          <p class="pf-bio" id="profileBio">أضف نبذة بسيطة لتظهر في مجتمع الأخبار.</p>
           <button class="profile-completion hidden" id="completeProfile"><i class="fa-solid fa-sparkles"></i><span><b>أكمل بيانات ملفك الشخصي</b><small>أضف الاسم ورقم الهاتف والمعلومات الأساسية لتخصيص التطبيق.</small></span><i class="fa-solid fa-arrow-left"></i></button>
         </section>
-        <section class="profile-feature-cards" aria-label="أهداف الطالب">
-          <a class="profile-feature feature-record" href="news.html"><span class="profile-feature-icon"><i class="fa-solid fa-fire-flame-curved"></i></span><b>تسجيل إنجاز</b><small>10+ نقاط</small></a>
-          <a class="profile-feature feature-focus" href="time-organizer.html"><span class="profile-feature-icon"><i class="fa-solid fa-stopwatch"></i></span><b>25:00</b><small>مؤقت التركيز</small></a>
-          <a class="profile-feature feature-goal" href="grade-calculator.html"><span class="profile-feature-icon"><i class="fa-solid fa-bullseye"></i></span><b id="featureGoalValue">—</b><small>هدفي الامتحاني</small></a>
+        <section class="pf-cards" aria-label="أهداف الطالب">
+          <a class="pf-card pf-record" href="news.html"><span class="pf-card-ico"><i class="fa-solid fa-fire-flame-curved"></i></span><b>تسجيل إنجاز</b><small>10+ نقاط</small></a>
+          <a class="pf-card pf-focus" href="time-organizer.html"><span class="pf-card-ico"><i class="fa-solid fa-stopwatch"></i></span><b>25:00</b><small>مؤقت التركيز</small></a>
+          <a class="pf-card pf-goal" href="grade-calculator.html"><span class="pf-card-ico"><i class="fa-solid fa-bullseye"></i></span><b id="featureGoalValue">—</b><small>هدفي الامتحاني</small></a>
         </section>
-        <nav class="profile-ref-tabs" aria-label="أقسام الملف الشخصي">
+        <nav class="pf-tabs" aria-label="أقسام الملف الشخصي">
           <a href="free-channels.html"><i class="fa-solid fa-tower-broadcast"></i><span>قنواتنا</span></a>
           <a href="saved-items.html"><i class="fa-regular fa-bookmark"></i><span>المحفوظات</span></a>
           <button type="button" class="is-active" aria-current="true"><i class="fa-solid fa-lock"></i><span>مهامي</span></button>
         </nav>
-<section class="student-progress-panel" aria-label="نسبة إنجاز الخطة الدراسية">
+        <section class="student-progress-panel" aria-label="نسبة إنجاز الخطة الدراسية">
           <div class="student-progress-head"><span><i class="fa-solid fa-chart-line"></i> نسبة إنجاز خطتي الدراسية</span><b>0%</b></div>
           <div class="student-progress-track"><i style="width:0%"></i></div>
           <a class="student-task-entry" href="time-organizer.html"><span>أضف مهمة أو ملاحظة دراسية جديدة...</span><b>إضافة</b></a>

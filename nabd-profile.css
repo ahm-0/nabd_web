@@ -373,227 +373,98 @@ html[data-theme] body[data-page="profile"] .greet-row { margin: calc(82px + env(
 /* منع انهيار هامش سطر الترحيب إلى الأعلى حتى يبقى الشريط الثابت في موضعه الصحيح */
 html[data-theme] body[data-page="profile"] .app { display: flow-root !important; }
 
-/* ---------- 22) بطاقة الهوية بتصميم المرجع: الاسم بالأعلى، الصورة والإحصائيات، ومعرّف قابل للنسخ ---------- */
-html[data-theme] body[data-page="profile"] .profile-hero-card {
-  text-align: center; padding: 20px 16px 18px !important; margin-top: 0 !important;
-}
-html[data-theme] body[data-page="profile"] .profile-name-top {
-  margin: 0 0 14px; font-size: 24px; font-weight: 800; color: var(--np-text); line-height: 1.3;
-}
-html[data-theme] body[data-page="profile"] .profile-hero-row {
-  display: grid; grid-template-columns: 138px minmax(0, 1fr); gap: 14px; align-items: center;
-}
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap { width: 138px; height: 138px; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar {
-  width: 132px !important; height: 132px !important; font-size: 52px !important;
-  border: 3px solid var(--np-accent) !important; box-shadow: 0 0 0 5px rgba(108, 180, 255, .12), 0 14px 30px rgba(0, 0, 0, .35) !important;
-  overflow: hidden;
-}
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .avatar-edit {
-  width: 40px !important; height: 40px !important; border-radius: 50% !important;
-  bottom: 4px !important; inset-inline-start: 6px !important; inset-inline-end: auto !important;
-  background: linear-gradient(135deg, var(--np-accent), var(--np-accent-2)) !important;
-  border: 3px solid var(--np-card-b) !important; color: #fff !important; display: grid; place-items: center;
-}
-/* الإحصائيات كعمود داخل البطاقة */
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stats {
-  display: grid !important; grid-template-columns: 1fr !important; gap: 8px !important; margin: 0 !important; padding: 0 !important;
-  background: transparent !important; border: 0 !important; box-shadow: none !important; order: 0 !important;
-}
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card {
-  display: flex !important; align-items: center; gap: 10px; padding: 9px 12px !important; min-height: 0 !important;
-  border-radius: 16px !important; text-align: start;
-}
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card > i:last-child { display: none !important; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-icon { width: 34px !important; height: 34px !important; border-radius: 12px !important; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card b { font-size: 17px !important; }
-/* معرّف الطالب مع زر النسخ */
-html[data-theme] body[data-page="profile"] .profile-id-row {
-  display: flex; align-items: center; justify-content: center; gap: 8px; margin: 16px 0 8px; flex-wrap: wrap;
-}
-html[data-theme] body[data-page="profile"] .profile-id-label { font-size: 12px; color: var(--np-muted); font-weight: 700; }
-html[data-theme] body[data-page="profile"] #profileHandle {
-  font-size: 17px; font-weight: 800; color: var(--np-text); letter-spacing: .6px; direction: ltr; font-variant-numeric: tabular-nums;
-}
-html[data-theme] body[data-page="profile"] .profile-copy-id {
-  width: 34px; height: 34px; border-radius: 12px; border: 1px solid var(--np-line);
-  background: var(--np-card-a); color: var(--np-accent); display: grid; place-items: center; cursor: pointer;
-}
-html[data-theme] body[data-page="profile"] .profile-stage {
-  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px;
-  background: rgba(108, 180, 255, .12); color: var(--np-accent); font-size: 12.5px; font-weight: 700;
-}
-html[data-theme] body[data-page="profile"] .profile-bio { margin: 12px 0 0; color: var(--np-muted); font-size: 13.5px; line-height: 1.7; }
-html[data-theme] body[data-page="profile"] .profile-hero-card .profile-completion { margin-top: 14px; width: 100%; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card {
-  flex-direction: row !important; aspect-ratio: auto !important; height: auto !important; min-height: 0 !important;
-  justify-content: flex-start !important;
-}
-/* الشريط العلوي الثابت: لا يجوز أن تُنشئ حاوية الصفحة تحويلاً (transform) يثبّته نسبياً إليها */
+/* ---------- 22) قواعد عامة محفوظة ---------- */
+/* الشريط العلوي الثابت: لا حركة ولا تحويل على حاوية الصفحة */
 html body[data-page="profile"] .app, html body[data-page="home"] .app { transform: none !important; filter: none !important; perspective: none !important; }
 html body[data-page="profile"] .app { animation: none !important; }
+html[data-theme] body[data-page="profile"] .profile-details-card .profile-section-head { display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 10px; }
+html[data-theme] body[data-page="profile"] .profile-details-tools { display: flex !important; align-items: center; gap: 8px; }
+html[data-theme] body[data-page="profile"] .profile-details-card .profile-details-tools button { flex: 0 0 auto; }
 
-/* ---------- 23) مطابقة المرجع: إحصائيات أفقية بجانب الصورة، وثلاث بطاقات ملونة، وتبويب الأقسام ---------- */
-html[data-theme] body[data-page="profile"] .profile-hero-row { grid-template-columns: 124px minmax(0, 1fr); gap: 12px; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap { width: 124px; height: 124px; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar { width: 118px !important; height: 118px !important; font-size: 46px !important; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stats {
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 6px !important;
-  padding: 12px 8px !important; border-radius: 20px !important;
-  background: linear-gradient(180deg, var(--np-card-a), var(--np-card-b)) !important;
-  border: 1px solid var(--np-line) !important; align-self: stretch; align-items: center;
-}
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card {
-  flex-direction: column !important; text-align: center; justify-content: center !important;
-  gap: 4px; padding: 6px 2px !important; background: transparent !important; border: 0 !important; box-shadow: none !important;
-}
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-icon { display: none !important; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card b { font-size: 20px !important; color: var(--np-text) !important; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card span:not(.profile-stat-icon) small { font-size: 10.5px !important; color: var(--np-muted) !important; line-height: 1.3; }
-
-html[data-theme] body[data-page="profile"] .profile-feature-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0 14px 16px; order: 4 !important; }
-html[data-theme] body[data-page="profile"] .profile-feature {
-  display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 8px 12px; border-radius: 22px; text-decoration: none;
-  border: 1px solid var(--np-line); background: linear-gradient(180deg, var(--np-card-a), var(--np-card-b)); color: var(--np-text); text-align: center;
-}
-html[data-theme] body[data-page="profile"] .profile-feature-icon { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; color: #fff; font-size: 19px; }
-html[data-theme] body[data-page="profile"] .profile-feature b { font-size: 20px; font-weight: 800; }
-html[data-theme] body[data-page="profile"] .profile-feature small { font-size: 11px; color: var(--np-muted); font-weight: 700; }
-html[data-theme] body[data-page="profile"] .feature-goal .profile-feature-icon { background: linear-gradient(145deg, #7ee8b0, #2fbf8a); }
-html[data-theme] body[data-page="profile"] .feature-focus .profile-feature-icon { background: linear-gradient(145deg, #7fd4ff, #3a8ef0); }
-html[data-theme] body[data-page="profile"] .feature-record .profile-feature-icon { background: linear-gradient(145deg, #ffb07a, #ff6b6b); }
-html[data-theme] body[data-page="profile"] .profile-section-grid { order: 5 !important; }
-html[data-theme] body[data-page="profile"] .student-progress-panel { order: 6 !important; }
+/* ---------- 23) رأس الملف الشخصي: تصميم نظيف بأصناف pf- فقط ---------- */
+html[data-theme] body[data-page="profile"] .profile-mobile-shell { display: flex !important; flex-direction: column; gap: 16px !important; }
+html[data-theme] body[data-page="profile"] .student-progress-panel { order: 5 !important; }
 html[data-theme] body[data-page="profile"] .profile-data { order: 7 !important; }
 
-/* ---------- 24) إصلاح التداخل: تسميات الإحصائيات، الحلقة المزدوجة للصورة، ترويسة بيانات الحساب ---------- */
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card { min-width: 0; overflow: hidden; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card span:not(.profile-stat-icon) small {
-  white-space: normal; overflow-wrap: anywhere; font-size: 10px !important; line-height: 1.35; display: block;
+body[data-page="profile"] .pf-head,
+body[data-page="profile"] .pf-cards,
+body[data-page="profile"] .pf-tabs { box-sizing: border-box; width: 100%; max-width: 640px; margin: 0 auto; }
+body[data-page="profile"] .pf-head { order: 2 !important; --pf-av: 96px; }
+body[data-page="profile"] .pf-cards { order: 3 !important; }
+body[data-page="profile"] .pf-tabs { order: 4 !important; }
+
+/* الصف الرئيسي: المعلومات يميناً، الصورة يساراً */
+body[data-page="profile"] .pf-main { display: flex; align-items: center; gap: 14px; }
+body[data-page="profile"] .pf-info { flex: 1 1 auto; min-width: 0; }
+body[data-page="profile"] .pf-name { margin: 0; font-size: 20px; font-weight: 800; line-height: 1.35; color: var(--np-text); overflow-wrap: anywhere; }
+body[data-page="profile"] .pf-id { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 11.5px; color: var(--np-muted); flex-wrap: wrap; }
+body[data-page="profile"] .pf-id b { font-size: 12.5px; font-weight: 600; letter-spacing: .3px; direction: ltr; color: var(--np-muted); }
+body[data-page="profile"] .pf-copy {
+  width: 26px; height: 26px; padding: 0; border-radius: 9px; display: grid; place-items: center; cursor: pointer;
+  border: 1px solid var(--np-line); background: var(--np-card-a); color: var(--np-accent); font-size: 12px;
 }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar::before,
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar::after,
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap::before,
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap::after { display: none !important; content: none !important; }
-html[data-theme] body[data-page="profile"] .profile-details-card .profile-section-head {
-  display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 10px;
+body[data-page="profile"] .pf-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 14px; }
+body[data-page="profile"] .pf-stat { display: block; min-width: 0; text-align: start; text-decoration: none; color: inherit; }
+body[data-page="profile"] .pf-stat b { display: block; font-size: 19px; font-weight: 800; line-height: 1.2; color: var(--np-text); }
+body[data-page="profile"] .pf-stat small { display: block; margin-top: 2px; font-size: 10.5px; line-height: 1.5; color: var(--np-muted); overflow-wrap: anywhere; }
+
+/* الصورة */
+body[data-page="profile"] .pf-avatar { flex: 0 0 calc(var(--pf-av) + 8px); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+body[data-page="profile"] .pf-note {
+  max-width: 100%; padding: 4px 9px; border-radius: 12px; border: 1px solid var(--np-line); background: var(--np-card-b);
+  color: var(--np-text); font-family: inherit; font-size: 11px; line-height: 1.4; text-align: center; cursor: pointer;
 }
-html[data-theme] body[data-page="profile"] .profile-details-tools { display: flex !important; align-items: center; gap: 8px; }
-html[data-theme] body[data-page="profile"] .profile-details-card .avatar-edit,
-html[data-theme] body[data-page="profile"] .profile-details-card .profile-details-tools button { flex: 0 0 auto; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap {
-  background: transparent !important; box-shadow: none !important; padding: 0 !important; display: grid; place-items: center; justify-self: center;
+body[data-page="profile"] .pf-ring { position: relative; width: var(--pf-av); height: var(--pf-av); flex: none; }
+html[data-theme] body[data-page="profile"] .pf-ring #profileAvatar {
+  width: var(--pf-av) !important; height: var(--pf-av) !important; margin: 0 !important; box-sizing: border-box !important;
+  border-radius: 50% !important; border: 3px solid #4b86f5 !important; box-shadow: none !important; filter: none !important;
+  display: grid; place-items: center; overflow: hidden; object-fit: cover; font-size: 40px; font-weight: 600; color: #fff !important;
+}
+html[data-theme] body[data-page="profile"] .pf-ring div#profileAvatar { background: #4c7d4a !important; background-image: none !important; }
+body[data-page="profile"] .pf-plus {
+  position: absolute; bottom: -2px; inset-inline-end: -2px; width: 32px; height: 32px; border-radius: 50%;
+  display: grid; place-items: center; background: #4b86f5; color: #fff; font-size: 13px; cursor: pointer; border: 3px solid var(--np-bg);
 }
 
-/* ---------- 25) نسخة طبق الأصل عن المرجع ---------- */
-/* خلفية النقاط كما في الرئيسية */
-html[data-theme] body[data-page="profile"] {
-  background-image: radial-gradient(rgba(130, 160, 255, .14) 1px, transparent 1.2px) !important;
-  background-size: 22px 22px !important; background-repeat: repeat !important;
-}
-html[data-theme="light"] body[data-page="profile"] { background-image: radial-gradient(rgba(60, 90, 200, .10) 1px, transparent 1.2px) !important; }
+/* الموقع والنبذة */
+body[data-page="profile"] .pf-location { margin: 16px 0 0; display: flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 700; color: var(--np-accent); }
+body[data-page="profile"] .pf-bio { margin: 8px 0 0; font-size: 13.5px; line-height: 1.75; color: var(--np-text); opacity: .85; overflow-wrap: anywhere; }
+body[data-page="profile"] .pf-head .profile-completion { margin-top: 14px; width: 100%; }
 
-/* الهوية بلا إطار: العناصر مباشرة على الخلفية */
-html[data-theme] body[data-page="profile"] .profile-hero-card {
-  background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; margin: 0 0 14px !important; overflow: visible !important;
-}
-html[data-theme] body[data-page="profile"] .profile-name-top { margin: 0 0 30px; font-size: 22px; }
-html[data-theme] body[data-page="profile"] .profile-hero-row { grid-template-columns: 108px minmax(0, 1fr); gap: 14px; margin-top: 0; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap { width: 108px; height: 108px; position: relative; overflow: visible; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar {
-  width: 104px !important; height: 104px !important; font-size: 46px !important; font-weight: 600;
-  border: 3px solid #4b86f5 !important; box-shadow: none !important;
-}
-html[data-theme] body[data-page="profile"] .profile-hero-row div.profile-avatar { background: #4c7d4a !important; color: #fff !important; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .avatar-edit {
-  width: 34px !important; height: 34px !important; font-size: 14px; bottom: -2px !important; background: #4b86f5 !important; border: 3px solid var(--np-bg) !important;
-}
-/* فقاعة "تحدث عن ما جرى" فوق الصورة */
-html[data-theme] body[data-page="profile"] .profile-note-bubble {
-  position: absolute; top: -26px; inset-inline-end: -4px; z-index: 2; white-space: nowrap;
-  padding: 6px 12px; border-radius: 14px; border: 1px solid var(--np-line); background: var(--np-card-b);
-  color: var(--np-text); font: 600 11.5px/1.2 inherit; cursor: pointer;
-}
-/* بطاقة الإحصائيات */
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stats {
-  padding: 14px 6px !important; border-radius: 22px !important; align-self: center;
-}
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card { padding: 2px !important; gap: 6px; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card b { font-size: 21px !important; line-height: 1; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card small { font-size: 10.5px !important; color: var(--np-muted) !important; white-space: nowrap; display: block; }
-/* المعرّف والموقع والنبذة */
-html[data-theme] body[data-page="profile"] .profile-id-row { margin: 16px 0 6px; }
-html[data-theme] body[data-page="profile"] .profile-stage {
-  display: flex; justify-content: center; gap: 6px; padding: 0; background: none !important; border-radius: 0;
-  color: var(--np-accent); font-size: 14.5px; font-weight: 700; margin: 8px 0 0;
-}
-html[data-theme] body[data-page="profile"] .profile-bio { color: var(--np-text); opacity: .88; font-size: 14px; margin: 10px 4px 0; }
 /* البطاقات الثلاث */
-html[data-theme] body[data-page="profile"] .profile-feature-cards { margin: 0 0 14px; gap: 10px; order: 4 !important; }
-html[data-theme] body[data-page="profile"] .profile-feature { padding: 14px 6px 12px; gap: 8px; border-radius: 20px; }
-html[data-theme] body[data-page="profile"] .profile-feature-icon { width: 40px; height: 40px; border-radius: 12px; font-size: 17px; }
-html[data-theme] body[data-page="profile"] .profile-feature b { font-size: 15.5px; line-height: 1.2; }
-html[data-theme] body[data-page="profile"] .profile-feature small { font-size: 11.5px; line-height: 1.2; }
-/* التبويبات بخط سفلي */
-html[data-theme] body[data-page="profile"] .profile-ref-tabs {
-  order: 5 !important; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin: 4px 0 14px; border-bottom: 1px solid var(--np-line);
+body[data-page="profile"] .pf-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+body[data-page="profile"] .pf-card {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; padding: 12px 6px 10px; text-align: center; text-decoration: none;
+  border-radius: 20px; border: 1px solid var(--np-line); background: linear-gradient(180deg, var(--np-card-a), var(--np-card-b)); color: var(--np-text);
 }
-html[data-theme] body[data-page="profile"] .profile-ref-tabs > * {
-  position: relative; display: flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 12px 4px 14px; background: none; border: 0; font: 700 15.5px/1 inherit; color: var(--np-muted); text-decoration: none; cursor: pointer;
-}
-html[data-theme] body[data-page="profile"] .profile-ref-tabs .is-active { color: var(--np-accent); }
-html[data-theme] body[data-page="profile"] .profile-ref-tabs .is-active::after {
-  content: ""; position: absolute; inset-inline: 14%; bottom: -1px; height: 3px; border-radius: 3px; background: var(--np-accent);
-}
-/* تصحيحات: أرقام بلا مربعات، خط الفقاعة والتبويبات، الصورة الخضراء بلا توهج */
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card b {
-  background: none !important; width: auto !important; height: auto !important; min-width: 0 !important;
-  padding: 0 !important; border-radius: 0 !important; box-shadow: none !important; color: var(--np-text) !important;
-}
-html[data-theme] body[data-page="profile"] .profile-note-bubble {
-  font-family: inherit; font-size: 11.5px; font-weight: 600; line-height: 1.2;
-  inset-inline-start: 0; inset-inline-end: auto; top: -30px;
-}
-html[data-theme] body[data-page="profile"] .profile-ref-tabs > * { font-family: inherit; font-size: 15.5px; font-weight: 700; line-height: 1; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap div.profile-avatar {
-  background-image: none !important; background-color: #4c7d4a !important; box-shadow: none !important; filter: none !important;
-}
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap { filter: none !important; }
-html[data-theme] body[data-page="profile"] div#profileAvatar.profile-avatar {
-  background: #4c7d4a !important; background-image: none !important; box-shadow: none !important; filter: none !important;
-}
-html[data-theme] body[data-page="profile"] .profile-note-bubble { font-size: 11px !important; padding: 5px 11px; }
+body[data-page="profile"] .pf-card-ico { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: #fff; font-size: 16px; }
+body[data-page="profile"] .pf-card b { font-size: 15px; font-weight: 800; line-height: 1.25; overflow-wrap: anywhere; }
+body[data-page="profile"] .pf-card small { font-size: 11px; line-height: 1.3; color: var(--np-muted); overflow-wrap: anywhere; }
+body[data-page="profile"] .pf-record .pf-card-ico { background: linear-gradient(145deg, #ffb07a, #ff6b6b); }
+body[data-page="profile"] .pf-focus .pf-card-ico { background: linear-gradient(145deg, #7fd4ff, #3a8ef0); }
+body[data-page="profile"] .pf-goal .pf-card-ico { background: linear-gradient(145deg, #7ee8b0, #2fbf8a); }
 
-/* ---------- 26) ترتيب الهيدر: الصورة يساراً، الاسم بجانبها، المعرّف بخط أصغر تحته، ثم الأرقام ---------- */
-html[data-theme] body[data-page="profile"] .profile-hero-row {
-  grid-template-columns: minmax(0, 1fr) 108px; align-items: start; gap: 14px; margin-top: 34px;
+/* التبويبات */
+body[data-page="profile"] .pf-tabs { display: flex; border-bottom: 1px solid var(--np-line); }
+body[data-page="profile"] .pf-tabs > * {
+  flex: 1 1 0; position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 2px 13px;
+  background: none; border: 0; font-family: inherit; font-size: 14.5px; font-weight: 700; line-height: 1; color: var(--np-muted);
+  text-decoration: none; white-space: nowrap; cursor: pointer;
 }
-html[data-theme] body[data-page="profile"] .profile-hero-info { min-width: 0; text-align: start; padding-top: 2px; }
-html[data-theme] body[data-page="profile"] .profile-name-top { margin: 0; font-size: 21px; text-align: start; line-height: 1.35; }
-html[data-theme] body[data-page="profile"] .profile-id-row { justify-content: flex-start; margin: 4px 0 16px; gap: 6px; flex-wrap: nowrap; }
-html[data-theme] body[data-page="profile"] .profile-id-label { font-size: 11px; }
-html[data-theme] body[data-page="profile"] #profileHandle { font-size: 12.5px; font-weight: 600; color: var(--np-muted); letter-spacing: .3px; }
-html[data-theme] body[data-page="profile"] .profile-copy-id { width: 26px; height: 26px; border-radius: 9px; font-size: 12px; }
-/* الأرقام بلا بطاقة، على الجهة المقابلة للصورة */
-html[data-theme] body[data-page="profile"] .profile-hero-info .profile-stats {
-  background: transparent !important; border: 0 !important; box-shadow: none !important;
-  padding: 0 !important; gap: 4px !important; justify-content: space-between; align-self: auto;
+body[data-page="profile"] .pf-tabs .is-active { color: var(--np-accent); }
+body[data-page="profile"] .pf-tabs .is-active::after { content: ""; position: absolute; inset-inline: 16%; bottom: -1px; height: 3px; border-radius: 3px; background: var(--np-accent); }
+
+/* شاشات ضيقة جداً */
+@media (max-width: 345px) {
+  body[data-page="profile"] .pf-head { --pf-av: 80px; }
+  body[data-page="profile"] .pf-main { gap: 10px; }
+  body[data-page="profile"] .pf-name { font-size: 18px; }
 }
-html[data-theme] body[data-page="profile"] .profile-hero-info .profile-stat-card { align-items: flex-start !important; text-align: start !important; padding: 0 !important; }
-html[data-theme] body[data-page="profile"] .profile-hero-info .profile-stat-card b { font-size: 20px !important; }
-html[data-theme] body[data-page="profile"] .profile-hero-info .profile-stat-card small { white-space: normal; line-height: 1.3; }
-/* الصورة على اليسار: زر + أسفلها يساراً، والفقاعة فوقها */
-html[data-theme] body[data-page="profile"] .profile-hero-row .avatar-edit { inset-inline-end: 4px !important; inset-inline-start: auto !important; }
-html[data-theme] body[data-page="profile"] .profile-note-bubble { inset-inline-start: auto; inset-inline-end: 0; }
-/* الموقع والنبذة بمحاذاة البداية */
-html[data-theme] body[data-page="profile"] .profile-stage { justify-content: flex-start; margin-top: 14px; }
-html[data-theme] body[data-page="profile"] .profile-bio { text-align: start; margin: 8px 0 0; }
-/* إصلاح القص: الصورة داخل حدود الصفحة، وتسميات الأرقام بلا قص للهمزات */
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap { justify-self: end; width: 108px; height: 108px; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar { box-sizing: border-box !important; width: 104px !important; height: 104px !important; }
-html[data-theme] body[data-page="profile"] .profile-hero-info .profile-stat-card { overflow: visible !important; min-width: 0; }
-html[data-theme] body[data-page="profile"] .profile-hero-info .profile-stat-card small { line-height: 1.55 !important; white-space: normal !important; }
-html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap { width: 108px !important; min-width: 108px !important; height: 108px !important; justify-self: stretch !important; }
+
+/* شريط علوي على الشاشات الضيقة جداً: سطر واحد دائماً */
+@media (max-width: 360px) {
+  body[data-page="profile"] .topbar, body[data-page="home"] .topbar { flex-wrap: nowrap !important; }
+  body[data-page="profile"] .topbar .top-actions, body[data-page="home"] .topbar .top-actions { flex-wrap: nowrap !important; flex: none; }
+  body[data-page="profile"] .topbar .share-platform, body[data-page="home"] .topbar .share-platform { display: none !important; }
+  body[data-page="profile"] .topbar .brand, body[data-page="home"] .topbar .brand { min-width: 0; flex: 1 1 auto; }
+}
