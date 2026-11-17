@@ -82,20 +82,8 @@ body[data-page="supervision"] .admin-sections-menu summary { width: auto !import
    صفحة واحدة متصلة + شريط تنقل سريع + بطاقات الأقسام الجديدة
    ========================================================================== */
 body[data-page="supervision"] .admin-users-workspace { display: flex !important; flex-direction: column; gap: 16px !important; }
-body[data-page="supervision"] .admin-tab-panel { display: block !important; animation: none !important; scroll-margin-top: 78px; }
-body[data-page="supervision"] .admin-tab-panel[hidden] { display: block !important; }
-body[data-page="supervision"] .admin-compact-header { order: 0; }
-body[data-page="supervision"] .ap-nav { order: 1; }
-body[data-page="supervision"] #adminOverviewPanel { order: 2; }
-body[data-page="supervision"] #adminVerifyPanel { order: 3; }
-body[data-page="supervision"] #adminSupportPanel { order: 4; }
-body[data-page="supervision"] #adminChatPanel { order: 5; }
-body[data-page="supervision"] #adminToolsPanel { order: 6; }
-body[data-page="supervision"] #adminNotificationsPanel { order: 7; }
-body[data-page="supervision"] .admin-notification-library { order: 8; }
-body[data-page="supervision"] #adminNewsPanel { order: 9; }
-body[data-page="supervision"] #adminUsersPanel { order: 10; }
-body[data-page="supervision"] #adminModeratorsPanel { order: 11; }
+body[data-page="supervision"] .admin-tab-panel { animation: none !important; }
+body[data-page="supervision"] .admin-tab-panel[hidden], body[data-page="supervision"] .admin-notification-library[hidden] { display: none !important; }
 body[data-page="supervision"] .admin-sections-menu { display: none !important; }
 
 /* الشريط السريع: ثابت أسفل الرأس، تمرير أفقي بلا تقطيع */
@@ -154,3 +142,35 @@ body[data-page="supervision"] #apChatRulesForm select { width: auto; min-width: 
 body[data-page="supervision"] .ap-chat-feed .ap-rows { max-height: 360px; overflow: auto; margin-bottom: 10px; }
 
 /* إخفاء رأس الأقسام القديمة المتكررة داخل النظرة العامة لا يلزم */
+
+/* بطاقة عدد المستخدمين قابلة للفتح */
+body[data-page="supervision"] .overview-users { cursor: pointer; position: relative; }
+body[data-page="supervision"] .overview-users::after { content: "\f053"; font-family: "Font Awesome 6 Free"; font-weight: 900; position: absolute; inset-inline-end: 10px; top: 10px; font-size: 10px; color: var(--ap-muted); }
+
+/* واجهة المستخدمين الكاملة */
+body.ap-sheet-open { overflow: hidden; }
+body[data-page="supervision"] .ap-sheet { position: fixed; inset: 0; z-index: 2000; display: flex; flex-direction: column; background: var(--ap-b, #0c1330); color: var(--ap-text, #f6f7ff); padding-top: env(safe-area-inset-top); }
+body[data-page="supervision"] .ap-sheet.hidden { display: none; }
+body[data-page="supervision"] .ap-sheet-head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--ap-line); }
+body[data-page="supervision"] .ap-sheet-head h3 { margin: 0; font-size: 17px; }
+body[data-page="supervision"] .ap-sheet-head small { color: var(--ap-muted); font-size: 12px; }
+body[data-page="supervision"] .ap-sheet-back { width: 40px; height: 40px; border-radius: 13px; border: 1px solid var(--ap-line); background: var(--ap-a); color: var(--ap-text); display: grid; place-items: center; cursor: pointer; }
+body[data-page="supervision"] .ap-sheet-tools { display: flex; gap: 8px; padding: 10px 14px; }
+body[data-page="supervision"] .ap-sheet-tools input { flex: 1; min-width: 0; height: 44px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--ap-line); background: var(--ap-a); color: var(--ap-text); font-family: inherit; font-size: 14px; }
+body[data-page="supervision"] .ap-sheet-tools select { flex: none; width: auto; height: 44px; padding: 0 10px; border-radius: 14px; border: 1px solid var(--ap-line); background: var(--ap-a); color: var(--ap-text); font-family: inherit; }
+body[data-page="supervision"] .ap-sheet-list { flex: 1; overflow: auto; padding: 4px 14px calc(24px + env(safe-area-inset-bottom)); display: grid; gap: 12px; align-content: start; }
+body[data-page="supervision"] .ap-user { padding: 14px; border-radius: 20px; border: 1px solid var(--ap-line); background: linear-gradient(180deg, var(--ap-a), var(--ap-b)); display: grid; gap: 12px; }
+body[data-page="supervision"] .ap-user.is-banned { border-color: rgba(255,77,109,.45); }
+body[data-page="supervision"] .ap-user-top { display: flex; align-items: center; gap: 12px; }
+body[data-page="supervision"] .ap-user-av { width: 52px; height: 52px; flex: none; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: #4c7d4a; color: #fff; font-weight: 700; font-size: 20px; }
+body[data-page="supervision"] .ap-user-av img { width: 100%; height: 100%; object-fit: cover; }
+body[data-page="supervision"] .ap-user-main { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+body[data-page="supervision"] .ap-user-main b { font-size: 15px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+body[data-page="supervision"] .ap-user-main small { font-size: 11.5px; color: var(--ap-muted); overflow-wrap: anywhere; }
+body[data-page="supervision"] .ap-banned { font-style: normal; color: #ff6b82; font-weight: 800; }
+body[data-page="supervision"] .ap-user-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+body[data-page="supervision"] .ap-user-actions .ap-btn { padding: 0 6px; font-size: 12px; text-decoration: none; }
+body[data-page="supervision"] .ap-user-verify { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+body[data-page="supervision"] .ap-user-verify select { flex: 1 1 90px; min-width: 0; height: 36px; padding: 0 8px; border-radius: 11px; border: 1px solid var(--ap-line); background: var(--ap-b); color: var(--ap-text); font-family: inherit; font-size: 12.5px; }
+body[data-page="supervision"] .ap-btn.blue { background: linear-gradient(135deg, #5aa8ff, #3a6fe0); }
+body[data-page="supervision"] .ap-btn.gray { background: linear-gradient(135deg, #7a86ad, #55608a); }

@@ -1236,6 +1236,7 @@ body[data-page="home"] .home-studio > .home-studio-section{border-inline-start:0
 
         <section class="admin-tab-panel" id="adminChatPanel" data-admin-panel="chat" hidden role="tabpanel" aria-labelledby="adminTabChat"><section class="admin-chat-control panel"><header class="admin-section-header"><div><span class="eyebrow">دردشة نبض التفوق</span><h3>تحكم الدردشة</h3><p>أدر حالة الدردشة، الإشعارات، المشرفين، وإحصائيات النشاط.</p></div><button class="outline-button" type="button" data-admin-action="refresh-chat-admin"><i class="fa-solid fa-arrows-rotate"></i><span>تحديث</span></button></header><div class="admin-chat-stat-grid"><article><i class="fa-solid fa-users"></i><span>كل المستخدمين</span><b id="adminChatTotalUsers">0</b></article><article><i class="fa-solid fa-circle"></i><span>متصلون الآن</span><b id="adminChatOnlineUsers">0</b></article><article><i class="fa-regular fa-message"></i><span>رسائل اليوم</span><b id="adminChatTodayMessages">0</b></article><article><i class="fa-solid fa-lock"></i><span>طلبات خاصة</span><b id="adminChatPrivateRequests">0</b></article></div><div class="admin-chat-control-grid"><section class="admin-chat-setting-card"><h4><i class="fa-solid fa-sliders"></i> إعدادات الدردشة</h4><label class="admin-chat-switch"><span><b>إظهار الدردشة للطلاب</b><small>إيقافها يخفي الدخول إلى الدردشة العامة</small></span><input id="adminChatEnabled" type="checkbox" checked></label><form id="adminChatAnnouncementForm"><label>رسالة أعلى الدردشة<textarea name="announcement" rows="3" maxlength="300" placeholder="رسالة قصيرة تظهر للطلاب..."></textarea></label><button class="primary-button" type="submit"><i class="fa-solid fa-check"></i> حفظ الإعدادات</button></form></section><section class="admin-chat-setting-card"><h4><i class="fa-solid fa-user-shield"></i> إضافة مشرف دردشة</h4><form id="chatModeratorForm" class="news-moderator-form"><label>البريد الإلكتروني أو UUID<input name="user_ref" required placeholder="student@example.com" autocomplete="off"></label><button class="primary-button" type="submit"><i class="fa-solid fa-user-plus"></i> إضافة مشرف</button></form><div id="chatModeratorsRows" class="news-moderators-rows"></div></section><section class="admin-chat-setting-card"><h4><i class="fa-solid fa-user-slash"></i> حظر مستخدم من الدردشة</h4><form id="chatBanForm" class="news-moderator-form"><label>البريد الإلكتروني أو UUID<input name="ban_user_ref" required placeholder="student@example.com" autocomplete="off"></label><label>السبب، اختياري<input name="ban_reason" maxlength="180" placeholder="مخالفة قواعد الدردشة"></label><select name="ban_action"><option value="ban">حظر من الدردشة</option><option value="unban">رفع الحظر</option></select><button class="primary-button" type="submit"><i class="fa-solid fa-shield-halved"></i> تطبيق</button></form></section></div><section class="admin-chat-setting-card"><h4><i class="fa-solid fa-gauge-high"></i> قواعد الدردشة</h4><form id="apChatRulesForm"><label class="admin-chat-switch"><span><b>الوضع البطيء</b><small>مهلة بين رسالة وأخرى لكل طالب</small></span><select name="slow" id="apSlow"><option value="0">متوقف</option><option value="5">5 ثوانٍ</option><option value="15">15 ثانية</option><option value="30">30 ثانية</option><option value="60">دقيقة</option></select></label><label class="admin-chat-switch"><span><b>منع الروابط</b><small>رفض أي رسالة تحتوي رابطاً</small></span><input id="apBlockLinks" type="checkbox"></label><button class="primary-button" type="submit"><i class="fa-solid fa-check"></i> حفظ القواعد</button></form></section><section class="admin-chat-setting-card ap-chat-feed"><h4><i class="fa-solid fa-eye"></i> مراقبة الرسائل</h4><div id="apChatFeed" class="ap-rows"><div class="admin-empty">جارٍ التحميل</div></div><button class="outline-button" type="button" id="apChatFeedRefresh"><i class="fa-solid fa-arrows-rotate"></i><span>تحديث الرسائل</span></button></section><section class="admin-chat-setting-card admin-chat-message-card"><h4><i class="fa-solid fa-bullhorn"></i> إرسال رسالة لجميع المستخدمين</h4><form id="adminChatMessageForm" class="admin-internal-notification-form"><label>العنوان<input name="title" maxlength="120" required placeholder="مثلاً: تنبيه مهم في الدردشة"></label><label>الرسالة<textarea name="body" rows="3" maxlength="2000" required placeholder="اكتب الرسالة..."></textarea></label><button class="primary-button" type="submit"><i class="fa-solid fa-paper-plane"></i> إرسال للجميع</button></form></section><section class="admin-chat-setting-card"><h4><i class="fa-solid fa-chart-line"></i> الأكثر نشاطاً</h4><div id="adminChatTopUsers" class="admin-chat-top-users"><div class="admin-empty">جارٍ تحميل الإحصائيات</div></div></section></section></section>
         
+        <div class="ap-sheet hidden" id="apUsersSheet" role="dialog" aria-modal="true" aria-label="مستخدمو التطبيق"><header class="ap-sheet-head"><button type="button" class="ap-sheet-back" data-ap-sheet-close aria-label="رجوع"><i class="fa-solid fa-chevron-right"></i></button><div><h3>مستخدمو التطبيق</h3><small id="apUsersCount">0 مستخدم</small></div></header><div class="ap-sheet-tools"><input id="apUsersSearch" type="search" placeholder="ابحث بالاسم أو البريد أو المعرّف" autocomplete="off"><select id="apUsersFilter"><option value="all">الكل</option><option value="verified">الموثّقون</option><option value="banned">المحظورون</option></select></div><div class="ap-sheet-list" id="apUsersList"><div class="admin-empty">جارٍ التحميل</div></div></div>
         <section class="admin-tab-panel" id="adminVerifyPanel" data-admin-panel="verify" role="tabpanel"><section class="admin-workspace-section panel ap-card"><header class="admin-section-header"><div><span class="eyebrow">إدارة الحسابات</span><h3>طلبات التوثيق</h3><p>راجع الطلبات الواردة ثم اقبلها أو ارفضها، ويصل الرد للطالب في محادثة الدعم.</p></div><span class="ap-count" id="apVerifyCount">0</span></header><div id="apVerifyRows" class="ap-rows"><div class="admin-empty">جارٍ التحميل</div></div></section></section>
 
         <section class="admin-tab-panel" id="adminToolsPanel" data-admin-panel="tools" role="tabpanel"><section class="admin-workspace-section panel ap-card"><header class="admin-section-header"><div><span class="eyebrow">أدوات سريعة</span><h3>مولّد أكواد الوصول المميز (VIP)</h3><p>أنشئ كوداً لأستاذ أو ملف مدفوع وانسخه للطالب مباشرة.</p></div><span class="ap-ico vip"><i class="fa-solid fa-crown"></i></span></header><form id="apCodeForm" class="ap-form"><label>النوع<select name="type"><option value="teacher_bundle">باقة أستاذ كاملة</option><option value="file">ملف واحد</option></select></label><label>الهدف<select name="target" id="apCodeTarget" required><option value="">جارٍ تحميل الكتالوج…</option></select></label><div class="ap-form-row"><label>عدد مرات الاستخدام<input name="max_uses" type="number" min="1" max="1000" value="1"></label><label>تاريخ الانتهاء (اختياري)<input name="expires" type="date"></label></div><button class="primary-button" type="submit"><i class="fa-solid fa-wand-magic-sparkles"></i> توليد الكود</button><div id="apCodeResult" class="ap-result hidden"></div></form></section>
@@ -4222,8 +4223,10 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
       button.setAttribute('aria-selected', String(isActive));
     });
     // صفحة واحدة متصلة: كل الأقسام ظاهرة، والتنقل بالتمرير إلى القسم
-    $$('#adminWorkspace [data-admin-panel]').forEach(panel => { panel.hidden = false; panel.classList.add('is-active'); });
-    if (scroll) $(`#adminWorkspace [data-admin-panel="${activeAdminTab}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // كل قسم يعرض وظيفته فقط ويخفي بقية الأقسام
+    $$('#adminWorkspace [data-admin-panel]').forEach(panel => { const on = panel.dataset.adminPanel === activeAdminTab; panel.hidden = !on; panel.classList.toggle('is-active', on); });
+    const library = $('.admin-notification-library'); if (library) library.hidden = activeAdminTab !== 'notifications';
+    if (scroll) $('#apNav')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     void loadAdminTabData(activeAdminTab);
   }
 
@@ -4313,13 +4316,62 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
     try { const map = JSON.parse(localStorage.getItem('nabd_exam_dates') || '{}'); map[key] = new Date(value).toISOString(); localStorage.setItem('nabd_exam_dates', JSON.stringify(map)); } catch {}
     toast('تم تحديث موعد الامتحان لكل الطلاب.');
   }
+
+  /* ---------- دليل المستخدمين ---------- */
+  let apUsers = [];
+  const VT_LABEL = { verified: 'موثّق', admin: 'أدمن', teacher: 'أستاذ', developer: 'مطوّر' };
+  const badgeFor = u => u.is_verified ? `<span class="verified-badge vb-${VT_LABEL[u.verification_type] ? u.verification_type : 'verified'}" title="${VT_LABEL[u.verification_type] || 'موثّق'}"><i class="fa-solid fa-check"></i></span>` : '';
+  async function openUsersSheet() {
+    const sheet = $('#apUsersSheet'); if (!sheet) return; sheet.classList.remove('hidden'); document.body.classList.add('ap-sheet-open');
+    const list = $('#apUsersList'); list.innerHTML = '<div class="admin-empty">جارٍ التحميل</div>';
+    const { data, error } = await supabaseClient.rpc('admin_users_directory', { p_limit: 1000 });
+    if (error || !Array.isArray(data)) { console.warn('تعذر تحميل دليل المستخدمين', error); list.innerHTML = '<div class="admin-empty">تعذر تحميل المستخدمين. تأكد من تطبيق ملف قاعدة البيانات الخاص بالتوثيق.</div>'; return; }
+    apUsers = data; renderUsersSheet();
+  }
+  function renderUsersSheet() {
+    const q = String($('#apUsersSearch')?.value || '').trim().toLowerCase(); const filter = $('#apUsersFilter')?.value || 'all';
+    const rows = apUsers.filter(u => (filter === 'verified' ? u.is_verified : filter === 'banned' ? u.is_banned : true) && (!q || [u.name, u.email, u.user_id].some(x => String(x || '').toLowerCase().includes(q))));
+    $('#apUsersCount').textContent = `${apUsers.length} مستخدم` + (rows.length !== apUsers.length ? ` · ${rows.length} نتيجة` : '');
+    const list = $('#apUsersList');
+    if (!rows.length) { list.innerHTML = '<div class="admin-empty">لا توجد نتائج.</div>'; return; }
+    list.innerHTML = rows.slice(0, 200).map(u => {
+      const id = escapeHTML(u.user_id); const short = escapeHTML(String(u.user_id).slice(0, 8).toUpperCase());
+      const avatar = u.avatar_url ? `<img src="${escapeHTML(u.avatar_url)}" alt="" loading="lazy">` : `<span>${escapeHTML((u.name || 'ط').trim().charAt(0))}</span>`;
+      return `<article class="ap-user ${u.is_banned ? 'is-banned' : ''}" data-uid="${id}"><div class="ap-user-top"><span class="ap-user-av">${avatar}</span><div class="ap-user-main"><b>${escapeHTML(u.name)} ${badgeFor(u)}</b><small dir="ltr">${escapeHTML(u.email || '')}</small><small>المعرّف: <span dir="ltr">${short}</span>${u.is_banned ? ' · <em class="ap-banned">محظور</em>' : ''}</small></div></div>
+        <div class="ap-user-actions"><a class="ap-btn blue" href="chat.html?profile=${id}"><i class="fa-regular fa-user"></i> الملف</a><a class="ap-btn blue" href="chat.html?dm=${id}"><i class="fa-regular fa-comment-dots"></i> مراسلة</a><button type="button" class="ap-btn ${u.is_banned ? 'ok' : 'no'}" data-u-ban="${u.is_banned ? '0' : '1'}"><i class="fa-solid fa-user-slash"></i> ${u.is_banned ? 'رفع الحظر' : 'حظر'}</button></div>
+        <div class="ap-user-verify"><select data-u-type aria-label="نوع التوثيق"><option value="verified">موثّق</option><option value="admin">أدمن</option><option value="teacher">أستاذ</option><option value="developer">مطوّر</option></select><button type="button" class="ap-btn ok" data-u-verify><i class="fa-solid fa-circle-check"></i> ${u.is_verified ? 'تحديث النوع' : 'توثيق'}</button>${u.is_verified ? '<button type="button" class="ap-btn gray" data-u-unverify><i class="fa-solid fa-ban"></i> إلغاء التوثيق</button>' : ''}</div></article>`;
+    }).join('');
+    $$('#apUsersList .ap-user').forEach(card => { const u = apUsers.find(x => x.user_id === card.dataset.uid); const sel = $('[data-u-type]', card); if (u && sel && u.verification_type) sel.value = u.verification_type; });
+  }
+  async function handleUserAction(button) {
+    const card = button.closest('.ap-user'); const user = apUsers.find(x => x.user_id === card?.dataset.uid); if (!user) return;
+    button.disabled = true;
+    if (button.matches('[data-u-ban]')) {
+      const banned = button.dataset.uBan === '1';
+      if (banned && !window.confirm(`حظر ${user.name} من الدردشة؟`)) { button.disabled = false; return; }
+      const { error } = await supabaseClient.rpc('chat_admin_ban_user', { p_user_ref: user.user_id, p_banned: banned, p_reason: null, p_expires_at: null });
+      if (error) { button.disabled = false; return toast('تعذر تنفيذ الإجراء.'); }
+      user.is_banned = banned; toast(banned ? 'تم حظر المستخدم.' : 'تم رفع الحظر.');
+    } else {
+      const verify = button.matches('[data-u-verify]'); const type = $('[data-u-type]', card)?.value || 'verified';
+      if (!verify && !window.confirm(`إلغاء توثيق ${user.name}؟`)) { button.disabled = false; return; }
+      const { error } = await supabaseClient.rpc('admin_set_verified', { p_user_id: user.user_id, p_verified: verify, p_type: type });
+      if (error) { button.disabled = false; console.warn(error); return toast('تعذر التنفيذ: تأكد من تطبيق ملف قاعدة البيانات.'); }
+      user.is_verified = verify; user.verification_type = verify ? type : null; toast(verify ? `تم التوثيق (${VT_LABEL[type]}).` : 'تم إلغاء التوثيق.');
+    }
+    renderUsersSheet();
+  }
   function bindPortalExtras() {
     document.addEventListener('click', async event => {
+      if (event.target.closest('.overview-users')) { event.preventDefault(); void openUsersSheet(); return; }
+      if (event.target.closest('[data-ap-sheet-close]')) { $('#apUsersSheet')?.classList.add('hidden'); document.body.classList.remove('ap-sheet-open'); return; }
+      const ua = event.target.closest('[data-u-ban],[data-u-verify],[data-u-unverify]'); if (ua) { event.preventDefault(); void handleUserAction(ua); return; }
       const v = event.target.closest('[data-verify-act]'); if (v) { event.preventDefault(); void handleVerifyAction(v); return; }
       const del = event.target.closest('[data-chat-del]'); if (del) { event.preventDefault(); if (!window.confirm('حذف هذه الرسالة؟')) return; del.disabled = true; const { error } = await supabaseClient.rpc('chat_moderate_delete_message', { p_message: del.dataset.chatDel }); if (error) { del.disabled = false; return toast('تعذر حذف الرسالة.'); } toast('تم حذف الرسالة.'); void loadChatFeed(); return; }
       const copy = event.target.closest('[data-copy-code]'); if (copy) { try { await navigator.clipboard.writeText(copy.dataset.copyCode); toast('تم نسخ الكود.'); } catch { toast('تعذر النسخ.'); } return; }
       if (event.target.closest('#apChatFeedRefresh')) void loadChatFeed();
     });
+    $('#apUsersSearch')?.addEventListener('input', renderUsersSheet); $('#apUsersFilter')?.addEventListener('change', renderUsersSheet);
     $('#apCodeForm')?.addEventListener('submit', event => { event.preventDefault(); void submitCodeForm(event.currentTarget); });
     $('#apCodeForm')?.elements.type.addEventListener('change', fillCodeTargets);
     $('#apExamForm')?.addEventListener('submit', event => { event.preventDefault(); void submitExamForm(event.currentTarget); });

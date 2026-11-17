@@ -1142,9 +1142,10 @@ body[data-page="profile"] .student-profile-services{order:6!important;display:gr
           <header class="profile-section-head profile-section-heading"><div><span>بيانات الحساب</span><h3 class="section-title"><i class="fa-regular fa-id-card"></i> معلومات الطالب</h3></div><div class="profile-details-tools"><button class="profile-details-toggle" id="profileDetailsToggle" type="button" aria-expanded="false"><span>عرض</span><i class="fa-solid fa-chevron-down"></i></button></div></header>
           <div class="profile-details-body" id="profileDetailsBody"><div class="info-row"><span><i class="fa-solid fa-user"></i> الاسم الكامل</span><b id="profileNameData">—</b></div><div class="info-row"><span><i class="fa-solid fa-user-tie"></i> اسم الأب</span><b id="profileFather">—</b></div><div class="info-row"><span><i class="fa-solid fa-graduation-cap"></i> المرحلة الدراسية</span><b id="profileStageData">—</b></div><div class="info-row"><span><i class="fa-solid fa-envelope"></i> البريد الإلكتروني</span><b id="profileEmail">—</b></div><div class="info-row"><span><i class="fa-solid fa-phone"></i> رقم الهاتف</span><b id="profilePhone">—</b></div><div class="info-row"><span><i class="fa-solid fa-location-dot"></i> المنطقة</span><b id="profileCity">—</b></div><div class="info-row"><span><i class="fa-solid fa-cake-candles"></i> تاريخ الميلاد</span><b id="profileBirth">—</b></div></div>
         </section>
-        <button class="pf-dev" type="button" id="devCredit" data-dev-open><img src="assets/nabd-logo.jpg" alt=""><span>تم تطوير التطبيق بواسطة <b>Ali Haj Hussuin</b></span><i class="fa-solid fa-chevron-left"></i></button>
+
 
       </div>
+      <button class="pf-dev" type="button" id="devCredit" data-dev-open><img src="assets/nabd-logo.jpg" alt=""><span>تم تطوير التطبيق بواسطة <b>Ali Haj Hussuin</b></span><i class="fa-solid fa-chevron-left"></i></button>
     </main></div>
   </div>
   <nav class="bottom-nav" id="bottomNav"></nav>
@@ -1705,8 +1706,9 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
     }
   }
 
-  function verifiedBadgeMarkup(verified = false) {
-    return verified ? '<span class="verified-badge" role="img" aria-label="حساب موثّق" title="حساب موثّق"><i class="fa-solid fa-check"></i></span>' : '';
+  function verifiedBadgeMarkup(verified = false, type = '') {
+    const labels = { admin: 'مشرف موثّق', teacher: 'أستاذ موثّق', developer: 'مطوّر المنصة' }; const kind = labels[type] ? type : 'verified'; const label = labels[kind] || 'حساب موثّق';
+    return verified ? `<span class="verified-badge vb-${kind}" role="img" aria-label="${label}" title="${label}"><i class="fa-solid fa-check"></i></span>` : '';
   }
 
   let verifiedSynced = false;
@@ -1714,10 +1716,11 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
     if (verifiedSynced || !supabaseClient || !currentAuthUser?.id) return;
     verifiedSynced = true;
     try {
-      const { data, error } = await supabaseClient.from('student_profiles').select('is_verified').eq('user_id', currentAuthUser.id).maybeSingle();
+      const { data, error } = await supabaseClient.from('student_profiles').select('is_verified,verification_type').eq('user_id', currentAuthUser.id).maybeSingle();
       if (error || !data) return; // العمود غير موجود بعد: نبقى على الحالة المحلية
       const status = data.is_verified === true ? 'approved' : (student.verificationStatus === 'approved' ? '' : student.verificationStatus);
-      if (status !== student.verificationStatus) { student.verificationStatus = status; saveState(); updateProfileUI?.(); }
+      const vtype = data.is_verified === true ? (data.verification_type || 'verified') : '';
+      if (status !== student.verificationStatus || vtype !== (student.verificationType || '')) { student.verificationStatus = status; student.verificationType = vtype; saveState(); updateProfileUI?.(); }
     } catch { /* تجاهل */ }
   }
 
@@ -1996,7 +1999,7 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
     };
     Object.entries(values).forEach(([id, text]) => { const element = $('#' + id); if (element) element.textContent = text; });
     const profileName = $('#profileName');
-    if (profileName) profileName.innerHTML = `${escapeHTML(fullName())}${verifiedBadgeMarkup(student.verificationStatus === 'approved')}`;
+    if (profileName) profileName.innerHTML = `${escapeHTML(fullName())}${verifiedBadgeMarkup(student.verificationStatus === 'approved', student.verificationType)}`;
     const stage = $('#profileStage');
     if (stage) stage.innerHTML = `<i class="fa-solid fa-location-dot"></i> ${escapeHTML([student.city, student.stage].filter(Boolean).join(' ▪ '))}`;
     const birth = $('#profileBirth');

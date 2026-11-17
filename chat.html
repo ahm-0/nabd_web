@@ -3900,6 +3900,7 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
      renderPrivateConversations();
      updatePrivateChatBadges();
      renderChatPage(); setChatLoading(false); void refreshChatAfterSession();
+     try { const q = new URLSearchParams(location.search); const pu = q.get('profile'), du = q.get('dm'); if (pu || du) window.setTimeout(() => { if (pu) void openChatProfile(pu); else void openPrivateChat(du); }, 1500); } catch {}
     $('#chatForm')?.addEventListener('submit', event => { event.preventDefault(); sendLocalChatMessage(event.currentTarget); });
     $('#chatReplyCancel')?.addEventListener('click', () => { chatReplyTarget = null; clearChatReply(); });
     $('#chatActionMenu [data-chat-edit]')?.addEventListener('click', editChatMessage); $('#chatActionMenu [data-chat-delete]')?.addEventListener('click', deleteChatMessage); $('#chatActionMenu [data-chat-pin-action]')?.addEventListener('click', () => { const message = remotePublicChatMessages.find(item => item.id === activeChatMessageId); closeChatActionMenu(); if (message?.remoteId) void toggleChatPin(message.remoteId); }); $$('#chatActionMenu [data-chat-reaction-option]').forEach(button => button.addEventListener('click', () => setChatReaction(button.dataset.chatReactionOption))); $$('#chatReactionMenu [data-chat-reaction-option]').forEach(button => button.addEventListener('click', () => setChatReaction(button.dataset.chatReactionOption)));

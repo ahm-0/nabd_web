@@ -470,9 +470,8 @@ body[data-page="profile"] .pf-tabs .is-active::after { content: ""; position: ab
 }
 
 /* ---------- 24) شريط المطوّر: سطر واحد نحيف في آخر الصفحة ---------- */
-html[data-theme] body[data-page="profile"] .pf-dev { order: 99 !important; }
 body[data-page="profile"] .pf-dev {
-  width: 100%; max-width: 640px; margin: 6px auto 0; box-sizing: border-box; display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px;
+  width: 100%; max-width: 640px; margin: 18px auto calc(104px + env(safe-area-inset-bottom)); box-sizing: border-box; display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px;
   border-radius: 12px; border: 1px solid var(--np-line); background: color-mix(in srgb, var(--np-card-b) 70%, transparent); color: var(--np-muted);
   font-family: inherit; font-size: 11px; line-height: 1; cursor: pointer; text-align: start; white-space: nowrap; overflow: hidden;
 }
