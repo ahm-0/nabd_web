@@ -1,0 +1,79 @@
+/* ==========================================================================
+   بوابة المشرفين — تصميم مميز بلا تقطيع (بنفسجي/وردي/برتقالي كبطاقة الإعدادات)
+   ========================================================================== */
+body[data-page="supervision"] {
+  --ap-a: #151e40; --ap-b: #0c1330; --ap-line: rgba(160,150,255,.16); --ap-text: #f6f7ff; --ap-muted: rgba(205,212,255,.66);
+  --ap-grad: linear-gradient(135deg, #7b3ff2 0%, #d6409f 58%, #ff8a3d 100%);
+}
+html[data-theme="light"] body[data-page="supervision"] { --ap-a: #ffffff; --ap-b: #f5f3ff; --ap-line: rgba(90,60,180,.14); --ap-text: #1b1740; --ap-muted: #61608a; }
+html body[data-page="supervision"] .app { animation: none !important; transform: none !important; }
+body[data-page="supervision"] .admin-users-main { padding-inline: 14px !important; }
+
+/* رأس البوابة */
+body[data-page="supervision"] .admin-compact-header {
+  display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 12px; min-height: 0 !important;
+  margin: 6px 0 14px !important; padding: 14px 16px !important; border-radius: 22px !important; border: 0 !important; color: #fff;
+  background: var(--ap-grad) !important; box-shadow: 0 12px 28px rgba(150,60,220,.32); overflow: visible !important;
+}
+body[data-page="supervision"] .admin-compact-title { display: flex; align-items: center; gap: 12px; min-width: 0; }
+body[data-page="supervision"] .admin-compact-title .admin-live-dot { width: 10px; height: 10px; border-radius: 50%; background: #5cffb0; box-shadow: 0 0 0 4px rgba(92,255,176,.28); flex: none; }
+body[data-page="supervision"] .admin-compact-title .eyebrow { color: rgba(255,255,255,.82) !important; font-size: 11.5px; }
+body[data-page="supervision"] .admin-compact-title h2 { margin: 2px 0 0; font-size: 19px; font-weight: 800; color: #fff !important; line-height: 1.3; }
+body[data-page="supervision"] .admin-sections-menu summary {
+  display: inline-flex !important; align-items: center; gap: 8px; height: 42px; padding: 0 14px; border-radius: 14px; list-style: none; cursor: pointer;
+  background: rgba(255,255,255,.22) !important; color: #fff !important; border: 1px solid rgba(255,255,255,.3) !important; font-size: 13.5px; font-weight: 700;
+}
+body[data-page="supervision"] .admin-sections-menu summary::-webkit-details-marker { display: none; }
+
+/* بطاقات الأرقام: 2×2 واضحة */
+body[data-page="supervision"] .admin-overview-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; }
+body[data-page="supervision"] .admin-overview-card {
+  display: flex !important; align-items: center; gap: 12px; min-width: 0; padding: 14px 12px !important; border-radius: 20px !important;
+  border: 1px solid var(--ap-line) !important; background: linear-gradient(180deg, var(--ap-a), var(--ap-b)) !important; box-shadow: none !important;
+}
+body[data-page="supervision"] .admin-overview-card > span { width: 42px; height: 42px; flex: none; border-radius: 14px; display: grid; place-items: center; font-size: 17px; color: #fff; }
+body[data-page="supervision"] .overview-users > span { background: linear-gradient(145deg, #6cb4ff, #3a6fe0); }
+body[data-page="supervision"] .overview-posts > span { background: linear-gradient(145deg, #a98bff, #6a4ff0); }
+body[data-page="supervision"] .overview-comments > span { background: linear-gradient(145deg, #ff8fb1, #e0407a); }
+body[data-page="supervision"] .overview-support > span { background: linear-gradient(145deg, #6fe6b8, #1fae80); }
+body[data-page="supervision"] .admin-overview-card > div { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+body[data-page="supervision"] .admin-overview-card small { font-size: 11.5px; line-height: 1.4; color: var(--ap-muted); white-space: normal; }
+body[data-page="supervision"] .admin-overview-card b { font-size: 24px; font-weight: 800; line-height: 1.15; color: var(--ap-text); }
+body[data-page="supervision"] .admin-overview-card em { font-style: normal; font-size: 11px; color: var(--ap-muted); }
+
+/* لوحة الإحصائيات */
+body[data-page="supervision"] .admin-analytics-panel { border-radius: 24px !important; border: 1px solid var(--ap-line) !important; background: linear-gradient(180deg, var(--ap-a), var(--ap-b)) !important; padding: 16px 14px !important; }
+body[data-page="supervision"] .admin-analytics-panel .admin-section-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+body[data-page="supervision"] .admin-analytics-panel .admin-section-header p { margin: 4px 0 0; font-size: 12.5px; line-height: 1.6; color: var(--ap-muted); }
+body[data-page="supervision"] .admin-analytics-panel h3 { margin: 2px 0 0; font-size: 18px; color: var(--ap-text); }
+body[data-page="supervision"] .admin-analytics-badge { flex: none; white-space: nowrap; padding: 5px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; background: rgba(92,255,176,.14); color: #3fe39a; }
+
+/* أزرار المؤشرات: شبكة 2×2 بلا تداخل */
+body[data-page="supervision"] .admin-analytics-switcher { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; overflow: visible !important; margin-bottom: 14px; }
+body[data-page="supervision"] .admin-analytics-chip {
+  display: grid !important; grid-template-columns: 34px minmax(0, 1fr); grid-template-areas: "i t" "i s"; column-gap: 10px; align-items: center; justify-items: start;
+  min-width: 0; width: 100%; padding: 10px 12px !important; border-radius: 16px !important; text-align: start; font-family: inherit; cursor: pointer;
+  border: 1px solid var(--ap-line) !important; background: var(--ap-b) !important; color: var(--ap-text) !important; box-shadow: none !important;
+}
+body[data-page="supervision"] .admin-analytics-chip > span { grid-area: i; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; font-size: 14px; background: rgba(150,130,255,.16); color: #a98bff; }
+body[data-page="supervision"] .admin-analytics-chip b { grid-area: t; font-size: 13.5px; font-weight: 800; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+body[data-page="supervision"] .admin-analytics-chip small { grid-area: s; font-size: 10.5px; line-height: 1.3; color: var(--ap-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+body[data-page="supervision"] .admin-analytics-chip.is-active { border-color: transparent !important; background: var(--ap-grad) !important; color: #fff !important; }
+body[data-page="supervision"] .admin-analytics-chip.is-active > span { background: rgba(255,255,255,.24); color: #fff; }
+body[data-page="supervision"] .admin-analytics-chip.is-active small { color: rgba(255,255,255,.85); }
+
+/* بطاقة المخطط: ارتفاع ثابت، لا يقطعها الشريط السفلي */
+body[data-page="supervision"] .admin-analytics-chart-card { border-radius: 20px !important; border: 1px solid var(--ap-line) !important; background: var(--ap-b) !important; padding: 14px !important; overflow: hidden; }
+body[data-page="supervision"] .admin-analytics-chart-card > header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+body[data-page="supervision"] .admin-chart-bars { position: relative; height: 240px; }
+body[data-page="supervision"] .admin-chart-bars canvas { width: 100% !important; height: 100% !important; }
+body[data-page="supervision"] .admin-analytics-footnote { margin: 12px 2px 0; font-size: 11.5px; line-height: 1.7; color: var(--ap-muted); }
+body[data-page="supervision"] .admin-users-main { padding-bottom: calc(120px + env(safe-area-inset-bottom)) !important; }
+
+/* إصلاحات دقيقة */
+body[data-page="supervision"] .admin-overview-card { flex-direction: row !important; text-align: start; }
+body[data-page="supervision"] .admin-overview-card > span { position: static !important; margin: 0 !important; }
+body[data-page="supervision"] .admin-sections-menu summary i { position: static !important; margin: 0 !important; font-size: 14px; }
+body[data-page="supervision"] .admin-sections-menu summary span { position: static !important; }
+body[data-page="supervision"] .admin-analytics-chip small { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+body[data-page="supervision"] .admin-sections-menu summary { width: auto !important; min-width: 0 !important; flex-direction: row-reverse; gap: 10px !important; padding-inline: 16px !important; }

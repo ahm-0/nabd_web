@@ -469,17 +469,17 @@ body[data-page="profile"] .pf-tabs .is-active::after { content: ""; position: ab
   body[data-page="profile"] .topbar .brand, body[data-page="home"] .topbar .brand { min-width: 0; flex: 1 1 auto; }
 }
 
-/* ---------- 24) بطاقة المطوّر ---------- */
-html[data-theme] body[data-page="profile"] .pf-dev { order: 8 !important; }
+/* ---------- 24) شريط المطوّر: سطر واحد نحيف في آخر الصفحة ---------- */
+html[data-theme] body[data-page="profile"] .pf-dev { order: 99 !important; }
 body[data-page="profile"] .pf-dev {
-  width: 100%; max-width: 640px; margin: 4px auto 0; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 12px 14px;
-  border-radius: 18px; border: 1px solid var(--np-line); background: linear-gradient(180deg, var(--np-card-a), var(--np-card-b)); color: var(--np-muted);
-  font-family: inherit; font-size: 12.5px; cursor: pointer; text-align: start;
+  width: 100%; max-width: 640px; margin: 6px auto 0; box-sizing: border-box; display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px;
+  border-radius: 12px; border: 1px solid var(--np-line); background: color-mix(in srgb, var(--np-card-b) 70%, transparent); color: var(--np-muted);
+  font-family: inherit; font-size: 11px; line-height: 1; cursor: pointer; text-align: start; white-space: nowrap; overflow: hidden;
 }
-body[data-page="profile"] .pf-dev img { width: 30px; height: 30px; border-radius: 10px; object-fit: cover; flex: none; }
-body[data-page="profile"] .pf-dev span { flex: 1; }
-body[data-page="profile"] .pf-dev b { color: var(--np-text); font-weight: 800; direction: ltr; unicode-bidi: isolate; }
-body[data-page="profile"] .pf-dev i { font-size: 11px; }
+body[data-page="profile"] .pf-dev img { width: 20px; height: 20px; border-radius: 6px; object-fit: cover; flex: none; }
+body[data-page="profile"] .pf-dev span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+body[data-page="profile"] .pf-dev b { color: var(--np-text); font-weight: 700; direction: ltr; unicode-bidi: isolate; }
+body[data-page="profile"] .pf-dev i { font-size: 10px; opacity: .7; }
 .dev-card { display: grid; gap: 12px; padding: 4px 2px 2px; text-align: start; }
 .dev-card p { margin: 0; line-height: 1.8; font-size: 14px; }
 .dev-list { margin: 0; padding: 0; list-style: none; counter-reset: d; display: grid; gap: 8px; }
