@@ -1103,16 +1103,18 @@ body[data-page="profile"] .student-profile-services{order:6!important;display:gr
 
 
         <section class="profile-card panel profile-hero-card">
-          <h2 class="profile-name-top" id="profileName">الطالب</h2>
           <div class="profile-hero-row">
+            <div class="profile-hero-info">
+              <h2 class="profile-name-top" id="profileName">الطالب</h2>
+              <div class="profile-id-row"><span class="profile-id-label">معرّف الطالب</span><b id="profileHandle">—</b><button type="button" class="profile-copy-id" id="copyStudentId" aria-label="نسخ معرّف الطالب" title="نسخ المعرّف"><i class="fa-regular fa-copy"></i></button></div>
+              <section class="profile-stats profile-stat-cards" aria-label="ملخص النشاط الدراسي">
+                <a class="profile-stat-card" href="time-organizer.html"><b id="profileStreak">1</b><small>أيام التزام <i class="fa-solid fa-fire" style="color:#ff8a3d"></i></small></a>
+                <a class="profile-stat-card" href="time-organizer.html"><b id="profileActiveTasks">0</b><small>جلسة مذاكرة</small></a>
+                <a class="profile-stat-card" href="news.html"><b id="profilePosts">0</b><small>نقطة تفوق</small></a>
+              </section>
+            </div>
             <div class="avatar-wrap profile-avatar-wrap"><button class="profile-note-bubble" type="button" data-profile-edit>تحدث عن ما جرى</button><div class="profile-avatar" id="profileAvatar">ن</div><label for="avatarInput" class="avatar-edit" title="رفع صورة الملف الشخصي" aria-label="رفع صورة الملف الشخصي"><i class="fa-solid fa-plus"></i></label><input class="hidden" id="avatarInput" type="file" accept="image/*"></div>
-            <section class="profile-stats profile-stat-cards" aria-label="ملخص النشاط الدراسي">
-              <a class="profile-stat-card" href="time-organizer.html"><b id="profileStreak">1</b><small>أيام التزام <i class="fa-solid fa-fire" style="color:#ff8a3d"></i></small></a>
-              <a class="profile-stat-card" href="time-organizer.html"><b id="profileActiveTasks">0</b><small>جلسة مذاكرة</small></a>
-              <a class="profile-stat-card" href="news.html"><b id="profilePosts">0</b><small>نقطة تفوق</small></a>
-            </section>
           </div>
-          <div class="profile-id-row"><span class="profile-id-label">معرّف الطالب</span><b id="profileHandle">—</b><button type="button" class="profile-copy-id" id="copyStudentId" aria-label="نسخ معرّف الطالب" title="نسخ المعرّف"><i class="fa-regular fa-copy"></i></button></div>
           <span class="profile-stage" id="profileStage"><i class="fa-solid fa-location-dot"></i> المرحلة الدراسية</span>
           <p class="profile-bio" id="profileBio">أضف نبذة بسيطة لتظهر في مجتمع الأخبار.</p>
           <button class="profile-completion hidden" id="completeProfile"><i class="fa-solid fa-sparkles"></i><span><b>أكمل بيانات ملفك الشخصي</b><small>أضف الاسم ورقم الهاتف والمعلومات الأساسية لتخصيص التطبيق.</small></span><i class="fa-solid fa-arrow-left"></i></button>

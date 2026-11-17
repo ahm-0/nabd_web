@@ -566,3 +566,34 @@ html[data-theme] body[data-page="profile"] div#profileAvatar.profile-avatar {
   background: #4c7d4a !important; background-image: none !important; box-shadow: none !important; filter: none !important;
 }
 html[data-theme] body[data-page="profile"] .profile-note-bubble { font-size: 11px !important; padding: 5px 11px; }
+
+/* ---------- 26) ترتيب الهيدر: الصورة يساراً، الاسم بجانبها، المعرّف بخط أصغر تحته، ثم الأرقام ---------- */
+html[data-theme] body[data-page="profile"] .profile-hero-row {
+  grid-template-columns: minmax(0, 1fr) 108px; align-items: start; gap: 14px; margin-top: 34px;
+}
+html[data-theme] body[data-page="profile"] .profile-hero-info { min-width: 0; text-align: start; padding-top: 2px; }
+html[data-theme] body[data-page="profile"] .profile-name-top { margin: 0; font-size: 21px; text-align: start; line-height: 1.35; }
+html[data-theme] body[data-page="profile"] .profile-id-row { justify-content: flex-start; margin: 4px 0 16px; gap: 6px; flex-wrap: nowrap; }
+html[data-theme] body[data-page="profile"] .profile-id-label { font-size: 11px; }
+html[data-theme] body[data-page="profile"] #profileHandle { font-size: 12.5px; font-weight: 600; color: var(--np-muted); letter-spacing: .3px; }
+html[data-theme] body[data-page="profile"] .profile-copy-id { width: 26px; height: 26px; border-radius: 9px; font-size: 12px; }
+/* الأرقام بلا بطاقة، على الجهة المقابلة للصورة */
+html[data-theme] body[data-page="profile"] .profile-hero-info .profile-stats {
+  background: transparent !important; border: 0 !important; box-shadow: none !important;
+  padding: 0 !important; gap: 4px !important; justify-content: space-between; align-self: auto;
+}
+html[data-theme] body[data-page="profile"] .profile-hero-info .profile-stat-card { align-items: flex-start !important; text-align: start !important; padding: 0 !important; }
+html[data-theme] body[data-page="profile"] .profile-hero-info .profile-stat-card b { font-size: 20px !important; }
+html[data-theme] body[data-page="profile"] .profile-hero-info .profile-stat-card small { white-space: normal; line-height: 1.3; }
+/* الصورة على اليسار: زر + أسفلها يساراً، والفقاعة فوقها */
+html[data-theme] body[data-page="profile"] .profile-hero-row .avatar-edit { inset-inline-end: 4px !important; inset-inline-start: auto !important; }
+html[data-theme] body[data-page="profile"] .profile-note-bubble { inset-inline-start: auto; inset-inline-end: 0; }
+/* الموقع والنبذة بمحاذاة البداية */
+html[data-theme] body[data-page="profile"] .profile-stage { justify-content: flex-start; margin-top: 14px; }
+html[data-theme] body[data-page="profile"] .profile-bio { text-align: start; margin: 8px 0 0; }
+/* إصلاح القص: الصورة داخل حدود الصفحة، وتسميات الأرقام بلا قص للهمزات */
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap { justify-self: end; width: 108px; height: 108px; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar { box-sizing: border-box !important; width: 104px !important; height: 104px !important; }
+html[data-theme] body[data-page="profile"] .profile-hero-info .profile-stat-card { overflow: visible !important; min-width: 0; }
+html[data-theme] body[data-page="profile"] .profile-hero-info .profile-stat-card small { line-height: 1.55 !important; white-space: normal !important; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap { width: 108px !important; min-width: 108px !important; height: 108px !important; justify-self: stretch !important; }
