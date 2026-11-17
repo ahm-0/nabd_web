@@ -485,3 +485,84 @@ html[data-theme] body[data-page="profile"] .profile-details-card .profile-detail
 html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap {
   background: transparent !important; box-shadow: none !important; padding: 0 !important; display: grid; place-items: center; justify-self: center;
 }
+
+/* ---------- 25) نسخة طبق الأصل عن المرجع ---------- */
+/* خلفية النقاط كما في الرئيسية */
+html[data-theme] body[data-page="profile"] {
+  background-image: radial-gradient(rgba(130, 160, 255, .14) 1px, transparent 1.2px) !important;
+  background-size: 22px 22px !important; background-repeat: repeat !important;
+}
+html[data-theme="light"] body[data-page="profile"] { background-image: radial-gradient(rgba(60, 90, 200, .10) 1px, transparent 1.2px) !important; }
+
+/* الهوية بلا إطار: العناصر مباشرة على الخلفية */
+html[data-theme] body[data-page="profile"] .profile-hero-card {
+  background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; margin: 0 0 14px !important; overflow: visible !important;
+}
+html[data-theme] body[data-page="profile"] .profile-name-top { margin: 0 0 30px; font-size: 22px; }
+html[data-theme] body[data-page="profile"] .profile-hero-row { grid-template-columns: 108px minmax(0, 1fr); gap: 14px; margin-top: 0; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap { width: 108px; height: 108px; position: relative; overflow: visible; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar {
+  width: 104px !important; height: 104px !important; font-size: 46px !important; font-weight: 600;
+  border: 3px solid #4b86f5 !important; box-shadow: none !important;
+}
+html[data-theme] body[data-page="profile"] .profile-hero-row div.profile-avatar { background: #4c7d4a !important; color: #fff !important; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .avatar-edit {
+  width: 34px !important; height: 34px !important; font-size: 14px; bottom: -2px !important; background: #4b86f5 !important; border: 3px solid var(--np-bg) !important;
+}
+/* فقاعة "تحدث عن ما جرى" فوق الصورة */
+html[data-theme] body[data-page="profile"] .profile-note-bubble {
+  position: absolute; top: -26px; inset-inline-end: -4px; z-index: 2; white-space: nowrap;
+  padding: 6px 12px; border-radius: 14px; border: 1px solid var(--np-line); background: var(--np-card-b);
+  color: var(--np-text); font: 600 11.5px/1.2 inherit; cursor: pointer;
+}
+/* بطاقة الإحصائيات */
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stats {
+  padding: 14px 6px !important; border-radius: 22px !important; align-self: center;
+}
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card { padding: 2px !important; gap: 6px; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card b { font-size: 21px !important; line-height: 1; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card small { font-size: 10.5px !important; color: var(--np-muted) !important; white-space: nowrap; display: block; }
+/* المعرّف والموقع والنبذة */
+html[data-theme] body[data-page="profile"] .profile-id-row { margin: 16px 0 6px; }
+html[data-theme] body[data-page="profile"] .profile-stage {
+  display: flex; justify-content: center; gap: 6px; padding: 0; background: none !important; border-radius: 0;
+  color: var(--np-accent); font-size: 14.5px; font-weight: 700; margin: 8px 0 0;
+}
+html[data-theme] body[data-page="profile"] .profile-bio { color: var(--np-text); opacity: .88; font-size: 14px; margin: 10px 4px 0; }
+/* البطاقات الثلاث */
+html[data-theme] body[data-page="profile"] .profile-feature-cards { margin: 0 0 14px; gap: 10px; order: 4 !important; }
+html[data-theme] body[data-page="profile"] .profile-feature { padding: 14px 6px 12px; gap: 8px; border-radius: 20px; }
+html[data-theme] body[data-page="profile"] .profile-feature-icon { width: 40px; height: 40px; border-radius: 12px; font-size: 17px; }
+html[data-theme] body[data-page="profile"] .profile-feature b { font-size: 15.5px; line-height: 1.2; }
+html[data-theme] body[data-page="profile"] .profile-feature small { font-size: 11.5px; line-height: 1.2; }
+/* التبويبات بخط سفلي */
+html[data-theme] body[data-page="profile"] .profile-ref-tabs {
+  order: 5 !important; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 4px 0 14px; border-bottom: 1px solid var(--np-line);
+}
+html[data-theme] body[data-page="profile"] .profile-ref-tabs > * {
+  position: relative; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 4px 14px; background: none; border: 0; font: 700 15.5px/1 inherit; color: var(--np-muted); text-decoration: none; cursor: pointer;
+}
+html[data-theme] body[data-page="profile"] .profile-ref-tabs .is-active { color: var(--np-accent); }
+html[data-theme] body[data-page="profile"] .profile-ref-tabs .is-active::after {
+  content: ""; position: absolute; inset-inline: 14%; bottom: -1px; height: 3px; border-radius: 3px; background: var(--np-accent);
+}
+/* تصحيحات: أرقام بلا مربعات، خط الفقاعة والتبويبات، الصورة الخضراء بلا توهج */
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-stat-card b {
+  background: none !important; width: auto !important; height: auto !important; min-width: 0 !important;
+  padding: 0 !important; border-radius: 0 !important; box-shadow: none !important; color: var(--np-text) !important;
+}
+html[data-theme] body[data-page="profile"] .profile-note-bubble {
+  font-family: inherit; font-size: 11.5px; font-weight: 600; line-height: 1.2;
+  inset-inline-start: 0; inset-inline-end: auto; top: -30px;
+}
+html[data-theme] body[data-page="profile"] .profile-ref-tabs > * { font-family: inherit; font-size: 15.5px; font-weight: 700; line-height: 1; }
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap div.profile-avatar {
+  background-image: none !important; background-color: #4c7d4a !important; box-shadow: none !important; filter: none !important;
+}
+html[data-theme] body[data-page="profile"] .profile-hero-row .profile-avatar-wrap { filter: none !important; }
+html[data-theme] body[data-page="profile"] div#profileAvatar.profile-avatar {
+  background: #4c7d4a !important; background-image: none !important; box-shadow: none !important; filter: none !important;
+}
+html[data-theme] body[data-page="profile"] .profile-note-bubble { font-size: 11px !important; padding: 5px 11px; }
