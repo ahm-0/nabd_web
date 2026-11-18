@@ -7,7 +7,7 @@
   --other-bg:#112a4c;--other-text:#eaf4ff;--other-meta:#8fb0d6;
   --sheet:#0d2140;--hover:rgba(14,165,233,.09);--shadow:0 10px 30px rgba(0,0,0,.35);
   --app-h:100dvh;--safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px);
-  --font:Cairo,"Segoe UI",Tahoma,system-ui,-apple-system,"Noto Sans Arabic",sans-serif;
+  --font:"Noto Sans Arabic","Segoe UI",Roboto,Arial,sans-serif; /* نفس الخط الافتراضي لبقية أقسام التطبيق (--app-font) */
 }
 :root[data-theme=light]{
   --bg:#eef6fd;--panel:#fff;--panel2:#e3f0fb;--text:#07192e;--muted:#4a6785;--line:rgba(14,165,233,.2);
@@ -16,7 +16,7 @@
   --other-bg:#fff;--other-text:#07192e;--other-meta:#6a86a3;--sheet:#fff;--hover:rgba(2,132,199,.07);--shadow:0 10px 30px rgba(7,25,46,.18);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font);overscroll-behavior:none}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font);font-weight:400;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 input,textarea{font:inherit;color:inherit}
 .ic{width:22px;height:22px;flex:none;display:block}
