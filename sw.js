@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-18-support-reactions-v31';
+const CACHE_VERSION = '2026-11-18-news-profile-v32';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -62,6 +62,7 @@ const APP_SHELL = [
   './nabd-profile.css',
   './nabd-settings.css',
   './nabd-whatsapp.css',
+  './nabd-news.css',
   './nabd-support-chat.js',
   './nabd-admin-portal.css',
   './nabd-smooth.js',

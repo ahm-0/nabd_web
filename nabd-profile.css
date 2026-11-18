@@ -489,3 +489,37 @@ body[data-page="profile"] .pf-dev i { font-size: 10px; opacity: .7; }
 .dev-btn { display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; border-radius: 14px; color: #fff !important; font-weight: 800; font-size: 14px; text-decoration: none; }
 .dev-btn.wa { background: linear-gradient(135deg, #2fd16f, #128c4a); }
 .dev-btn.ig { background: linear-gradient(135deg, #feda75, #d62976 55%, #4f5bd5); }
+
+/* ---------- 25) تصغير الخطوط والأيقونات + شريط المطوّر في آخر الصفحة ---------- */
+html[data-theme] body[data-page="profile"] .main-content { display: flex !important; flex-direction: column; min-height: calc(100dvh - 120px); padding-bottom: 0 !important; box-sizing: border-box; }
+html[data-theme] body[data-page="profile"] .profile-mobile-shell { flex: 1 0 auto; }
+html[data-theme] body[data-page="profile"] .pf-dev { margin: 14px auto 0 !important; flex: none; }
+body[data-page="profile"] .pf-head { --pf-av: 82px; }
+body[data-page="profile"] .pf-main { gap: 12px; }
+body[data-page="profile"] .pf-name { font-size: 17px; }
+body[data-page="profile"] .pf-id { font-size: 10.5px; margin-top: 2px; }
+body[data-page="profile"] .pf-id b { font-size: 11.5px; }
+body[data-page="profile"] .pf-copy { width: 22px; height: 22px; border-radius: 8px; font-size: 10.5px; }
+body[data-page="profile"] .pf-stats { margin-top: 10px; }
+body[data-page="profile"] .pf-stat b { font-size: 16px; }
+body[data-page="profile"] .pf-stat small { font-size: 9.5px; }
+body[data-page="profile"] .pf-note { font-size: 9.5px; padding: 3px 7px; }
+html[data-theme] body[data-page="profile"] .pf-ring #profileAvatar { font-size: 32px; border-width: 2.5px !important; }
+body[data-page="profile"] .pf-plus { width: 26px; height: 26px; font-size: 11px; border-width: 2.5px; }
+body[data-page="profile"] .pf-location { margin-top: 12px; font-size: 12px; }
+body[data-page="profile"] .pf-bio { margin-top: 6px; font-size: 12px; line-height: 1.7; }
+body[data-page="profile"] .pf-cards { gap: 8px; }
+body[data-page="profile"] .pf-card { padding: 9px 4px 8px; gap: 4px; border-radius: 16px; }
+body[data-page="profile"] .pf-card-ico { width: 30px; height: 30px; border-radius: 10px; font-size: 13px; }
+body[data-page="profile"] .pf-card b { font-size: 13px; }
+body[data-page="profile"] .pf-card small { font-size: 9.5px; }
+body[data-page="profile"] .pf-tabs > * { padding: 10px 2px 11px; font-size: 12.5px; gap: 5px; }
+body[data-page="profile"] .pf-tabs i { font-size: 12px; }
+html[data-theme] body[data-page="profile"] .student-progress-panel { font-size: 12px; }
+html[data-theme] body[data-page="profile"] .student-progress-panel h3 { font-size: 14px; }
+html[data-theme] body[data-page="profile"] .student-progress-panel i { font-size: 12px; }
+html[data-theme] body[data-page="profile"] .profile-details-card h3 { font-size: 14px; }
+html[data-theme] body[data-page="profile"] .profile-details-card { font-size: 12px; }
+html[data-theme] body[data-page="profile"] .profile-details-card i { font-size: 12px; }
+body[data-page="profile"] .greet-row { font-size: 12px; }
+body[data-page="profile"] .greet-row .greet-btn i, body[data-page="profile"] .greet-row button i, body[data-page="profile"] .greet-row a i { font-size: 13px; }

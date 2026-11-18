@@ -1,0 +1,77 @@
+/* ==========================================================================
+   الأخبار — تصميم موجز متصل (feed) بنفس لغة الرئيسية والملف الشخصي
+   ========================================================================== */
+body[data-page="news"] {
+  --nw-bg: #070b1a; --nw-a: #121a38; --nw-b: #0c1330; --nw-line: rgba(150,170,255,.12); --nw-text: #f5f7ff; --nw-muted: rgba(200,212,255,.62); --nw-accent: #6cb4ff;
+  background-color: var(--nw-bg) !important;
+  background-image: radial-gradient(rgba(130,160,255,.13) 1px, transparent 1.2px), radial-gradient(70% 28% at 50% -4%, rgba(60,110,255,.24), transparent 72%) !important;
+  background-size: 22px 22px, 100% 100% !important; background-repeat: repeat, no-repeat !important; color: var(--nw-text);
+}
+html[data-theme="light"] body[data-page="news"] { --nw-bg: #eef2fb; --nw-a: #ffffff; --nw-b: #f6f8ff; --nw-line: rgba(40,60,140,.11); --nw-text: #141a33; --nw-muted: #5b6588; --nw-accent: #2f6fe0; background-image: radial-gradient(rgba(60,90,200,.09) 1px, transparent 1.2px), radial-gradient(70% 28% at 50% -4%, rgba(60,110,255,.12), transparent 72%) !important; }
+html body[data-page="news"] .app { animation: none !important; transform: none !important; background: transparent !important; padding-inline: 0 !important; }
+body[data-page="news"] .layout, body[data-page="news"] .news-material-main { padding: 0 !important; margin: 0 auto !important; max-width: 640px !important; width: 100% !important; background: transparent !important; }
+
+/* شريط علوي زجاجي ثابت */
+body[data-page="news"] .topbar {
+  position: fixed !important; top: calc(10px + env(safe-area-inset-top)); inset-inline: 12px; z-index: 40; max-width: 616px; margin-inline: auto !important; height: 56px; padding: 0 10px !important;
+  border-radius: 22px !important; border: 1px solid var(--nw-line) !important; background: color-mix(in srgb, var(--nw-b) 88%, transparent) !important; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: none !important;
+}
+
+/* رأس الصفحة */
+body[data-page="news"] .nw-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: calc(84px + env(safe-area-inset-top)) 16px 12px; }
+body[data-page="news"] .nw-head h2 { margin: 0; font-size: 22px; font-weight: 800; color: var(--nw-text); }
+body[data-page="news"] .nw-head p { margin: 2px 0 0; font-size: 12px; color: var(--nw-muted); }
+body[data-page="news"] .nw-live { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 11px; border-radius: 14px; font-size: 11.5px; font-weight: 700; color: #3fe39a; background: rgba(63,227,154,.12); }
+body[data-page="news"] .nw-live i { font-size: 7px; animation: nwBlink 1.6s infinite; }
+@keyframes nwBlink { 50% { opacity: .35; } }
+
+/* الموجز: منشورات متصلة بخطوط فاصلة، بلا بطاقات عائمة */
+body[data-page="news"] .news-shell { padding: 0 0 calc(120px + env(safe-area-inset-bottom)) !important; }
+body[data-page="news"] #feed { display: block; }
+body[data-page="news"] #feed .post {
+  margin: 0 !important; padding: 14px 16px 6px !important; border: 0 !important; border-top: 1px solid var(--nw-line) !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; animation: none !important;
+}
+body[data-page="news"] #feed .post:first-child { border-top: 1px solid var(--nw-line) !important; }
+body[data-page="news"] .post-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+body[data-page="news"] .post-head .avatar { width: 40px !important; height: 40px !important; flex: none; border-radius: 50% !important; object-fit: cover; font-size: 16px; }
+body[data-page="news"] .post-author { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+body[data-page="news"] .post-author-name { display: flex; align-items: center; gap: 2px; font-size: 14.5px; font-weight: 800; color: var(--nw-text); }
+body[data-page="news"] .post-author > span { font-size: 11px; color: var(--nw-muted); }
+body[data-page="news"] .post-menu { margin-inline-start: auto; width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: var(--nw-muted); }
+body[data-page="news"] #feed .post > p, body[data-page="news"] .post-text { margin: 0 0 10px; font-size: 14.5px; line-height: 1.85; color: var(--nw-text); overflow-wrap: anywhere; }
+body[data-page="news"] .post-images { display: grid; gap: 4px; margin: 0 0 10px; border-radius: 16px; overflow: hidden; border: 1px solid var(--nw-line); }
+body[data-page="news"] .post-images.multiple { grid-template-columns: 1fr 1fr; }
+body[data-page="news"] .post-images img { width: 100%; max-height: 360px; object-fit: cover; display: block; border-radius: 0; }
+body[data-page="news"] .post-media-indicator:empty { display: none; }
+body[data-page="news"] .post-media-indicator { font-size: 11px; color: var(--nw-muted); margin: -4px 0 8px; }
+body[data-page="news"] .post-insights { display: flex; gap: 14px; padding: 2px 0 8px; font-size: 11.5px; color: var(--nw-muted); }
+body[data-page="news"] .post-tools { display: flex; align-items: center; justify-content: space-between; margin: 0 -8px; padding: 2px 0; border-top: 1px solid var(--nw-line); }
+body[data-page="news"] .post-tools .tool-button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 40px; border: 0; border-radius: 10px; background: transparent; color: var(--nw-muted); font-family: inherit; font-size: 12.5px; box-shadow: none; }
+body[data-page="news"] .post-tools .tool-button i { font-size: 14px; }
+body[data-page="news"] .post-tools .tool-button.liked { color: #ff5c7a; }
+body[data-page="news"] .post-tools .tool-button:active { background: rgba(134,150,200,.12); }
+body[data-page="news"] .comments { padding: 4px 0 10px; }
+body[data-page="news"] .comments.hidden { display: none; }
+body[data-page="news"] .comment { display: flex; gap: 8px; padding: 8px 0; }
+body[data-page="news"] .comment > div { flex: 1; min-width: 0; padding: 8px 12px; border-radius: 14px; background: var(--nw-a); }
+body[data-page="news"] .comment b { font-size: 12.5px; color: var(--nw-text); }
+body[data-page="news"] .comment p { margin: 2px 0 0; font-size: 13px; line-height: 1.7; color: var(--nw-text); opacity: .9; }
+body[data-page="news"] .comment-avatar { width: 30px !important; height: 30px !important; flex: none; border-radius: 50% !important; display: grid; place-items: center; font-size: 12px; background: #4c7d4a; color: #fff; object-fit: cover; }
+body[data-page="news"] .comment-actions { display: flex; gap: 12px; margin-top: 4px; }
+body[data-page="news"] .comment-actions button { border: 0; background: none; padding: 0; font-family: inherit; font-size: 11px; color: var(--nw-muted); }
+body[data-page="news"] .comment-form { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+body[data-page="news"] .comment-form input { flex: 1; min-width: 0; height: 40px; padding: 0 14px; border: 1px solid var(--nw-line); border-radius: 20px; background: var(--nw-a); color: var(--nw-text); font-family: inherit; font-size: 13px; outline: none; }
+body[data-page="news"] .comment-form button { flex: none; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--nw-accent); color: #fff; }
+
+/* شريط نشر خبر (للمشرف): نحيف أعلى الشريط السفلي */
+body[data-page="news"] .news-composer-dock { position: fixed; inset-inline: 10px; bottom: calc(86px + env(safe-area-inset-bottom)); z-index: 30; max-width: 620px; margin-inline: auto; }
+body[data-page="news"] .news-composer-dock .compose { padding: 8px 10px !important; border-radius: 20px !important; border: 1px solid var(--nw-line) !important; background: color-mix(in srgb, var(--nw-b) 92%, transparent) !important; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 8px 24px rgba(0,0,0,.35) !important; }
+body[data-page="news"] .compose-dock-head label { font-size: 11.5px; color: var(--nw-muted); }
+body[data-page="news"] .compose-dock-head .avatar { width: 24px !important; height: 24px !important; font-size: 11px; }
+body[data-page="news"] #postText { font-size: 14px; }
+body[data-page="news"] .nw-head p { font-size: 12px !important; line-height: 1.5 !important; color: var(--nw-muted) !important; }
+body[data-page="news"] .nw-head h2 { font-size: 22px !important; }
+body[data-page="news"] #feed .news-empty, body[data-page="news"] #feed > div:not(.post) { margin: 24px 16px; border-radius: 20px !important; }
+body[data-page="news"] .post-tools { background: transparent !important; border-radius: 0 !important; border-inline: 0 !important; border-bottom: 0 !important; box-shadow: none !important; padding: 0 !important; margin: 0 -8px !important; }
+body[data-page="news"] .post-insights { border: 0 !important; background: transparent !important; padding-inline: 0 !important; }
+body[data-page="news"] .post-tools .tool-button, body[data-page="news"] .post-tools .tool-button.liked { background: transparent !important; border: 0 !important; box-shadow: none !important; border-radius: 10px !important; }
