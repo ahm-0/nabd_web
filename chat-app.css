@@ -228,3 +228,5 @@ input,textarea{font:inherit;color:inherit}
   .msgs{padding-inline:max(14px,calc((100% - 760px)/2))}
 }
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+.verified.vk-verified{background:linear-gradient(145deg,#3aa0ff,#1565e0)}.verified.vk-admin{background:linear-gradient(145deg,#ff5b6b,#d6182f)}.verified.vk-teacher{background:linear-gradient(145deg,#38d39f,#0c9a68)}.verified.vk-developer{background:linear-gradient(145deg,#a478ff,#6a33e6)}.verified{margin-inline-start:4px}

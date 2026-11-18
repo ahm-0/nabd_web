@@ -118,6 +118,11 @@
   document.addEventListener('pointerdown', event => { if (!event.target.closest('#menu, #listMenuBtn')) closeMenu(); }, true);
 
   /* ───────── الملفات والصور المصغّرة ───────── */
+  const VT_TITLE = { admin: 'مشرف موثّق', teacher: 'أستاذ موثّق', developer: 'مطوّر المنصة' };
+  function badgeHTML(p) {
+    if (p?.ver) { const t = VT_TITLE[p.vt] ? p.vt : 'verified'; return `<i class="verified vk-${t}" title="${VT_TITLE[t] || 'حساب موثّق'}">✓</i>`; }
+    return p?.mod ? '<i class="verified" title="مشرف">✓</i>' : '';
+  }
   function putProfile(row) {
     const id = row.user_id || row.id; if (!id) return null;
     const prev = S.profiles.get(id) || {};
@@ -128,6 +133,8 @@
       province: row.province ?? prev.province ?? '',
       bio: row.bio ?? prev.bio ?? '',
       mod: row.is_moderator ?? prev.mod ?? false,
+      ver: row.is_verified ?? prev.ver ?? false,
+      vt: row.verification_type ?? prev.vt ?? '',
       has: row.has_avatar ?? prev.has ?? false
     };
     S.profiles.set(id, profile);
@@ -205,7 +212,7 @@
 
   /* ───────── تعيين الصفوف إلى رسائل ───────── */
   function mapPub(row) {
-    putProfile({ user_id: row.sender_id, first_name: row.first_name, father_name: row.father_name, family_name: row.family_name, study_stage: row.study_stage, avatar_thumb: row.avatar_thumb, has_avatar: row.has_avatar, is_moderator: row.is_moderator });
+    putProfile({ user_id: row.sender_id, first_name: row.first_name, father_name: row.father_name, family_name: row.family_name, study_stage: row.study_stage, avatar_thumb: row.avatar_thumb, has_avatar: row.has_avatar, is_moderator: row.is_moderator, is_verified: row.is_verified, verification_type: row.verification_type });
     return {
       id: row.id, scope: 'public', sid: row.sender_id, body: row.body, at: row.created_at, edited: !!row.edited_at, pinned: !!row.pinned_at,
       rid: row.reply_to_id, rbody: row.reply_body, rname: row.reply_name, reacts: row.reactions || {}, my: row.my_reaction || null
@@ -302,7 +309,7 @@
     let h = `<div class="row ${mine ? 'mine' : 'other'} ${first ? 'first' : ''} ${isNew ? 'new' : ''}" data-id="${esc(m.id)}" style="--h:${hueOf(m.sid)}">`;
     if (pub && !mine) h += `<div class="av-col">${last ? `<button type="button" data-profile="${esc(m.sid)}" aria-label="الملف">${avatarHTML(m.sid, nameOf(m.sid), 'sm')}</button>` : ''}</div>`;
     h += '<div class="bubble">';
-    if (pub && !mine && first) { const p = S.profiles.get(m.sid); h += `<div class="who-name" data-profile="${esc(m.sid)}">${esc(nameOf(m.sid))}${p?.mod ? '<i class="verified" title="مشرف">✓</i>' : ''}</div>`; }
+    if (pub && !mine && first) { const p = S.profiles.get(m.sid); h += `<div class="who-name" data-profile="${esc(m.sid)}">${esc(nameOf(m.sid))}${badgeHTML(p)}</div>`; }
     if (m.rid || m.rbody) {
       const list = cur()?.msgs;
       h += `<button type="button" class="quote" data-goto="${esc(m.rid || '')}"><b>${esc(replyName(m, list) || 'رسالة')}</b><span>${esc(m.rbody || 'رسالة غير متاحة')}</span></button>`;
@@ -411,9 +418,9 @@
   }
 
   /* ───────── فتح المحادثات (التوجيه) ───────── */
-  function setHeader({ avatar, title, sub, mod }) {
+  function setHeader({ avatar, title, sub, mod, ver, vt }) {
     E.chatAv.innerHTML = avatar;
-    E.chatTitle.innerHTML = `${esc(title)}${mod ? '<i class="verified">✓</i>' : ''}`;
+    E.chatTitle.innerHTML = `${esc(title)}${badgeHTML({ mod, ver, vt })}`;
     E.chatSub.textContent = sub || ''; E.chatSub.classList.remove('typing');
   }
   function statsText() { return S.stats.total ? `${S.stats.total} عضو · ${S.stats.online} متصل الآن` : 'مجتمع الطلاب'; }
@@ -505,7 +512,7 @@
     enterConversation(); showPinned(); applyPlatform();
     const paintHeader = () => {
       const p = S.profiles.get(userId) || {}, conv = S.convs.find(c => c.other_user_id === userId);
-      setHeader({ avatar: avatarHTML(userId, p.name || conv?.other_name, 'xs'), title: p.name || conv?.other_name || 'مستخدم', sub: p.stage || 'محادثة خاصة', mod: p.mod || conv?.other_is_moderator });
+      setHeader({ avatar: avatarHTML(userId, p.name || conv?.other_name, 'xs'), title: p.name || conv?.other_name || 'مستخدم', sub: p.stage || 'محادثة خاصة', mod: p.mod || conv?.other_is_moderator, ver: p.ver, vt: p.vt });
     };
     paintHeader(); renderMsgs({ stick: true }); renderList();
     joinTyping(thread.id);
@@ -674,7 +681,7 @@
     await ensureProfiles([userId]);
     const p = S.profiles.get(userId); if (!p) return toast('معلومات هذا الطالب غير متاحة');
     const self = userId === S.uid, inThread = S.view.type === 'private' && S.view.userId === userId;
-    openSheet(`<div class="profile-sheet">${avatarHTML(userId, p.name, 'xl')}<h3>${esc(p.name || 'طالب')}${p.mod ? '<i class="verified" title="مشرف">✓</i>' : ''}</h3><div class="sub">${esc([p.stage, p.province].filter(Boolean).join(' · ') || 'نبض التفوق')}</div><p>${esc(p.bio || 'لا توجد نبذة مضافة.')}</p>${self || inThread ? '' : `<button class="btn block" type="button" id="startPrivate">${ic('lock')} مراسلة خاصة</button>`}</div>`);
+    openSheet(`<div class="profile-sheet">${avatarHTML(userId, p.name, 'xl')}<h3>${esc(p.name || 'طالب')}${badgeHTML(p)}</h3><div class="sub">${esc([p.stage, p.province].filter(Boolean).join(' · ') || 'نبض التفوق')}</div><p>${esc(p.bio || 'لا توجد نبذة مضافة.')}</p>${self || inThread ? '' : `<button class="btn block" type="button" id="startPrivate">${ic('lock')} مراسلة خاصة</button>`}</div>`);
     E.sheet.onclick = event => { if (event.target.closest('#startPrivate')) closeSheet(() => { location.hash = `#/u/${encodeURIComponent(userId)}`; }); };
   }
 

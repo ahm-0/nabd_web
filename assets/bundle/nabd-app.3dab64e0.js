@@ -492,11 +492,26 @@
     }
   }
 
-  function verifiedBadgeMarkup(verified = false) {
-    return verified ? '<span class="verified-badge" role="img" aria-label="حساب موثّق" title="حساب موثّق"><i class="fa-solid fa-check"></i></span>' : '';
+  function verifiedBadgeMarkup(verified = false, type = '') {
+    const labels = { admin: 'مشرف موثّق', teacher: 'أستاذ موثّق', developer: 'مطوّر المنصة' }; const kind = labels[type] ? type : 'verified'; const label = labels[kind] || 'حساب موثّق';
+    return verified ? `<span class="verified-badge vb-${kind}" role="img" aria-label="${label}" title="${label}"><i class="fa-solid fa-check"></i></span>` : '';
+  }
+
+  let verifiedSynced = false;
+  async function syncVerifiedFlag() {
+    if (verifiedSynced || !supabaseClient || !currentAuthUser?.id) return;
+    verifiedSynced = true;
+    try {
+      const { data, error } = await supabaseClient.from('student_profiles').select('is_verified,verification_type').eq('user_id', currentAuthUser.id).maybeSingle();
+      if (error || !data) return;
+      const status = data.is_verified === true ? 'approved' : (student.verificationStatus === 'approved' ? '' : student.verificationStatus);
+      const vtype = data.is_verified === true ? (data.verification_type || 'verified') : '';
+      if (status !== student.verificationStatus || vtype !== (student.verificationType || '')) { student.verificationStatus = status; student.verificationType = vtype; saveState(); try { updateProfileUI(); } catch { /* تجاهل */ } }
+    } catch { /* تجاهل */ }
   }
 
   async function revealPremiumAdminShortcut() {
+    void syncVerifiedFlag();
     const shortcuts = $$('#premiumAdminHomeShortcut, #adminPortalShortcut');
     if (!shortcuts.length || adminShortcutChecked || !supabaseClient || !currentAuthUser) return;
     try {
@@ -764,7 +779,7 @@
     };
     Object.entries(values).forEach(([id, text]) => { const element = $('#' + id); if (element) element.textContent = text; });
     const profileName = $('#profileName');
-    if (profileName) profileName.innerHTML = `${escapeHTML(fullName())}${verifiedBadgeMarkup(student.verificationStatus === 'approved')}`;
+    if (profileName) profileName.innerHTML = `${escapeHTML(fullName())}${verifiedBadgeMarkup(student.verificationStatus === 'approved', student.verificationType)}`;
     const stage = $('#profileStage');
     if (stage) stage.innerHTML = `<i class="fa-solid fa-graduation-cap"></i> ${escapeHTML(student.stage)}`;
     const birth = $('#profileBirth');
@@ -901,7 +916,7 @@
       images: Array.isArray(row.images) ? row.images : [],
       likes: Number(row.like_count || 0),
       liked: Boolean(row.liked_by_me),
-      comments: Array.isArray(row.comments) ? row.comments.map(comment => ({ id: comment.id, authorId: comment.author_id || '', parentId: comment.parent_id || comment.parentId || '', name: comment.name || 'طالب نبض', meta: comment.meta || 'مجتمع الأخبار', text: comment.text || '', mine: Boolean(currentAuthUser && comment.author_id === currentAuthUser.id), verified: false, createdAt: comment.created_at })) : [],
+      comments: Array.isArray(row.comments) ? row.comments.map(comment => ({ id: comment.id, authorId: comment.author_id || '', parentId: comment.parent_id || comment.parentId || '', name: comment.name || 'طالب نبض', meta: comment.meta || 'مجتمع الأخبار', text: comment.text || '', mine: Boolean(currentAuthUser && comment.author_id === currentAuthUser.id), verified: Boolean(comment.verified), vtype: comment.vtype || '', createdAt: comment.created_at })) : [],
       remote: true,
       mine: Boolean(currentAuthUser && row.author_id === currentAuthUser.id),
       verified: true,
@@ -980,7 +995,7 @@
       ? `<div class="post-images ${(post.images || []).length > 1 ? 'multiple' : ''}">${post.images.map(src => `<img loading="lazy" src="${escapeHTML(src)}" alt="صورة مرفقة بالمنشور">`).join('')}</div><div class="post-media-indicator">${post.images.length > 1 ? `<i class="fa-solid fa-images"></i> اسحب لمشاهدة الصور ${post.images.length}` : ''}</div>`
       : '';
     const rootComments = post.comments.filter(comment => !comment.parentId);
-    const comments = rootComments.map(comment => { const commentVerified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified); const commentAvatar = comment.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((comment.name || 'ط')[0])}</span>`; const replyCount = post.comments.filter(reply => reply.parentId === comment.id).length; return `<div class="comment">${commentAvatar}<div><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(commentVerified)}</b><p>${newsLinkMarkup(comment.text)}</p>${commentActionsMarkup(comment, post.id, replyCount)}</div></div>`; }).join('');
+    const comments = rootComments.map(comment => { const commentVerified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified); const commentAvatar = comment.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((comment.name || 'ط')[0])}</span>`; const replyCount = post.comments.filter(reply => reply.parentId === comment.id).length; return `<div class="comment">${commentAvatar}<div><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(commentVerified, comment.vtype)}</b><p>${newsLinkMarkup(comment.text)}</p>${commentActionsMarkup(comment, post.id, replyCount)}</div></div>`; }).join('');
     const menu = newsIsAdmin ? `<button class="post-menu" type="button" data-action="post-menu" title="إدارة الخبر" aria-label="إدارة الخبر"><i class="fa-solid fa-ellipsis-vertical"></i></button>` : '';
     return `<article class="post ${likePulsePosts.has(post.id) ? 'like-pulse' : ''}" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong class="post-author-name"><span>${escapeHTML(post.name)}</span>${verifiedBadgeMarkup(verified)}</strong><span>${escapeHTML(post.meta || `${student.stage} · ${student.city}`)} · الآن</span></div>${menu}</div>${newsTextMarkup(post)}${images}<div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
   }
@@ -995,13 +1010,13 @@
   function commentItemMarkup(comment, postId, replies = []) {
     const verified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified);
     const avatar = comment.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((comment.name || 'ط')[0])}</span>`;
-    return `<article class="comment-thread-item" data-comment-id="${escapeHTML(comment.id || '')}"><div class="comment-thread-head">${avatar}<div><b>${escapeHTML(comment.name || 'طالب نبض')}${verifiedBadgeMarkup(verified)}</b><small>${escapeHTML(comment.meta || 'مجتمع الأخبار')}</small></div></div><p>${newsLinkMarkup(comment.text || '')}</p>${commentActionsMarkup(comment, postId, replies.length)}</article>`;
+    return `<article class="comment-thread-item" data-comment-id="${escapeHTML(comment.id || '')}"><div class="comment-thread-head">${avatar}<div><b>${escapeHTML(comment.name || 'طالب نبض')}${verifiedBadgeMarkup(verified, comment.vtype)}</b><small>${escapeHTML(comment.meta || 'مجتمع الأخبار')}</small></div></div><p>${newsLinkMarkup(comment.text || '')}</p>${commentActionsMarkup(comment, postId, replies.length)}</article>`;
   }
 
   function commentReplyItemMarkup(comment, postId, replyCount = 0) {
     const verified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified);
     const avatar = comment.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((comment.name || 'ط')[0])}</span>`;
-    return `<article class="comment-thread-item" data-comment-id="${escapeHTML(comment.id || '')}"><div class="comment-thread-head">${avatar}<div><b>${escapeHTML(comment.name || 'طالب نبض')}${verifiedBadgeMarkup(verified)}</b><small>${escapeHTML(comment.meta || 'مجتمع الأخبار')}</small></div></div><p>${newsLinkMarkup(comment.text || '')}</p>${commentActionsMarkup(comment, postId, replyCount)}</article>`;
+    return `<article class="comment-thread-item" data-comment-id="${escapeHTML(comment.id || '')}"><div class="comment-thread-head">${avatar}<div><b>${escapeHTML(comment.name || 'طالب نبض')}${verifiedBadgeMarkup(verified, comment.vtype)}</b><small>${escapeHTML(comment.meta || 'مجتمع الأخبار')}</small></div></div><p>${newsLinkMarkup(comment.text || '')}</p>${commentActionsMarkup(comment, postId, replyCount)}</article>`;
   }
 
   function commentThreadMarkup(post) {
@@ -1030,7 +1045,7 @@
     const parentAvatar = parent.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((parent.name || 'ط')[0])}</span>`;
     const parentVerified = parent.mine ? student.verificationStatus === 'approved' : Boolean(parent.verified);
     const replyHint = replyTo ? `<div class="comment-reply-target"><i class="fa-solid fa-reply"></i><span>رد على <b>${escapeHTML(replyTo.name || 'التعليق')}</b></span><button type="button" data-clear-comment-reply="${escapeHTML(postId)}" data-return-replies="${escapeHTML(parent.id)}" title="إلغاء الرد"><i class="fa-solid fa-xmark"></i></button></div>` : '<div class="comment-reply-target"><i class="fa-solid fa-reply"></i><span>رد على التعليق الأصلي</span></div>';
-    const parentMarkup = `<article class="comment-thread-item comment-replies-origin" data-comment-id="${escapeHTML(parent.id || '')}"><div class="comment-thread-head">${parentAvatar}<div><b>${escapeHTML(parent.name || 'طالب نبض')}${verifiedBadgeMarkup(parentVerified)}</b><small>${escapeHTML(parent.meta || 'مجتمع الأخبار')}</small></div></div><p>${newsLinkMarkup(parent.text || '')}</p>${commentActionsMarkup(parent, postId)}</article>`;
+    const parentMarkup = `<article class="comment-thread-item comment-replies-origin" data-comment-id="${escapeHTML(parent.id || '')}"><div class="comment-thread-head">${parentAvatar}<div><b>${escapeHTML(parent.name || 'طالب نبض')}${verifiedBadgeMarkup(parentVerified, parent.vtype)}</b><small>${escapeHTML(parent.meta || 'مجتمع الأخبار')}</small></div></div><p>${newsLinkMarkup(parent.text || '')}</p>${commentActionsMarkup(parent, postId)}</article>`;
     openModal(`<div class="comment-replies-screen" data-root-comment-id="${escapeHTML(parent.id)}"><div class="modal-head comment-replies-head"><button type="button" class="comment-page-back" data-comments-back="${escapeHTML(postId)}"><i class="fa-solid fa-arrow-right"></i><span>التعليقات</span></button><div class="comments-modal-title"><span class="comment-modal-icon replies-icon"><i class="fa-solid fa-reply"></i></span><div><span class="eyebrow">مجتمع الأخبار</span><h3>الردود</h3><small>${replies.length} رد على التعليق</small></div></div><button class="close-modal" aria-label="إغلاق">×</button></div><section class="comment-replies-body"><div class="comment-replies-label"><i class="fa-solid fa-reply"></i><span>الحوار مستمر هنا</span></div>${parentMarkup}<div class="comment-replies-list">${replyList}</div></section><form class="comment-modal-form" data-post-id="${escapeHTML(postId)}" data-parent-id="${escapeHTML(replyTo?.id || parent.id)}">${replyHint}<div><input name="comment" required maxlength="280" placeholder="اكتب ردك..." autocomplete="off"><button type="submit" title="إرسال الرد"><i class="fa-solid fa-paper-plane"></i></button></div></form></div>`);
   }
 

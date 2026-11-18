@@ -9,7 +9,7 @@ security definer
 set search_path = public, pg_temp
 as $$
 begin
-  if not public.premium_is_admin() then
+  if not private.is_premium_admin() then
     raise exception 'not allowed' using errcode = '42501';
   end if;
   update public.student_profiles
@@ -27,7 +27,7 @@ returns trigger language plpgsql security definer set search_path = public, pg_t
 begin
   if tg_op = 'INSERT' then
     new.is_verified := false; new.verification_type := null;
-  elsif (new.is_verified is distinct from old.is_verified or new.verification_type is distinct from old.verification_type) and not public.premium_is_admin() then
+  elsif (new.is_verified is distinct from old.is_verified or new.verification_type is distinct from old.verification_type) and not private.is_premium_admin() then
     new.is_verified := old.is_verified; new.verification_type := old.verification_type;
   end if;
   return new;
@@ -42,7 +42,7 @@ create or replace function public.admin_users_directory(p_limit integer default 
 returns table(user_id uuid, name text, email text, avatar_url text, stage text, province text, is_verified boolean, verification_type text, is_banned boolean, created_at timestamptz)
 language plpgsql stable security definer set search_path = public, private, pg_temp as $$
 begin
-  if not public.premium_is_admin() then raise exception 'not allowed' using errcode = '42501'; end if;
+  if not private.is_premium_admin() then raise exception 'not allowed' using errcode = '42501'; end if;
   return query
   select au.id,
          coalesce(nullif(trim(concat_ws(' ', sp.first_name, sp.father_name, sp.family_name)), ''), 'طالب نبض'),

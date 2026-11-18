@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-18-exam-card-v34';
+const CACHE_VERSION = '2026-11-19-verify-stats-v35';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 

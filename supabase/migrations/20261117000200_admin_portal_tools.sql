@@ -63,7 +63,7 @@ grant execute on function public.get_exam_dates() to anon, authenticated;
 create or replace function public.admin_set_exam_date(p_key text, p_target timestamptz)
 returns void language plpgsql security definer set search_path = public, private, pg_temp as $$
 begin
-  if not public.premium_is_admin() then raise exception 'not allowed' using errcode = '42501'; end if;
+  if not private.is_premium_admin() then raise exception 'not allowed' using errcode = '42501'; end if;
   if p_key not in ('bac','nine') then raise exception 'invalid key'; end if;
   insert into public.app_exam_dates(key, target, updated_by, updated_at) values (p_key, p_target, auth.uid(), now())
   on conflict (key) do update set target = excluded.target, updated_by = excluded.updated_by, updated_at = now();
@@ -75,7 +75,7 @@ grant execute on function public.admin_set_exam_date(text, timestamptz) to authe
 create or replace function public.admin_verified_count()
 returns integer language plpgsql stable security definer set search_path = public, pg_temp as $$
 begin
-  if not public.premium_is_admin() then raise exception 'not allowed' using errcode = '42501'; end if;
+  if not private.is_premium_admin() then raise exception 'not allowed' using errcode = '42501'; end if;
   return (select count(*)::integer from public.student_profiles where is_verified = true);
 end; $$;
 revoke all on function public.admin_verified_count() from public, anon;
