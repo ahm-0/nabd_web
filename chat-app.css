@@ -230,3 +230,14 @@ input,textarea{font:inherit;color:inherit}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 .verified.vk-verified{background:linear-gradient(145deg,#3aa0ff,#1565e0)}.verified.vk-admin{background:linear-gradient(145deg,#ff5b6b,#d6182f)}.verified.vk-teacher{background:linear-gradient(145deg,#38d39f,#0c9a68)}.verified.vk-developer{background:linear-gradient(145deg,#a478ff,#6a33e6)}.verified{margin-inline-start:4px}
+
+/* رسائل المشرفين: لون مميز وتوهّج ولمعان */
+.row.staff .bubble{background:linear-gradient(135deg,#5b21d6 0%,#b3269f 55%,#f0832a 100%)!important;color:#fff!important;border:1px solid rgba(255,219,120,.65);box-shadow:0 0 0 1px rgba(255,200,87,.25),0 6px 20px rgba(179,38,159,.5),0 0 18px rgba(255,170,60,.35);overflow:hidden;animation:staffGlow 3.2s ease-in-out infinite}
+.row.staff .bubble::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.38) 50%,transparent 65%);transform:translateX(-120%);animation:staffShine 3.6s ease-in-out infinite;pointer-events:none}
+.row.staff .bubble p,.row.staff .bubble .meta,.row.staff .bubble .meta span{color:#fff!important}
+.row.staff .bubble .who-name{color:#ffe08a!important;text-shadow:0 1px 3px rgba(0,0,0,.35)}
+.row.staff .bubble .quote{background:rgba(0,0,0,.22)!important;color:#fff}
+.staff-tag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:900;letter-spacing:.2px;color:#2b1500;background:linear-gradient(135deg,#ffe58a,#ffb84d);padding:1px 7px;border-radius:999px;margin-bottom:3px;box-shadow:0 1px 4px rgba(0,0,0,.3)}.staff-tag i{font-style:normal;font-size:9px}.staff-tag.inline{margin:0 6px 0 0}
+@keyframes staffGlow{0%,100%{box-shadow:0 0 0 1px rgba(255,200,87,.25),0 6px 20px rgba(179,38,159,.5),0 0 14px rgba(255,170,60,.3)}50%{box-shadow:0 0 0 1px rgba(255,200,87,.5),0 6px 24px rgba(179,38,159,.65),0 0 26px rgba(255,170,60,.6)}}
+@keyframes staffShine{0%{transform:translateX(-120%)}55%,100%{transform:translateX(120%)}}
+@media(prefers-reduced-motion:reduce){.row.staff .bubble,.row.staff .bubble::after{animation:none}}

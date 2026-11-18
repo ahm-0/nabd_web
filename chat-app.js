@@ -271,7 +271,7 @@
       const mine = c.last_sender_id === S.uid;
       const preview = c.last_message ? `${mine ? '<b>أنت:</b> ' : ''}${esc(c.last_message)}` : 'ابدأ المحادثة';
       const active = S.view.type === 'private' && S.view.userId === c.other_user_id;
-      return `<button class="conv ${unread ? 'unread' : ''} ${active ? 'active' : ''}" type="button" data-open="${esc(c.other_user_id)}">${avatarHTML(c.other_user_id, c.other_name)}<div class="body"><div class="row1"><span class="name">${esc(c.other_name || 'مستخدم')}${c.other_is_moderator ? '<i class="verified">✓</i>' : ''}</span><span class="time">${listTime(c.last_message_at)}</span></div><div class="row2"><span class="preview">${preview}</span>${unread ? `<span class="count">${unread > 99 ? '99+' : unread}</span>` : ''}</div></div></button>`;
+      return `<button class="conv ${unread ? 'unread' : ''} ${active ? 'active' : ''}" type="button" data-open="${esc(c.other_user_id)}">${avatarHTML(c.other_user_id, c.other_name)}<div class="body"><div class="row1"><span class="name">${esc(c.other_name || 'مستخدم')}${badgeHTML({ mod: c.other_is_moderator, ver: S.profiles.get(c.other_user_id)?.ver, vt: S.profiles.get(c.other_user_id)?.vt })}</span><span class="time">${listTime(c.last_message_at)}</span></div><div class="row2"><span class="preview">${preview}</span>${unread ? `<span class="count">${unread > 99 ? '99+' : unread}</span>` : ''}</div></div></button>`;
     }).join('');
     if (!S.convs.length && !q) html += `<div class="empty">${ic('lock')}<b>لا توجد رسائل خاصة بعد</b><span>اضغط على اسم أي طالب في الدردشة العامة لبدء محادثة خاصة.</span></div>`;
     if (q && !convs.length && !pubName.includes(q)) html = `<div class="empty">${ic('chat')}<b>لا نتائج</b><span>جرّب اسمًا آخر.</span></div>`;
@@ -288,6 +288,9 @@
       // الاسم الكامل جاهز في other_name؛ نحفظه كاسم مباشر
       S.convs.forEach(c => { const p = S.profiles.get(c.other_user_id); if (p) p.name = c.other_name; });
       renderList(); saveCache();
+      // شارات التوثيق للطرف الآخر (استدعاء واحد لكل المحادثات)
+      const ids = S.convs.map(c => c.other_user_id).filter(Boolean);
+      if (ids.length) { try { ((await rpc('chat_get_profiles_v2', { p_user_ids: ids })) || []).forEach(r => { const p = S.profiles.get(r.user_id); if (p) { p.ver = !!r.is_verified; p.vt = r.verification_type || ''; } }); renderList(); } catch { /* تجاهل */ } }
     } catch (error) { console.warn('تعذر تحميل المحادثات الخاصة', error); }
   }
 
@@ -306,10 +309,12 @@
   function rowHTML(m, prev, next, isNew = false) {
     const mine = m.sid === S.uid, pub = m.scope === 'public';
     const first = gap(prev, m), last = gap(m, next);
-    let h = `<div class="row ${mine ? 'mine' : 'other'} ${first ? 'first' : ''} ${isNew ? 'new' : ''}" data-id="${esc(m.id)}" style="--h:${hueOf(m.sid)}">`;
+    const staff = pub && (mine ? S.me.mod : S.profiles.get(m.sid)?.mod);
+    let h = `<div class="row ${mine ? 'mine' : 'other'} ${staff ? 'staff' : ''} ${first ? 'first' : ''} ${isNew ? 'new' : ''}" data-id="${esc(m.id)}" style="--h:${hueOf(m.sid)}">`;
     if (pub && !mine) h += `<div class="av-col">${last ? `<button type="button" data-profile="${esc(m.sid)}" aria-label="الملف">${avatarHTML(m.sid, nameOf(m.sid), 'sm')}</button>` : ''}</div>`;
     h += '<div class="bubble">';
-    if (pub && !mine && first) { const p = S.profiles.get(m.sid); h += `<div class="who-name" data-profile="${esc(m.sid)}">${esc(nameOf(m.sid))}${badgeHTML(p)}</div>`; }
+    if (staff && (mine || !first)) h += '<div class="staff-tag"><i>✦</i> مشرف</div>';
+    if (pub && !mine && first) { const p = S.profiles.get(m.sid); h += `<div class="who-name" data-profile="${esc(m.sid)}">${esc(nameOf(m.sid))}${badgeHTML(p)}${staff ? '<span class="staff-tag inline"><i>✦</i> مشرف</span>' : ''}</div>`; }
     if (m.rid || m.rbody) {
       const list = cur()?.msgs;
       h += `<button type="button" class="quote" data-goto="${esc(m.rid || '')}"><b>${esc(replyName(m, list) || 'رسالة')}</b><span>${esc(m.rbody || 'رسالة غير متاحة')}</span></button>`;
