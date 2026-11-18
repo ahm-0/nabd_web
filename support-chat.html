@@ -1063,6 +1063,7 @@ body[data-page="home"] .home-studio > .home-studio-section{border-inline-start:0
 </script>
 <meta name="nabd-single-file" content="true">
 <link rel="stylesheet" href="nabd-pro.css">
+<link rel="stylesheet" href="nabd-whatsapp.css">
 <script src="nabd-smooth.js" defer></script>
 </head>
 <body data-page="support-chat">
@@ -3632,11 +3633,12 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
     return true;
   }
 
+  function waTime(ts) { try { return new Intl.DateTimeFormat('ar-SY', { hour: 'numeric', minute: '2-digit' }).format(new Date(ts)); } catch { return ''; } }
   function renderSupportChat() {
     const holder = $('#supportChatMessages'); if (!holder) return;
     const ticket = mySupportTicket(); const messages = supportThread(ticket);
     const status = $('#supportChatStatus'); if (status) status.textContent = ticket?.status === 'resolved' ? 'تمت المعالجة' : ticket ? 'الدعم متاح للمتابعة' : 'ابدأ محادثة جديدة';
-    holder.innerHTML = messages.length ? messages.map(message => `<article class="support-message ${message.sender === 'admin' ? 'admin' : 'student'}"><span class="support-message-avatar"><i class="fa-solid ${message.sender === 'admin' ? 'fa-headset' : 'fa-user'}"></i></span><div><p>${escapeHTML(message.text)}</p><small>${message.sender === 'admin' ? 'دعم نبض التفوق' : 'أنت'} · ${displayAdminDate(message.createdAt || message.created_at || Date.now())}</small></div></article>`).join('') : '<div class="support-chat-empty"><i class="fa-regular fa-comments"></i><b>كيف يمكننا مساعدتك؟</b><span>اكتب رسالتك وسيتابعها المشرف من بوابة الدعم.</span></div>';
+    holder.innerHTML = messages.length ? messages.map(message => `<article class="support-message ${message.sender === 'admin' ? 'admin' : 'student'}"><span class="support-message-avatar"><i class="fa-solid ${message.sender === 'admin' ? 'fa-headset' : 'fa-user'}"></i></span><div><p>${escapeHTML(message.text)}</p><small>${waTime(message.createdAt || message.created_at || Date.now())}${message.sender === 'admin' ? '' : ' <i class="fa-solid fa-check-double" style="color:#53bdeb;font-size:9px"></i>'}</small></div></article>`).join('') : '<div class="support-chat-empty"><i class="fa-regular fa-comments"></i><b>كيف يمكننا مساعدتك؟</b><span>اكتب رسالتك وسيتابعها المشرف من بوابة الدعم.</span></div>';
     holder.scrollTop = holder.scrollHeight;
   }
 

@@ -174,3 +174,23 @@ body[data-page="supervision"] .ap-user-verify { display: flex; gap: 8px; align-i
 body[data-page="supervision"] .ap-user-verify select { flex: 1 1 90px; min-width: 0; height: 36px; padding: 0 8px; border-radius: 11px; border: 1px solid var(--ap-line); background: var(--ap-b); color: var(--ap-text); font-family: inherit; font-size: 12.5px; }
 body[data-page="supervision"] .ap-btn.blue { background: linear-gradient(135deg, #5aa8ff, #3a6fe0); }
 body[data-page="supervision"] .ap-btn.gray { background: linear-gradient(135deg, #7a86ad, #55608a); }
+
+/* ==== بلا حواف: عرض كامل وأقسام متصلة بدل البطاقات العائمة ==== */
+body[data-page="supervision"] .admin-users-main { padding-inline: 0 !important; }
+body[data-page="supervision"] .admin-users-workspace { gap: 0 !important; }
+body[data-page="supervision"] .admin-compact-header { border-radius: 0 !important; margin: 0 !important; box-shadow: none !important; padding: 16px 16px !important; }
+body[data-page="supervision"] .ap-nav { border-radius: 0 !important; border-inline: 0 !important; margin: 0 !important; top: 0; padding: 8px 12px; }
+body[data-page="supervision"] .admin-overview-grid { gap: 1px !important; background: var(--ap-line); border-block: 1px solid var(--ap-line); }
+body[data-page="supervision"] .admin-overview-card { border: 0 !important; border-radius: 0 !important; background: var(--ap-b) !important; }
+body[data-page="supervision"] .admin-analytics-panel, body[data-page="supervision"] .ap-card, body[data-page="supervision"] .admin-workspace-section, body[data-page="supervision"] .admin-chat-control, body[data-page="supervision"] .admin-users-list-card, body[data-page="supervision"] .admin-internal-notification {
+  border-radius: 0 !important; border-inline: 0 !important; box-shadow: none !important; margin: 0 0 1px !important; background: var(--ap-b) !important;
+}
+body[data-page="supervision"] .admin-chat-setting-card, body[data-page="supervision"] .admin-analytics-chart-card { border-radius: 0 !important; border-inline: 0 !important; }
+body[data-page="supervision"] .ap-row, body[data-page="supervision"] .ap-user { border-radius: 0 !important; border-inline: 0 !important; }
+body[data-page="supervision"] .admin-analytics-chip, body[data-page="supervision"] .ap-nav button, body[data-page="supervision"] .ap-btn { box-shadow: none !important; }
+body[data-page="supervision"] .layout, body[data-page="supervision"] .main-content, body[data-page="supervision"] .admin-users-main { padding-inline: 0 !important; margin-inline: 0 !important; max-width: none !important; width: 100% !important; }
+body[data-page="supervision"] .admin-users-workspace { width: 100% !important; margin: 0 !important; }
+body[data-page="supervision"] .admin-analytics-panel, body[data-page="supervision"] .ap-card { padding-inline: 14px !important; }
+html body[data-page="supervision"] main.main-content.admin-users-main { margin: 0 !important; padding-inline: 0 !important; width: 100% !important; max-width: 100% !important; inset-inline: 0 !important; }
+html body[data-page="supervision"] .layout { padding: 0 !important; margin: 0 !important; max-width: none !important; width: 100% !important; }
+html body[data-page="supervision"] .app.admin-users-app { padding-inline: 0 !important; max-width: none !important; width: 100% !important; }

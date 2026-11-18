@@ -1209,6 +1209,7 @@ body[data-page="home"] .home-studio > .home-studio-section{border-inline-start:0
 </script>
 <meta name="nabd-single-file" content="true">
 <link rel="stylesheet" href="nabd-pro.css">
+<link rel="stylesheet" href="nabd-whatsapp.css">
 <link rel="stylesheet" href="nabd-admin-portal.css">
 <script src="nabd-smooth.js" defer></script>
 </head>
@@ -3958,7 +3959,15 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
     if (!holder) return;
     const supportOnly = adminSupportThreads.filter(t => t.category !== 'طلب توثيق');
     if (!supportOnly.length) { holder.innerHTML = '<div class="admin-empty">لا توجد رسائل دعم حتى الآن.</div>'; return; }
-    holder.innerHTML = supportOnly.map(thread => { const messages = supportThread(thread); const last = messages[messages.length - 1]; const isOpen = thread.status !== 'resolved'; return `<article class="admin-support-card ${isOpen ? 'is-open' : 'is-resolved'}"><div class="admin-support-card-main"><span class="admin-support-avatar"><i class="fa-solid ${isOpen ? 'fa-headset' : 'fa-circle-check'}"></i></span><div class="admin-support-copy"><div class="admin-support-title"><b>${escapeHTML(thread.name || 'طالب نبض')}</b><span class="admin-support-status">${isOpen ? 'بانتظار الرد' : 'تمت المتابعة'}</span></div><small>${escapeHTML(thread.category || 'استفسار عام')} · ${escapeHTML(displayAdminDate(thread.updated_at || thread.created_at))}</small><p>${escapeHTML(last?.text || 'لا توجد رسالة')}</p></div></div><button class="outline-button admin-support-reply" type="button" data-admin-action="support-reply" data-support-id="${escapeHTML(thread.id)}"><i class="fa-regular fa-comment-dots"></i><span>${isOpen ? 'قراءة والرد' : 'فتح المحادثة'}</span></button></article>`; }).join('');
+    const colors = ['#4c7d4a', '#3a6fe0', '#8a4fd6', '#d6409f', '#e08a1a', '#0e9a8a'];
+    const waTime = ts => { try { const d = new Date(ts); const today = new Date(); return d.toDateString() === today.toDateString() ? new Intl.DateTimeFormat('ar-SY', { hour: 'numeric', minute: '2-digit' }).format(d) : new Intl.DateTimeFormat('ar-SY', { day: 'numeric', month: 'short' }).format(d); } catch { return ''; } };
+    // محادثة واحدة لكل مستخدم (أحدث نشاط أولاً)
+    const byUser = new Map(); supportOnly.forEach(t => { const key = t.user_id || t.id; const cur = byUser.get(key); if (!cur || new Date(t.updated_at || 0) > new Date(cur.updated_at || 0)) byUser.set(key, t); });
+    holder.innerHTML = [...byUser.values()].sort((x, y) => new Date(y.updated_at || 0) - new Date(x.updated_at || 0)).map((thread, i) => {
+      const messages = supportThread(thread); const last = messages[messages.length - 1]; const isOpen = thread.status !== 'resolved'; const mine = last?.sender === 'admin';
+      const name = thread.name || 'طالب نبض';
+      return `<article class="wa-row ${isOpen ? 'is-open' : ''}" role="button" tabindex="0" data-admin-action="support-reply" data-support-id="${escapeHTML(thread.id)}"><span class="wa-av" style="--c:${colors[(name.length + i) % colors.length]}">${escapeHTML(name.trim().charAt(0) || 'ط')}</span><div class="wa-main"><div class="wa-top"><b>${escapeHTML(name)}</b><span class="wa-time">${escapeHTML(waTime(thread.updated_at || thread.created_at))}</span></div><div class="wa-bottom"><p class="wa-prev">${mine ? '<i class="fa-solid fa-check-double tick"></i>' : ''}${escapeHTML(last?.text || 'لا توجد رسالة')}</p><span class="wa-cat">${escapeHTML(thread.category || 'استفسار عام')}</span>${isOpen && !mine ? '<span class="wa-dot">1</span>' : ''}</div></div></article>`;
+    }).join('');
   }
 
   async function loadAdminSupport() {
