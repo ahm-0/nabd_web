@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-16-profile-match-v19';
+const CACHE_VERSION = '2026-11-17-messenger-chat-v20';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -68,6 +68,8 @@ const APP_SHELL = [
   './curriculum-cards.css',
   './channels.css',
   './chat.css',
+  './chat-app.css',
+  './chat-app.js',
   './notifications.css',
   './nabd-admin-ui.css',
   './premium.css',
