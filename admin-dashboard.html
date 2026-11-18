@@ -1210,6 +1210,7 @@ body[data-page="home"] .home-studio > .home-studio-section{border-inline-start:0
 <meta name="nabd-single-file" content="true">
 <link rel="stylesheet" href="nabd-pro.css">
 <link rel="stylesheet" href="nabd-whatsapp.css">
+<script src="nabd-support-chat.js" defer></script>
 <link rel="stylesheet" href="nabd-admin-portal.css">
 <script src="nabd-smooth.js" defer></script>
 </head>
@@ -3832,14 +3833,29 @@ if (supabaseLibrary && typeof supabaseLibrary.createClient === 'function') {
 
   function openSupportReply(ticketId) {
     const ticket = adminSupportThreads.find(item => item.id === ticketId) || supportTickets.find(item => item.id === ticketId); if (!ticket) return;
-    const messages = supportThread(ticket).map(message => `<article class="admin-support-bubble ${message.sender === 'admin' ? 'admin' : 'student'}" data-support-message-id="${escapeHTML(message.id || '')}" data-support-message-text="${escapeHTML(message.text || '')}" data-support-message-sender="${message.sender === 'admin' ? 'admin' : 'student'}" tabindex="0" role="button" aria-label="اسحب للرد على الرسالة"><div><b>${message.sender === 'admin' ? 'فريق نبض التفوق' : escapeHTML(ticket.name || 'الطالب')}</b><p>${escapeHTML(message.text)}</p><small>${displayAdminDate(message.createdAt || message.created_at || ticket.createdAt || ticket.created_at)} <span class="admin-support-swipe-hint">اسحب للرد</span></small></div></article>`).join('');
-    openModal(`<div class="admin-support-chat-modal"><header class="modal-head admin-support-chat-modal-head"><div class="admin-support-chat-modal-head"><span class="admin-support-chat-modal-avatar"><i class="fa-solid fa-headset"></i></span><div class="admin-support-chat-modal-copy"><h3>${escapeHTML(ticket.name || 'طالب نبض')}</h3><small><i class="fa-solid fa-circle"></i> محادثة الدعم</small></div></div><button class="close-modal" aria-label="إغلاق">×</button></header><section class="admin-support-thread admin-support-live-chat" aria-live="polite">${messages || '<p class="sheet-hint">لا توجد رسائل بعد.</p>'}</section><form class="admin-support-chat-composer" data-ticket-id="${escapeHTML(ticket.id)}"><div class="admin-support-quote hidden" data-support-quote><div><i class="fa-solid fa-reply"></i><span><b data-support-quote-name>الرد على الرسالة</b><small data-support-quote-text></small></span></div><button type="button" data-clear-support-quote aria-label="إلغاء الاقتباس">×</button></div><div class="admin-support-reply-row"><textarea name="reply" required maxlength="700" placeholder="اكتب ردًا للطالب..." autofocus></textarea><button type="submit" class="admin-support-send" aria-label="إرسال الرد" title="إرسال الرد"><i class="fa-solid fa-paper-plane"></i></button></div><div class="form-actions"><button type="button" class="outline-button close-modal">إغلاق</button><span class="sheet-hint">اسحب أي رسالة للرد عليها.</span></div></form></div>`);
-    const modal = $('#modalContent'); const thread = $('.admin-support-live-chat', modal); const form = $('.admin-support-chat-composer', modal); const quote = $('[data-support-quote]', form); const quoteName = $('[data-support-quote-name]', form); const quoteText = $('[data-support-quote-text]', form); const input = $('[name="reply"]', form);
-    let startX = 0; let activeBubble = null;
-    const setQuote = bubble => { if (!bubble || bubble.dataset.supportMessageSender === 'admin') return; const body = String(bubble.dataset.supportMessageText || '').trim(); if (!body) return; form.dataset.replyQuote = body; form.dataset.replyQuoteName = bubble.querySelector('b')?.textContent || ticket.name || 'الطالب'; quoteName.textContent = `الرد على ${form.dataset.replyQuoteName}`; quoteText.textContent = body; quote.classList.remove('hidden'); input?.focus(); };
-    thread?.querySelectorAll('.admin-support-bubble').forEach(bubble => { bubble.addEventListener('pointerdown', event => { startX = event.clientX; activeBubble = bubble; bubble.classList.add('is-swiping'); }); bubble.addEventListener('pointerup', event => { const distance = event.clientX - startX; bubble.classList.remove('is-swiping'); if (Math.abs(distance) >= 42) setQuote(activeBubble); activeBubble = null; }); bubble.addEventListener('pointercancel', () => { bubble.classList.remove('is-swiping'); activeBubble = null; }); bubble.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setQuote(bubble); } }); });
-    $('[data-clear-support-quote]', form)?.addEventListener('click', () => { delete form.dataset.replyQuote; delete form.dataset.replyQuoteName; quote.classList.add('hidden'); quoteText.textContent = ''; });
-    thread?.scrollTo({ top: thread.scrollHeight, behavior: 'auto' });
+    $('#apChat')?.remove();
+    const time = ts => { try { return new Intl.DateTimeFormat('ar-SY', { hour: 'numeric', minute: '2-digit' }).format(new Date(ts)); } catch { return ''; } };
+    const day = ts => { try { return new Intl.DateTimeFormat('ar-SY', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(ts)); } catch { return ''; } };
+    let lastDay = ''; const rows = supportThread(ticket).map(message => {
+      const ts = message.createdAt || message.created_at || ticket.createdAt || ticket.created_at; const d = day(ts); const sep = d && d !== lastDay ? `<div class="wc-day"><span>${escapeHTML(d)}</span></div>` : ''; lastDay = d || lastDay;
+      const out = message.sender === 'admin';
+      return `${sep}<div class="wc-msg ${out ? 'out' : 'in'}" data-mid="${escapeHTML(message.id || '')}" data-text="${escapeHTML(message.text || '')}"><div class="wc-bubble"><p>${escapeHTML(message.text)}</p><small>${escapeHTML(time(ts))}${out ? ' <i class="fa-solid fa-check-double"></i>' : ''}</small></div></div>`;
+    }).join('');
+    const name = ticket.name || 'طالب نبض'; const isOpen = ticket.status !== 'resolved';
+    const el = document.createElement('div'); el.id = 'apChat'; el.className = 'wc-chat'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
+    el.innerHTML = `<header class="wc-head"><button type="button" class="wc-back" data-wc-close aria-label="رجوع"><i class="fa-solid fa-chevron-right"></i></button><span class="wc-av">${escapeHTML(name.trim().charAt(0) || 'ط')}</span><div class="wc-title"><b>${escapeHTML(name)}</b><small>${isOpen ? 'بانتظار الرد' : 'تمت المتابعة'} · ${escapeHTML(ticket.category || 'استفسار عام')}</small></div></header>
+      <section class="wc-msgs" aria-live="polite">${rows || '<div class="wc-empty">لا توجد رسائل بعد.</div>'}</section>
+      <form class="wc-composer admin-support-chat-composer" data-ticket-id="${escapeHTML(ticket.id)}"><div class="wc-quote hidden" data-wc-quote><i class="fa-solid fa-reply"></i><span><b data-wc-quote-name></b><small data-wc-quote-text></small></span><button type="button" data-wc-quote-clear aria-label="إلغاء الاقتباس">×</button></div><div class="wc-row"><textarea name="reply" rows="1" required maxlength="700" placeholder="اكتب ردًا للطالب..."></textarea><button type="submit" class="wc-send" aria-label="إرسال"><i class="fa-solid fa-paper-plane"></i></button></div></form>`;
+    document.body.appendChild(el); document.body.classList.add('wc-open');
+    const form = $('.wc-composer', el); const input = $('textarea', form); const msgs = $('.wc-msgs', el);
+    const clearQuote = () => { delete form.dataset.replyQuote; delete form.dataset.replyQuoteName; $('[data-wc-quote]', form).classList.add('hidden'); };
+    $('[data-wc-quote-clear]', form).addEventListener('click', clearQuote);
+    $('[data-wc-close]', el).addEventListener('click', () => { el.remove(); document.body.classList.remove('wc-open'); void loadAdminSupport(); });
+    input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 120) + 'px'; });
+    form.addEventListener('submit', event => { event.preventDefault(); void sendAdminSupportReply(form); });
+    msgs.scrollTop = msgs.scrollHeight;
+    window.NabdSupportReactions?.configure({ client: supabaseClient, thread: adminSupportThreads.some(item => item.id === ticketId) ? ticketId : null, myId: currentAuthUser?.id || 'admin',
+      onReply: msg => { if (!msg.classList.contains('in')) return toast('يمكن الرد على رسائل الطالب فقط.'); form.dataset.replyQuote = msg.dataset.text || ''; form.dataset.replyQuoteName = name; $('[data-wc-quote-name]', form).textContent = `الرد على ${name}`; $('[data-wc-quote-text]', form).textContent = msg.dataset.text || ''; $('[data-wc-quote]', form).classList.remove('hidden'); input.focus(); } });
   }
 
   async function sendAdminSupportReply(form) {
