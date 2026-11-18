@@ -1,0 +1,15 @@
+/* صفحة عدّاد الامتحانات: كرت قابل للمشاركة */
+.countdown-page{gap:12px}
+.xc-wrap{display:grid;gap:12px}
+.xc-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:16px;background:rgba(var(--primary-rgb),.08);border:1px solid rgba(var(--primary-rgb),.14)}
+.xc-tab{display:flex;align-items:center;justify-content:center;gap:7px;min-height:38px;border:0;border-radius:12px;background:transparent;color:var(--muted);font:inherit;font-size:12px;font-weight:800;cursor:pointer;transition:background .2s,color .2s,box-shadow .2s}
+.xc-tab i{font-size:12px}
+.xc-tab.active{background:linear-gradient(135deg,#0b6a3b,#128a4f);color:#fff;box-shadow:0 6px 14px rgba(11,106,59,.3)}
+.xc-card{border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.25);border:1px solid rgba(201,162,74,.45)}
+.xc-card canvas{display:block;width:100%;height:auto;aspect-ratio:3/2}
+.xc-actions{display:grid;grid-template-columns:1fr auto;gap:8px}
+.xc-share,.xc-save{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:14px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;border:0}
+.xc-share{background:linear-gradient(135deg,#0b6a3b,#128a4f);color:#fff;box-shadow:0 8px 18px rgba(11,106,59,.32)}
+.xc-save{padding:0 16px;background:rgba(var(--primary-rgb),.1);color:var(--text);border:1px solid rgba(var(--primary-rgb),.2)}
+.xc-share:disabled,.xc-save:disabled{opacity:.7;cursor:wait}
+.xc-hint{margin:0;text-align:center;color:var(--muted);font-size:9px;line-height:1.7}.xc-hint i{color:#16a05a;margin-inline-end:4px}

@@ -204,7 +204,7 @@
 
         <section class="admin-tab-panel" id="adminToolsPanel" data-admin-panel="tools" role="tabpanel"><section class="admin-workspace-section panel ap-card"><header class="admin-section-header"><div><span class="eyebrow">أدوات سريعة</span><h3>مولّد أكواد الوصول المميز (VIP)</h3><p>أنشئ كوداً لأستاذ أو ملف مدفوع وانسخه للطالب مباشرة.</p></div><span class="ap-ico vip"><i class="fa-solid fa-crown"></i></span></header><form id="apCodeForm" class="ap-form"><label>النوع<select name="type"><option value="teacher_bundle">باقة أستاذ كاملة</option><option value="file">ملف واحد</option></select></label><label>الهدف<select name="target" id="apCodeTarget" required><option value="">جارٍ تحميل الكتالوج…</option></select></label><div class="ap-form-row"><label>عدد مرات الاستخدام<input name="max_uses" type="number" min="1" max="1000" value="1"></label><label>تاريخ الانتهاء (اختياري)<input name="expires" type="date"></label></div><button class="primary-button" type="submit"><i class="fa-solid fa-wand-magic-sparkles"></i> توليد الكود</button><div id="apCodeResult" class="ap-result hidden"></div></form></section>
 
-        <section class="admin-workspace-section panel ap-card"><header class="admin-section-header"><div><span class="eyebrow">الصفحة الرئيسية</span><h3>تحديث عدّاد الامتحانات</h3><p>يتغير الموعد عند كل الطلاب في عدّاد الصفحة الرئيسية.</p></div><span class="ap-ico exam"><i class="fa-solid fa-hourglass-half"></i></span></header><form id="apExamForm" class="ap-form"><label>الامتحان<select name="key"><option value="bac">امتحانات البكالوريا</option><option value="nine">امتحانات التاسع</option></select></label><label>موعد الامتحان<input name="target" type="datetime-local" required></label><button class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ الموعد</button></form></section></section>
+        <section class="admin-workspace-section panel ap-card"><header class="admin-section-header"><div><span class="eyebrow">الصفحة الرئيسية</span><h3>تعديل عدّاد الامتحانات</h3><p>اختر البكالوريا أو التاسع وحدّد الموعد؛ يتغير كرت العدّاد عند كل الطلاب، ويختفي وصف «وقت تقريبي» بعد الحفظ.</p></div><span class="ap-ico exam"><i class="fa-solid fa-hourglass-half"></i></span></header><form id="apExamForm" class="ap-form"><label>الامتحان<select name="key"><option value="bac">امتحانات البكالوريا (دورة 2027)</option><option value="nine">امتحانات التاسع (دورة 2027)</option></select></label><label>موعد الامتحان<input name="target" type="datetime-local" required></label><button class="primary-button" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ الموعد</button></form></section></section>
         <section class="admin-tab-panel" id="adminModeratorsPanel" data-admin-panel="moderators" hidden role="tabpanel" aria-labelledby="adminTabModerators"><section class="admin-news-moderators panel"><header class="admin-section-header"><div><span class="eyebrow">صلاحية محددة</span><h3>تعيين مشرف الأخبار</h3><p>امنح مستخدمًا صلاحية نشر وإدارة الأخبار فقط دون الوصول إلى لوحة الإدارة.</p></div><button class="outline-button" type="button" data-admin-action="refresh-news-moderators"><i class="fa-solid fa-arrows-rotate"></i><span>تحديث</span></button></header><form id="newsModeratorForm" class="news-moderator-form"><label>معرّف المستخدم أو البريد الإلكتروني<input name="user_id" required placeholder="البريد الإلكتروني أو UUID المستخدم" autocomplete="off"></label><button class="primary-button" type="submit"><i class="fa-solid fa-user-shield"></i><span>تعيين مشرف أخبار</span></button></form><div id="newsModeratorsRows" class="news-moderators-rows"><div class="admin-empty">جارٍ تحميل مشرفي الأخبار</div></div></section></section>
       </section>
   </div>
@@ -3236,6 +3236,19 @@
     const { data } = await supabaseClient.rpc('premium_admin_get_catalog');
     if (data) apCatalog = { teachers: data.teachers || [], files: data.files || [] };
     fillCodeTargets();
+    try {
+      const { data: rows } = await supabaseClient.rpc('get_exam_dates');
+      if (Array.isArray(rows)) { const map = {}; rows.forEach(r => { if (r?.key && r?.target) map[r.key] = r.target; }); localStorage.setItem('nabd_exam_dates', JSON.stringify(map)); }
+    } catch { /* تجاهل */ }
+    fillExamForm();
+  }
+  const EXAM_DEFAULTS = { bac: '2027-06-05T08:00', nine: '2027-06-02T08:00' };
+  function fillExamForm() {
+    const form = $('#apExamForm'); if (!form) return;
+    let stored = null; try { stored = JSON.parse(localStorage.getItem('nabd_exam_dates') || '{}')[form.elements.key.value]; } catch { /* تجاهل */ }
+    const d = stored ? new Date(stored) : null;
+    const pad = n => String(n).padStart(2, '0');
+    form.elements.target.value = d && !Number.isNaN(+d) ? `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}` : EXAM_DEFAULTS[form.elements.key.value];
   }
   function fillCodeTargets() {
     const type = $('#apCodeForm')?.elements.type.value; const select = $('#apCodeTarget'); if (!select) return;
@@ -3317,6 +3330,7 @@
     $('#apUsersSearch')?.addEventListener('input', renderUsersSheet); $('#apUsersFilter')?.addEventListener('change', renderUsersSheet);
     $('#apCodeForm')?.addEventListener('submit', event => { event.preventDefault(); void submitCodeForm(event.currentTarget); });
     $('#apCodeForm')?.elements.type.addEventListener('change', fillCodeTargets);
+    $('#apExamForm')?.elements.key.addEventListener('change', fillExamForm); fillExamForm();
     $('#apExamForm')?.addEventListener('submit', event => { event.preventDefault(); void submitExamForm(event.currentTarget); });
     $('#apChatRulesForm')?.addEventListener('submit', async event => {
       event.preventDefault(); const { error } = await supabaseClient.rpc('chat_admin_update_rules', { p_slow_mode_seconds: parseInt($('#apSlow').value || '0', 10), p_block_links: $('#apBlockLinks').checked });

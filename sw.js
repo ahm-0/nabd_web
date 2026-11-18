@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-18-shared-bundles-v33';
+const CACHE_VERSION = '2026-11-18-exam-card-v34';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -77,7 +77,9 @@ const APP_SHELL = [
   './nabd-admin-portal.css',
   './nabd-smooth.js',
   './nabd-ui.css',
-  './exam-countdown-share.css',
+  './exam-card.css',
+  './exam-card.js',
+  './assets/exam-card/emblem.webp',
   './vendor/html2canvas/html2canvas.min.js',
   './vendor/chart/chart.umd.js',
   './curriculum-cards.css',
