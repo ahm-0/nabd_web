@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-18-news-profile-v32';
+const CACHE_VERSION = '2026-11-18-shared-bundles-v33';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -60,6 +60,16 @@ const APP_SHELL = [
   './nabd-showcase.css',
   './nabd-auth.css',
   './nabd-profile.css',
+  './assets/bundle/all.min.e8e1e872.css',
+  './assets/bundle/material-ui.82fe7dde.js',
+  './assets/bundle/material-ui.962a81ab.css',
+  './assets/bundle/nabd-app.3dab64e0.js',
+  './assets/bundle/nabd-navigation.73210ac4.js',
+  './assets/bundle/nabd-theme.9fcd0995.css',
+  './assets/bundle/nabd-ui.79450694.css',
+  './assets/bundle/pwa.b83d2ef2.js',
+  './assets/bundle/supabase-client.291eac98.js',
+  './assets/bundle/supabase.f9ccb1e9.js',
   './nabd-settings.css',
   './nabd-whatsapp.css',
   './nabd-news.css',
