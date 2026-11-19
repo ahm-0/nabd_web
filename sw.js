@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-19-share-font-v45';
+const CACHE_VERSION = '2026-11-19-sections-v46';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -56,6 +56,7 @@ const APP_SHELL = [
   './nabd-navigation.js',
   './nabd-pro.css',
   './nabd-motion.css',
+  './nabd-sections.css',
   './nabd-points.js',
   './points.html',
   './points.css',

@@ -1,0 +1,80 @@
+/* إعادة تصميم أقسام: التاسع · البكالوريا · الجامعات — بلا حدود، بطاقات ملوّنة مسطّحة، هوية التطبيق نفسها */
+html body[data-page="nine"],html body[data-page="curriculum"],html body[data-page="universities"]{
+  --sx-tint:.13;--sx-radius:24px}
+html[data-theme="dark"] body[data-page="nine"],html[data-theme="dark"] body[data-page="curriculum"],html[data-theme="dark"] body[data-page="universities"]{--sx-tint:.18}
+
+/* ---------- الغلاف والترويسة ---------- */
+html body[data-page="nine"] .curriculum-track-panel,
+html body[data-page="curriculum"] .curriculum-track-panel,
+html body[data-page="universities"] .study-page-shell{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;display:grid;gap:14px}
+html body[data-page="nine"] .curriculum-track-head,
+html body[data-page="curriculum"] .curriculum-track-head,
+html body[data-page="universities"] .study-page-head{position:relative;overflow:hidden;display:flex!important;flex-direction:row-reverse;align-items:center;justify-content:space-between;gap:14px;margin:0!important;padding:22px 20px!important;border:0!important;border-radius:var(--sx-radius)!important;box-shadow:none!important;color:#fff!important;background:linear-gradient(135deg,var(--hero-a),var(--hero-b))!important}
+html body[data-page="nine"]{--hero-a:#0f9e8e;--hero-b:#1f7bd8}
+html body[data-page="curriculum"]{--hero-a:#6a55e8;--hero-b:#2f6bff}
+html body[data-page="universities"]{--hero-a:#d6478f;--hero-b:#6a55e8}
+html body[data-page="nine"] .curriculum-track-head::after,
+html body[data-page="curriculum"] .curriculum-track-head::after,
+html body[data-page="universities"] .study-page-head::after{content:"";position:absolute;inset-inline-start:-40px;bottom:-60px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.12);pointer-events:none}
+html body[data-page] .curriculum-track-head h3,html body[data-page="universities"] .study-page-head h2{margin:2px 0 4px!important;font-size:21px!important;font-weight:800!important;color:#fff!important}
+html body[data-page] .curriculum-track-head p,html body[data-page="universities"] .study-page-head p{margin:0!important;font-size:12.5px!important;line-height:1.7;color:rgba(255,255,255,.88)!important}
+html body[data-page] .curriculum-track-head .eyebrow,html body[data-page="universities"] .study-page-eyebrow{display:inline-block;margin:0 0 4px;padding:3px 10px;border-radius:99px;font-size:11px!important;font-weight:700;color:#fff!important;background:rgba(255,255,255,.2)!important;border:0!important}
+html body[data-page] .curriculum-track-head-icon,html body[data-page="universities"] .study-page-head-icon{flex:none;width:58px;height:58px;display:grid;place-items:center;border-radius:20px!important;font-size:26px;color:#fff!important;background:rgba(255,255,255,.2)!important;border:0!important;box-shadow:none!important}
+html body[data-page="universities"] .study-back-link{display:none!important}
+
+/* ---------- شبكة البطاقات ---------- */
+html body[data-page="nine"] .study-track-cards,
+html body[data-page="curriculum"] .study-track-cards,
+html body[data-page="universities"] .study-card-list{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important}
+html body[data-page="nine"] .study-track-card:first-child{grid-column:1/-1}
+
+html body[data-page="nine"] .study-track-card,
+html body[data-page="curriculum"] .study-track-card,
+html body[data-page="universities"] .study-card{--acr:76,140,255;position:relative;display:flex!important;flex-direction:column;align-items:flex-start;gap:10px;min-height:0;margin:0!important;padding:16px 14px!important;border:0!important;border-radius:var(--sx-radius)!important;box-shadow:none!important;text-align:start;color:inherit;background:rgba(var(--acr),var(--sx-tint))!important;transition:transform .16s ease,background .2s}
+html body[data-page] .study-track-card:active,html body[data-page="universities"] .study-card:active{transform:scale(.97)}
+html body[data-page] .study-track-icon,html body[data-page="universities"] .study-card-icon{flex:none;width:46px;height:46px;display:grid;place-items:center;border-radius:15px!important;font-size:20px;color:#fff!important;border:0!important;box-shadow:none!important;background:rgb(var(--acr))!important}
+html body[data-page] .study-track-copy,html body[data-page="universities"] .study-card-copy{display:grid;gap:3px;min-width:0;flex:1}
+html body[data-page] .study-track-copy small{order:-1;font-size:10.5px!important;font-weight:700;color:rgb(var(--acr))!important}
+html body[data-page] .study-track-copy b,html body[data-page="universities"] .study-card-copy b{font-size:14.5px!important;font-weight:800;line-height:1.4;color:var(--text,inherit)!important}
+html body[data-page] .study-track-copy em,html body[data-page="universities"] .study-card-copy small{font-style:normal;font-size:11.5px!important;line-height:1.65;color:var(--muted,#7b8aa8)!important;font-weight:500}
+html body[data-page] .study-track-arrow,html body[data-page="universities"] .study-card>i.fa-chevron-left{position:absolute;inset-block-start:14px;inset-inline-end:14px;font-size:11px;opacity:.45}
+/* البطاقة الأولى في التاسع عريضة: أيقونة بجانب النص */
+html body[data-page="nine"] .study-track-card:first-child{flex-direction:row;align-items:center;gap:14px}
+html body[data-page="nine"] .study-track-card:first-child .study-track-icon{width:56px;height:56px;font-size:24px}
+
+/* ألوان البطاقات */
+html body[data-page="nine"] .study-track-card:nth-child(1){--acr:15,158,142}
+html body[data-page="nine"] .study-track-card:nth-child(2){--acr:245,158,11}
+html body[data-page="nine"] .study-track-card:nth-child(3){--acr:76,140,255}
+html body[data-page="nine"] .study-track-card:nth-child(4){--acr:214,71,143}
+html body[data-page="nine"] .study-track-card:nth-child(5){--acr:117,101,230}
+html body[data-page="curriculum"] .study-track-card.track-science{--acr:47,107,255}
+html body[data-page="curriculum"] .study-track-card.track-literary{--acr:214,71,143}
+html body[data-page="curriculum"] .study-track-card{min-height:190px;padding:18px 14px!important}
+html body[data-page="curriculum"] .study-track-icon{width:56px;height:56px;font-size:24px}
+
+/* الجامعات: ترتيب وتمييز بطاقة المفاضلة */
+html body[data-page="universities"] .study-card:nth-child(1){order:1;--acr:47,107,255}
+html body[data-page="universities"] .study-card:nth-child(2){order:2;--acr:214,71,143}
+html body[data-page="universities"] .study-card:nth-child(4){order:3;grid-column:1/-1;flex-direction:row;align-items:center;gap:14px;background:linear-gradient(135deg,#f59e0b,#e5791a)!important}
+html body[data-page="universities"] .study-card:nth-child(4) .study-card-icon{background:rgba(255,255,255,.25)!important;width:54px;height:54px;font-size:23px}
+html body[data-page="universities"] .study-card:nth-child(4) .study-card-copy b,
+html body[data-page="universities"] .study-card:nth-child(4) .study-card-copy small{color:#fff!important}
+html body[data-page="universities"] .study-card:nth-child(4)>i.fa-chevron-left{position:static;color:#fff;opacity:.8}
+html body[data-page="universities"] .study-card:nth-child(3){order:4;--acr:117,101,230}
+html body[data-page="universities"] .study-card:nth-child(5){order:5;--acr:245,158,11}
+html body[data-page="universities"] .study-card:nth-child(6){order:6;--acr:239,68,68}
+html body[data-page="universities"] .study-card:nth-child(7){order:7;--acr:22,163,74}
+html body[data-page="universities"] .study-page-note{display:flex;gap:10px;align-items:flex-start;margin:0!important;padding:4px 6px!important;border:0!important;background:transparent!important;box-shadow:none!important;font-size:11.5px;color:var(--muted,#7b8aa8)}
+html body[data-page="universities"] .study-page-note p{margin:0}
+@media (max-width:340px){html body[data-page] .study-track-cards,html body[data-page="universities"] .study-card-list{grid-template-columns:1fr}}
+
+/* تصحيحات التخطيط */
+html body[data-page="universities"] .study-card-list{grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%!important}
+html body[data-page] .study-track-copy em{white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
+html body[data-page="universities"] .study-card{min-height:0!important;align-items:flex-start!important;overflow:visible!important;content-visibility:visible}
+html body[data-page="universities"] .study-card:nth-child(4){align-items:center!important}
+html body[data-page="universities"] .study-card-copy{text-align:start!important;width:100%}
+html body[data-page] .curriculum-track-head .eyebrow,html body[data-page="universities"] .study-page-eyebrow{width:fit-content;max-width:100%}
+html body[data-page="universities"] .study-page-head>div{display:grid;justify-items:start}
+html body[data-page="universities"] .study-page-head{flex-direction:row-reverse!important}
