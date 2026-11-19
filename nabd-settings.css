@@ -89,3 +89,10 @@ body[data-page="settings"] .st-ico.rose { background: linear-gradient(145deg,#ff
 .shot-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(127,150,190,.1);border:1px solid rgba(127,150,190,.16);cursor:pointer}
 .shot-item b{flex:1;font-size:13px;font-weight:700}
 .shot-ico{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:rgba(224,50,79,.14);color:#ff7a8a;font-size:13px}
+.st-bright{margin:0 14px 14px;padding:12px;border-radius:16px;background:rgba(150,170,230,.1);display:grid;gap:8px}
+.st-bright-h{display:flex;align-items:center;gap:8px}.st-bright-h i{color:#f59e0b}.st-bright-h span{margin-inline-start:auto;font-weight:800;color:#f59e0b}
+.st-bright-r{display:flex;align-items:center;gap:10px;direction:ltr}.st-bright-r i{opacity:.7;font-size:15px}
+.st-bright input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:8px;border-radius:8px;outline:0;background:linear-gradient(90deg,#f59e0b var(--p,100%),rgba(150,170,230,.3) var(--p,100%))}
+.st-bright input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;border:3px solid #f59e0b;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.st-bright input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid #f59e0b}
+.st-bright small{font-size:11.5px;opacity:.7}

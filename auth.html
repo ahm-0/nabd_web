@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <title>نبض التفوق | تسجيل الدخول</title>
-  <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='dark';}})();</script>
+  <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='dark'&&saved?.themeSet?'dark':'light';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='light';}})();</script>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <script src="assets/bundle/pwa.b83d2ef2.js"></script>
@@ -27,7 +27,7 @@
 <link rel="stylesheet" href="nabd-motion.css">
 <link rel="stylesheet" href="auth-pro.css">
 <script src="nabd-smooth.js" defer></script>
-<script src="screen-guard.js" defer></script><script src="nabd-motion.js" defer></script></head>
+<script src="screen-guard.js" defer></script><script src="nabd-points.js" defer></script><script src="nabd-motion.js" defer></script></head>
 <body data-page="auth">
   <div class="lg-bg" aria-hidden="true"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i><span class="grid"></span><i class="sp"></i><i class="sp"></i><i class="sp"></i><i class="sp"></i><i class="sp"></i></div>
   <main class="lg-page">

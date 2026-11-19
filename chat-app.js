@@ -607,9 +607,11 @@
       if (c.scope === 'public') {
         const { error } = await sb.from('public_chat_messages').insert({ id: m.id, sender_id: S.uid, body: m.body, reply_to_id: m.rid });
         if (error && error.code !== '23505') throw error;
+        if (!error) window.nabdPoints?.award('chat_message');
       } else {
         const row = await rpc('chat_send_private_v2', { p_thread_id: c.id, p_body: m.body, p_reply_to: m.rid, p_id: m.id });
         if (row?.created_at) m.at = row.created_at;
+        window.nabdPoints?.award('chat_message');
         const conv = S.convs.find(x => x.thread_id === c.id);
         if (conv) { conv.last_message = m.body; conv.last_sender_id = S.uid; conv.last_message_at = m.at; S.convs.sort((a, b) => new Date(b.last_message_at) - new Date(a.last_message_at)); }
       }

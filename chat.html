@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>الدردشة | نبض التفوق</title>
-<script>(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const t=saved?.theme==='light'?'light':'dark';document.documentElement.dataset.theme=t;document.querySelector('meta[name=theme-color]').content=t==='light'?'#ffffff':'#071324'}catch{document.documentElement.dataset.theme='dark'}})();</script>
+<script>(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const t=saved?.theme==='dark'&&saved?.themeSet?'dark':'light';document.documentElement.dataset.theme=t;document.querySelector('meta[name=theme-color]').content=t==='light'?'#ffffff':'#071324'}catch{document.documentElement.dataset.theme='light'}})();</script>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="assets/icons/icon-192.png">
 <link rel="preconnect" href="https://vyjosbxjizttdwnrphza.supabase.co" crossorigin>
@@ -17,7 +17,7 @@
 <script src="supabase-client.js" defer></script>
 <script src="chat-app.js" defer></script>
 <script src="pwa.js" defer></script>
-<script src="screen-guard.js" defer></script></head>
+<script src="screen-guard.js" defer></script><script src="nabd-points.js" defer></script></head>
 <body data-page="chat">
 <div class="app" id="app">
 

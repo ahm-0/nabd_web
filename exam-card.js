@@ -152,6 +152,7 @@
   function download(blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'nabd-exam-countdown.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
 
   async function share(saveOnly) {
+    window.nabdPoints?.award('exam_share');
     const btn = saveOnly ? $('#xcSave') : $('#xcShare');
     const info = examInfo(active); const title = `عداد امتحانات ${info.name}`; const text = shareText(info);
     const label = btn.querySelector('span').textContent; btn.disabled = true; btn.querySelector('span').textContent = 'جارٍ تجهيز الصورة...';

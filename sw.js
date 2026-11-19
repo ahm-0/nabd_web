@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-19-home-fix-v40';
+const CACHE_VERSION = '2026-11-19-points-light-v41';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -56,6 +56,10 @@ const APP_SHELL = [
   './nabd-navigation.js',
   './nabd-pro.css',
   './nabd-motion.css',
+  './nabd-points.js',
+  './points.html',
+  './points.css',
+  './points-page.js',
   './nabd-motion.js',
   './nabd-home.css',
   './nabd-material.css',

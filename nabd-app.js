@@ -91,7 +91,7 @@
   const defaultStudent = {
     first: '', father: '', last: '', phone: '', birth: '', city: 'دمشق', province: 'دمشق', stage: 'بكالوريا علمي',
     bio: 'طالب في منصة نبض التفوق، أعمل على تنظيم رحلتي الدراسية والوصول إلى أهدافي.',
-    avatar: '', notifications: true, theme: 'dark', motion: true, studentId: '', gender: '', verificationRequested: false, verificationStatus: '', dailyUsageMinutes: 0, usageDay: '', lastUsageAt: ''
+    avatar: '', notifications: true, theme: 'light', motion: true, studentId: '', gender: '', verificationRequested: false, verificationStatus: '', dailyUsageMinutes: 0, usageDay: '', lastUsageAt: ''
   };
 
   function localUsageDay(date = new Date()) { return date.toISOString().slice(0, 10); }
@@ -390,7 +390,7 @@
   }
 
   function applyTheme(theme = student.theme, persist = true) {
-    student.theme = theme === 'light' ? 'light' : 'dark';
+    student.theme = (theme === 'dark' && student.themeSet) ? 'dark' : 'light';
     document.documentElement.dataset.theme = student.theme;
     const meta = $('meta[name="theme-color"]');
     if (meta) meta.content = student.theme === 'dark' ? '#080d19' : '#f2f7ff';
@@ -1583,7 +1583,7 @@
   function chooseTestAnswer(index) { activeTestAnswers[activeTestIndex] = Number(index); renderTestSession(); }
   function moveTestQuestion(direction) { const test = activeTest(); if (!test) return; activeTestIndex = Math.min(test.questions.length - 1, Math.max(0, activeTestIndex + direction)); renderTestSession(); }
 
-  function finishTest() {
+  function finishTest() { window.nabdPoints?.award('quiz_complete');
     const test = activeTest(); if (!test) return; const missing = test.questions.findIndex((_, index) => activeTestAnswers[index] === undefined);
     if (missing >= 0) { activeTestIndex = missing; renderTestSession(); return toast('أجب عن جميع الأسئلة قبل إنهاء الاختبار.'); }
     const correct = test.questions.filter((question, index) => activeTestAnswers[index] === question.correct).length; const percentage = (correct / test.questions.length) * 100;
@@ -3029,9 +3029,9 @@
       const nativeChat = event.target.closest('[data-native-chat-url]');
       if (nativeChat) { event.preventDefault(); openNativeChatViewer(nativeChat.dataset.nativeChatUrl, nativeChat.dataset.nativeChatTitle); }
       if (event.target.closest('#studentLogout')) { event.preventDefault(); void signOutStudent(); return; }
-      if (event.target.closest('#profileThemeButton')) applyTheme(student.theme === 'dark' ? 'light' : 'dark');
+      if (event.target.closest('#profileThemeButton')) { student.themeSet = true; applyTheme(student.theme === 'dark' ? 'light' : 'dark'); };
       const themeChoice = event.target.closest('[data-theme-choice]');
-      if (themeChoice) applyTheme(themeChoice.dataset.themeChoice);
+      if (themeChoice) { student.themeSet = true; applyTheme(themeChoice.dataset.themeChoice); };
       const galleryOpen = event.target.closest('[data-gallery-image]');
       if (galleryOpen) openGalleryImage(galleryOpen.dataset.galleryImage);
       const galleryShare = event.target.closest('[data-gallery-share]');
@@ -3116,7 +3116,7 @@
       const label = $('span', button);
       if (label) label.textContent = expanded ? 'عرض' : 'إخفاء';
     });
-    $('#themeSwitch')?.addEventListener('change', event => applyTheme(event.target.checked ? 'dark' : 'light'));
+    $('#themeSwitch')?.addEventListener('change', event => { student.themeSet = true; applyTheme(event.target.checked ? 'dark' : 'light'); });
     $('#motionSwitch')?.addEventListener('change', event => { applyMotion(event.target.checked); toast(event.target.checked ? 'تم تفعيل الحركات الخفيفة.' : 'تم تقليل الحركات والتأثيرات.'); });
     $('#notificationsSwitch')?.addEventListener('change', event => { student.notifications = event.target.checked; saveState(); toast(event.target.checked ? 'تم تفعيل الإشعارات.' : 'تم إيقاف الإشعارات.'); });
     document.addEventListener('focusin', event => {

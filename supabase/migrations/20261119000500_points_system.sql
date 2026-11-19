@@ -1,0 +1,3 @@
+-- نظام النقاط والمتصدرين (مطبّق على القاعدة عبر apply_migration: points_system)
+-- الجداول: user_points, points_events | الدوال: points_award(text), points_my_stats(), points_leaderboard(int)
+-- الأحداث وحدودها اليومية: app_open 5, chat_message 20, news_comment 15, news_like 10, exam_share 10, quiz_complete 60
