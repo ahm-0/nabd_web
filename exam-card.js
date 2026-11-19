@@ -152,7 +152,7 @@
   function download(blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'nabd-exam-countdown.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
 
   async function share(saveOnly) {
-    window.nabdPoints?.award('exam_share');
+    let watch = null;
     const btn = saveOnly ? $('#xcSave') : $('#xcShare');
     const info = examInfo(active); const title = `عداد امتحانات ${info.name}`; const text = shareText(info);
     const label = btn.querySelector('span').textContent; btn.disabled = true; btn.querySelector('span').textContent = 'جارٍ تجهيز الصورة...';
@@ -162,16 +162,16 @@
       if (saveOnly) { download(blob); toast('تم حفظ صورة الكرت.'); return; }
       const dataUrl = await toDataUrl(blob);
       const nativeShare = cap_('Share'), fs = cap_('Filesystem');
-      if (window.NabdAndroid?.shareImage) { await window.NabdAndroid.shareImage(dataUrl, title, text); return; }
+      if (window.NabdAndroid?.shareImage) { watch = window.nabdPoints?.awardOnShareLeave('exam_share'); await window.NabdAndroid.shareImage(dataUrl, title, text); return; }
       if (isNative() && nativeShare?.share && fs?.writeFile) {
         const saved = await fs.writeFile({ path: `nabd-exam-${Date.now()}.png`, data: dataUrl.split(',')[1], directory: 'CACHE', recursive: true });
-        if (saved?.uri) { await nativeShare.share({ title, text, files: [saved.uri], dialogTitle: 'مشاركة كرت العداد' }); return; }
+        if (saved?.uri) { watch = window.nabdPoints?.awardOnShareLeave('exam_share'); await nativeShare.share({ title, text, files: [saved.uri], dialogTitle: 'مشاركة كرت العداد' }); return; }
       }
-      if (navigator.canShare?.({ files: [file] }) && navigator.share) { await navigator.share({ title, text, files: [file] }); return; }
+      if (navigator.canShare?.({ files: [file] }) && navigator.share) { await navigator.share({ title, text, files: [file] }); window.nabdPoints?.award('exam_share'); return; }
       download(blob);
       try { await navigator.clipboard?.writeText(text); toast('تم حفظ الصورة ونسخ النص ورابط التحميل للمشاركة.'); } catch { toast('تم حفظ الصورة.'); }
     } catch (error) {
-      if (error?.name !== 'AbortError') toast('تعذر تجهيز الصورة الآن.');
+      watch?.cancel(); if (error?.name !== 'AbortError') toast('تعذر تجهيز الصورة الآن.');
     } finally { btn.disabled = false; btn.querySelector('span').textContent = label; }
   }
   $('#xcShare')?.addEventListener('click', () => { void share(false); });

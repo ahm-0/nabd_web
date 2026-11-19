@@ -36,3 +36,6 @@ fun googleSignIn() {
 - Authentication → Providers → Google: فعّله وأدخل Client ID و Client Secret من Google Cloud Console.
 - Authentication → URL Configuration: أضف رابط الموقع (…/auth.html) إلى Redirect URLs.
 - للتطبيق: فعّل «Skip nonce check» أو مرّر nonce مطابقاً.
+
+## shareText(text) — مشاركة نص التطبيق (اختياري)
+`window.NabdAndroid.shareText(text)` يفتح قائمة المشاركة بالنص كما هو (Intent.ACTION_SEND, text/plain). إن لم تتوفر تستخدم الصفحة `navigator.share`. تُمنح نقاط «نشر التطبيق» (50، مرة واحدة) فقط بعد مغادرة المستخدم التطبيق إلى تطبيق المشاركة والعودة؛ إغلاق القائمة دون اختيار تطبيق لا يمنح شيئًا.

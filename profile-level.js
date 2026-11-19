@@ -23,8 +23,9 @@ https://nabd0.github.io/app/`;
     } catch { /* صامت */ }
   }
   async function shareApp() {
-    try { if (window.NabdAndroid?.shareText) { window.NabdAndroid.shareText(SHARE_TEXT); return; } } catch { /* تابع */ }
-    try { if (navigator.share) { await navigator.share({ text: SHARE_TEXT }); return; } } catch (e) { if (e?.name === 'AbortError') return; }
+    const P = window.nabdPoints;
+    try { if (window.NabdAndroid?.shareText) { const w = P?.awardOnShareLeave('app_share'); try { await window.NabdAndroid.shareText(SHARE_TEXT); } catch (e) { w?.cancel(); } return; } } catch { /* تابع */ }
+    try { if (navigator.share) { await navigator.share({ text: SHARE_TEXT }); P?.award('app_share'); return; } } catch (e) { return; /* إلغاء المشاركة = لا نقاط */ }
     try { await navigator.clipboard.writeText(SHARE_TEXT); toast('تم نسخ نص المشاركة، الصقه في أي تطبيق.'); } catch { toast('تعذر فتح المشاركة.'); }
   }
   function openHow() {

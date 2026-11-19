@@ -21,9 +21,6 @@
       a.addEventListener('pointerenter', () => prefetch(a.href), { once: true, passive: true });
       a.addEventListener('touchstart', () => prefetch(a.href), { once: true, passive: true });
     });
-    ['index.html','chat.html','news.html','profile.html','exam-countdown.html'].forEach((page) => {
-      if (!location.pathname.endsWith(`/${page}`) && !location.pathname.endsWith(page)) prefetch(new URL(page, location.href).href);
-    });
   };
   if ('requestIdleCallback' in window) requestIdleCallback(warm, { timeout: 1200 });
   else window.setTimeout(warm, 350);

@@ -6,7 +6,7 @@
   'use strict';
 
   const CORE_PAGES = ['index.html', 'chat.html', 'news.html', 'profile.html', 'exam-countdown.html'];
-  const MAX_URLS = 14;
+  const MAX_URLS = 4;
 
   // مواعيد الامتحانات المحدّثة من لوحة الإشراف: تُجلب وتُخزَّن لتقرأها الصفحات عند فتحها
   try {
@@ -50,24 +50,13 @@
     const nav = [...document.querySelectorAll('#bottomNav a[href$=".html"]')]
       .map(a => toURL(a.getAttribute('href'))).filter(u => u && u !== toURL(here));
     const navSet = new Set(nav);
-    const rest = collect().filter(u => !navSet.has(u));
+    const rest = [];
     if (!nav.length && !rest.length) return;
     if (HTMLScriptElement.supports?.('speculationrules')) {
       // صفحات الشريط السفلي: تُحمَّل كاملة في الخلفية عند أول لمس، فيصبح الانتقال لحظياً
       // صفحة "حسابي" تُجهَّز فوراً (eager) لأنها الأثقل، والبقية عند اللمس.
-      const profileURL = toURL('profile.html');
-      let eagerNav = profileURL && navSet.has(profileURL) && here !== 'profile.html' ? [profileURL] : [];
-      // من صفحة الملف الشخصي: تجهيز الإعدادات فوراً حتى تُفتح دون انتظار
-      const settingsURL = toURL('settings.html');
-      if (here === 'profile.html' && settingsURL) eagerNav.push(settingsURL);
-      const lazyNav = nav.filter(u => !eagerNav.includes(u));
-      const rules = {
-        prerender: [
-          ...(eagerNav.length ? [{ source: 'list', urls: eagerNav, eagerness: 'eager' }] : []),
-          ...(lazyNav.length ? [{ source: 'list', urls: lazyNav, eagerness: 'conservative' }] : [])
-        ],
-        prefetch: rest.length ? [{ source: 'list', urls: rest, eagerness: 'moderate' }] : []
-      };
+      // لا prerender: تشغيل صفحات كاملة بالخلفية كان يثقل الجهاز ويسبب بطء الانتقال. نكتفي بجلب HTML مسبقاً لصفحات الشريط السفلي.
+      const rules = { prefetch: nav.length ? [{ source: 'list', urls: nav, eagerness: 'moderate' }] : [] };
       const script = document.createElement('script');
       script.type = 'speculationrules';
       script.id = 'nabd-speculation';

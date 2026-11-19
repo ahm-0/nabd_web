@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-19-speed-profile-v43';
+const CACHE_VERSION = '2026-11-19-nav-speed-v44';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -174,8 +174,16 @@ async function cacheFirst(request) {
 }
 
 
+const assetRefreshAt = new Map();
+const ASSET_REVALIDATE_MS = 10 * 60 * 1000;
 async function staleWhileRevalidateAsset(request, event) {
   const cached = await caches.match(request, { ignoreSearch: true });
+  // الملفات المجزّأة (hash) ثابتة، وبقية الملفات لا نعيد جلبها أكثر من مرة كل 10 دقائق: لا طلبات شبكة تنافس الصفحة عند كل انتقال.
+  if (cached) {
+    const key = request.url; const hashed = /\/assets\/bundle\/.+\.[0-9a-f]{8}\.(?:css|js)$/i.test(key);
+    if (hashed || Date.now() - (assetRefreshAt.get(key) || 0) < ASSET_REVALIDATE_MS) return cached;
+    assetRefreshAt.set(key, Date.now());
+  }
   const refresh = fetch(request).then(async response => {
     if (response.ok && response.type === 'basic') {
       const cache = await caches.open(RUNTIME_CACHE);

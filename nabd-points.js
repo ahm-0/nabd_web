@@ -22,7 +22,19 @@
       return n;
     } catch { return 0; }
   };
-  window.nabdPoints = { award };
+  /* منح نقاط المشاركة فقط بعد إتمامها: يغادر المستخدم التطبيق إلى تطبيق المشاركة ثم يعود. الضغط على مشاركة ثم الرجوع دون اختيار تطبيق لا يمنح شيئًا. */
+  function awardOnShareLeave(action) {
+    let left = false, done = false; const t0 = Date.now();
+    const onVis = () => {
+      if (document.hidden) { left = true; return; }
+      if (left && !done && Date.now() - t0 < 10 * 60 * 1000) { done = true; cleanup(); void award(action); }
+    };
+    const cleanup = () => { document.removeEventListener('visibilitychange', onVis); clearTimeout(timer); };
+    const timer = setTimeout(cleanup, 10 * 60 * 1000);
+    document.addEventListener('visibilitychange', onVis);
+    return { cancel: cleanup, complete() { if (!done) { done = true; cleanup(); void award(action); } } };
+  }
+  window.nabdPoints = { award, awardOnShareLeave };
   /* فتح التطبيق مرة يوميًا */
   const day = new Date().toISOString().slice(0, 10);
   const page = document.body?.dataset.page;

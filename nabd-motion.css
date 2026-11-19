@@ -22,3 +22,6 @@ body{animation:nm-page .3s ease}
 .nm-reveal.in{opacity:1;transform:none}
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.nm-reveal{opacity:1;transform:none}}
+
+/* أداء: إيقاف الانتقال الشامل بين الصفحات */
+@view-transition{navigation:none}
