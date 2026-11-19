@@ -20,7 +20,7 @@
     msgs: $('#msgs'), fab: $('#fab'), fabBadge: $('#fabBadge'), input: $('#input'), sendBtn: $('#sendBtn'), counter: $('#counter'),
     ctx: $('#ctx'), ctxTitle: $('#ctxTitle'), ctxText: $('#ctxText'), ctxIc: $('#ctxIc'), composer: $('#composer'),
     chatAv: $('#chatAv'), chatTitle: $('#chatTitle'), chatSub: $('#chatSub'), pinnedBar: $('#pinnedBar'), pinnedText: $('#pinnedText'),
-    announce: $('#announce'), scrim: $('#scrim'), sheet: $('#sheet'), menu: $('#menu'), toast: $('#toast')
+    announce: $('#announce'), blockBtn: $('#blockBtn'), scrim: $('#scrim'), sheet: $('#sheet'), menu: $('#menu'), toast: $('#toast')
   };
 
   /* ───────── أدوات ───────── */
@@ -441,13 +441,27 @@
     S.replyTo = null; S.editing = null; E.ctx.hidden = true;
     E.sendBtn.classList.remove('edit'); E.sendBtn.innerHTML = ic('send');
   }
+  S.blocks = new Map();
+  async function loadBlocks() { try { const rows = await rpc('chat_list_blocks'); S.blocks = new Map((rows || []).map(r => [r.user_id, !!r.blocked_by_me])); } catch (e) { /* اختياري */ } applyBlockUI(); }
+  function applyBlockUI() {
+    const priv = S.view.type === 'private'; E.blockBtn.hidden = !priv;
+    const st = priv ? S.blocks.get(S.view.userId) : undefined; const blocked = st !== undefined;
+    E.blockBtn.classList.toggle('active', st === true); E.blockBtn.title = st === true ? 'إلغاء الحظر' : 'حظر المستخدم';
+    if (priv) { E.input.disabled = blocked; E.input.placeholder = st === true ? 'لقد حظرت هذا المستخدم' : st === false ? 'لا يمكنك مراسلة هذا المستخدم' : 'اكتب رسالة…'; syncSend(); }
+  }
+  async function toggleBlock() {
+    if (S.view.type !== 'private') return; const id = S.view.userId; const was = S.blocks.get(id) === true;
+    if (!was && !confirm('حظر هذا المستخدم؟ لن يستطيع أي منكما مراسلة الآخر.')) return;
+    try { await rpc('chat_set_block', { p_user: id, p_blocked: !was }); if (was) S.blocks.delete(id); else S.blocks.set(id, true); applyBlockUI(); toast(was ? 'تم إلغاء الحظر' : 'تم حظر المستخدم'); } catch (e) { toast(errText(e)); }
+  }
+  E.blockBtn.addEventListener('click', toggleBlock);
   function applyPlatform() {
     const pub = S.view.type === 'public';
     const off = pub && S.platform.enabled === false;
     E.input.disabled = off; E.input.placeholder = off ? 'الدردشة متوقفة مؤقتًا' : 'اكتب رسالة…';
-    const text = pub ? (S.platform.announcement || (off ? 'الدردشة متوقفة مؤقتًا من قبل الإدارة.' : '')) : '';
+    const text = pub && off ? 'الدردشة متوقفة مؤقتًا من قبل الإدارة.' : '';
     E.announce.hidden = !text; E.announce.textContent = text; E.announce.classList.toggle('off', off);
-    syncSend();
+    syncSend(); if (S.view.type === 'private') applyBlockUI(); else E.blockBtn.hidden = true;
   }
   async function loadPlatform() {
     try {
@@ -464,8 +478,7 @@
     } catch (error) { /* اختياري */ }
   }
   function showPinned() {
-    const p = S.view.type === 'public' ? S.pub.pinned : null;
-    E.pinnedBar.hidden = !p; if (p) E.pinnedText.textContent = p.body;
+        E.pinnedBar.hidden = true;
   }
 
   function saveDraft() { const c = cur(); if (c && !S.editing) drafts.set(c.id, E.input.value); }
@@ -522,6 +535,7 @@
     paintHeader(); renderMsgs({ stick: true }); renderList();
     joinTyping(thread.id);
     void ensureProfiles([userId]).then(() => { if (S.view.userId === userId) paintHeader(); });
+    void loadBlocks();
     await loadLatest(thread, { silent: thread.loaded });
     if (S.view.threadId !== thread.id) return;
     thread.unreadFrom = thread.msgs.find(m => m.sid !== S.uid && !m.read)?.id || null;

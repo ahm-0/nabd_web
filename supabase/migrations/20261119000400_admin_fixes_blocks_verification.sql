@@ -114,12 +114,6 @@ create unique index if not exists verification_requests_one_pending on public.ve
 alter table public.verification_requests enable row level security;
 revoke all on table public.verification_requests from anon, authenticated;
 
--- نقل طلبات التوثيق القديمة المحفوظة كتذاكر دعم (بحالة محسومة)
-insert into public.verification_requests(user_id, reason, status, created_at, decided_at)
-select t.user_id, 'طلب سابق من صندوق الدعم', case when sp.is_verified then 'approved' else 'rejected' end, t.created_at, t.updated_at
-from public.support_threads t left join public.student_profiles sp on sp.user_id = t.user_id
-where t.category = 'طلب توثيق' and not exists (select 1 from public.verification_requests v where v.user_id = t.user_id);
-
 create or replace function public.verification_submit(p_reason text)
 returns uuid language plpgsql security definer set search_path = public, pg_temp as $$
 declare v_id uuid;
@@ -267,4 +261,3 @@ create index if not exists student_profiles_last_usage_idx on public.student_pro
 create index if not exists student_profiles_verified_idx on public.student_profiles (user_id) where is_verified;
 create index if not exists private_chat_threads_a_idx on public.private_chat_threads (user_a, last_message_at desc);
 create index if not exists private_chat_threads_b_idx on public.private_chat_threads (user_b, last_message_at desc);
-analyze public.student_profiles; analyze public.support_messages; analyze public.public_chat_messages;

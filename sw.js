@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-19-login-pro-v38';
+const CACHE_VERSION = '2026-11-19-admin-motion-v39';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -55,6 +55,8 @@ const APP_SHELL = [
   './nabd-theme.css',
   './nabd-navigation.js',
   './nabd-pro.css',
+  './nabd-motion.css',
+  './nabd-motion.js',
   './nabd-home.css',
   './nabd-material.css',
   './nabd-showcase.css',

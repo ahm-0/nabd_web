@@ -243,3 +243,4 @@ input,textarea{font:inherit;color:inherit}
 .staff-tag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:#e9cf8f;margin-bottom:2px;letter-spacing:.2px}.staff-tag i{font-style:normal;font-size:8px}.staff-tag.inline{margin:0 6px 0 0}
 :root[data-theme=light] .staff-tag{color:#8a6a1f}
 .verified,.verified.vk-verified,.verified.vk-admin,.verified.vk-teacher,.verified.vk-developer{display:inline-block;width:16px;height:16px;margin-inline-start:4px;background:url('assets/badge/verified.svg') center/contain no-repeat;font-size:0;color:transparent;position:relative;top:-1px;vertical-align:1px;border-radius:0;flex:none}
+#blockBtn.active{color:#ff6b6b}
