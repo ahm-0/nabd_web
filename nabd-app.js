@@ -61,6 +61,7 @@
     if (lastError || !session) { window.location.replace('auth.html'); return false; }
     currentAuthUser = session.user;
     void syncOneSignalSubscription();
+    void (async () => { try {
     const expandedSelect = 'user_id,first_name,father_name,family_name,study_stage,province,governorate,gender,email,avatar_url,bio,daily_usage_minutes,usage_day,last_usage_at';
     let { data: profile, error: profileError } = await supabaseClient.from('student_profiles').select(expandedSelect).eq('user_id', currentAuthUser.id).maybeSingle();
     if (profileError) ({ data: profile, error: profileError } = await supabaseClient.from('student_profiles').select('user_id,first_name,father_name,family_name,study_stage,email,avatar_url,bio').eq('user_id', currentAuthUser.id).maybeSingle());
@@ -68,6 +69,8 @@
       student = { ...student, first: profile.first_name || student.first, father: profile.father_name || student.father, last: profile.family_name || student.last, stage: profile.study_stage || student.stage, province: profile.province || profile.governorate || student.province, gender: profile.gender || student.gender, bio: profile.bio || student.bio, avatar: profile.avatar_url || student.avatar, dailyUsageMinutes: Number.isFinite(Number(profile.daily_usage_minutes)) ? Number(profile.daily_usage_minutes) : student.dailyUsageMinutes, usageDay: profile.usage_day || student.usageDay, lastUsageAt: profile.last_usage_at || student.lastUsageAt };
       saveState();
     }
+      try { updateProfileUI(); } catch { /* تحديث لاحق */ }
+    } catch (error) { console.warn('تعذر تحميل الملف في الخلفية', error); } })();
     return true;
   }
 

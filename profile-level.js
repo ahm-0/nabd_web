@@ -30,15 +30,11 @@ https://nabd0.github.io/app/`;
   function openHow() {
     const modal = $('#modalContent'), backdrop = $('#modalBackdrop'); if (!modal || !backdrop) return;
     modal.innerHTML = `<div class="modal-head"><div><span class="eyebrow">النقاط</span><h3>كيف تجمع النقاط؟</h3></div><button class="close-modal" aria-label="إغلاق">×</button></div>
-      <div class="pts-sheet"><p class="pts-sub">أنجز المهام التالية لترفع مستواك وتصعد في لوحة الصدارة:</p>
-      <ul class="pts-list">
-        <li><i class="fa-solid fa-comments"></i><span>المشاركة في الدردشة العامة.</span></li>
-        <li><i class="fa-solid fa-heart"></i><span>التفاعل في الدردشة، والتفاعل والتعليق على منشورات قسم الأخبار.</span></li>
-        <li><i class="fa-solid fa-hourglass-half"></i><span>مشاركة عداد الامتحان.</span></li>
-        <li class="big"><i class="fa-solid fa-share-nodes"></i><span><b>المساهمة في نشر التطبيق:</b> شارك رابط تحميل التطبيق في 10 مجموعات واتساب + مع 10 من أصدقائك + في 10 قنوات تليجرام، لتحصل على <em>50 نقطة</em> (بشرط أن تجذب هذه المشاركات عمليات تحميل فعلية للتطبيق).</span></li>
-      </ul><button type="button" class="pts-share" id="ptsShareApp"><i class="fa-solid fa-share-nodes"></i> مشاركة التطبيق</button></div>`;
+      <div class="pts-sheet"><p class="pts-sub">اضغط على أي مهمة لتنتقل إليها مباشرة:</p>
+      <section class="pt-how"><div class="pt-how-grid-wrap"><div class="pt-how-grid"><a href="chat.html"><i class="fa-solid fa-comments"></i> المشاركة في الدردشة العامة <em>+1</em></a><a href="chat.html"><i class="fa-solid fa-heart"></i> التفاعل في الدردشة <em>+1</em></a><a href="news.html"><i class="fa-solid fa-message"></i> التعليق على منشورات الأخبار <em>+3</em></a><a href="news.html"><i class="fa-solid fa-thumbs-up"></i> التفاعل مع منشورات الأخبار <em>+1</em></a><a href="exam-countdown.html"><i class="fa-solid fa-share-nodes"></i> مشاركة عداد الامتحان <em>+10</em></a><a href="tests.html"><i class="fa-solid fa-clipboard-check"></i> إنهاء اختبار <em>+10</em></a><a href="index.html"><i class="fa-solid fa-door-open"></i> فتح التطبيق يوميًا <em>+5</em></a></div></div><a class="pts-big" href="#" id="ptsShareBig"><i class="fa-solid fa-share-nodes"></i><span><b>المساهمة في نشر التطبيق:</b> شارك رابط تحميل التطبيق في 10 مجموعات واتساب + مع 10 من أصدقائك + في 10 قنوات تليجرام، لتحصل على <em>+50 نقطة</em> (بشرط أن تجذب هذه المشاركات عمليات تحميل فعلية للتطبيق).</span></a></section><button type="button" class="pts-share" id="ptsShareApp"><i class="fa-solid fa-share-nodes"></i> مشاركة التطبيق</button></div>`;
     document.body.classList.add('sheet-open'); backdrop.classList.add('show');
     $('#ptsShareApp')?.addEventListener('click', shareApp);
+    $('#ptsShareBig')?.addEventListener('click', e => { e.preventDefault(); shareApp(); });
   }
   document.addEventListener('click', e => { if (e.target.closest('#pfHowPoints')) openHow(); });
   window.addEventListener('load', () => setTimeout(loadLevel, 600));
