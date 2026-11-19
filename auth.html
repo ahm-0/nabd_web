@@ -19,133 +19,28 @@
   <link rel="stylesheet" href="assets/bundle/all.min.e8e1e872.css">
   <link rel="stylesheet" href="assets/bundle/nabd-ui.79450694.css">
   <link rel="stylesheet" href="assets/bundle/material-ui.962a81ab.css">
-  <style data-bundled-from="auth-ui.css">
-:root{--auth-blue:#52c9f4;--auth-violet:#7772ec;--auth-ink:#0a1324;--auth-line:rgba(148,185,239,.18);--auth-ease:cubic-bezier(.23,1,.32,1)}
-.auth-page{position:relative;isolation:isolate;display:grid;place-items:center;min-height:100dvh;overflow:hidden;padding:clamp(16px,4vw,48px);box-sizing:border-box;background:radial-gradient(circle at 12% 12%,rgba(83,197,246,.14),transparent 30%),radial-gradient(circle at 90% 88%,rgba(119,114,236,.18),transparent 32%),var(--bg)}
-.auth-orb{position:absolute;z-index:-1;border-radius:50%;filter:blur(2px);opacity:.7;pointer-events:none}.auth-orb-one{width:260px;height:260px;top:-110px;right:8%;background:radial-gradient(circle,rgba(78,196,245,.24),transparent 68%)}.auth-orb-two{width:330px;height:330px;bottom:-190px;left:4%;background:radial-gradient(circle,rgba(119,114,236,.22),transparent 68%)}
-.auth-shell{display:grid;grid-template-columns:minmax(260px,.84fr) minmax(0,1.16fr);width:min(100%,980px);min-height:650px;overflow:hidden;border:1px solid var(--auth-line);border-radius:30px;background:color-mix(in srgb,var(--surface) 96%,transparent);box-shadow:0 30px 80px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.025);backdrop-filter:blur(18px)}
-.auth-visual{position:relative;display:flex;flex-direction:column;justify-content:space-between;min-width:0;padding:clamp(25px,4vw,45px);overflow:hidden;color:#f6fbff;background:linear-gradient(145deg,#101f3a 0%,#101a31 55%,#18224b 100%)}.auth-visual:after{content:"";position:absolute;right:-90px;bottom:-90px;width:270px;height:270px;border:1px solid rgba(113,211,250,.18);border-radius:50%;box-shadow:0 0 0 30px rgba(113,211,250,.035),0 0 0 60px rgba(113,211,250,.025);pointer-events:none}.auth-visual-grid{position:absolute;inset:0;opacity:.18;background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:34px 34px;mask-image:linear-gradient(145deg,#000,transparent 80%);pointer-events:none}.auth-visual-brand,.auth-mobile-brand{display:flex;align-items:center;gap:11px}.auth-visual-brand{position:relative;z-index:1}.auth-visual-mark{display:grid;place-items:center;width:45px;height:45px;border:1px solid rgba(255,255,255,.2);border-radius:15px;background:linear-gradient(135deg,var(--auth-blue),var(--auth-violet));color:#fff;font-size:19px;box-shadow:0 12px 24px rgba(51,145,229,.25)}.auth-visual-brand b{display:block;font-size:18px;letter-spacing:-.3px}.auth-visual-brand small{display:block;margin-top:3px;color:rgba(239,247,255,.66);font-size:10px}.auth-visual-copy{position:relative;z-index:1;max-width:340px;margin-top:auto;margin-bottom:auto}.auth-visual-eyebrow,.auth-kicker{color:var(--auth-blue);font-size:11px;font-weight:850}.auth-visual-eyebrow{display:inline-flex;align-items:center;gap:6px;margin-bottom:16px}.auth-visual-copy h2{margin:0;color:#fff;font-size:clamp(30px,4vw,48px);line-height:1.2;letter-spacing:-1.8px}.auth-visual-copy h2 strong{color:var(--auth-blue);font-weight:900}.auth-visual-copy p{max-width:290px;margin:18px 0 0;color:rgba(239,247,255,.68);font-size:13px;line-height:1.9}.auth-visual-pills{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:7px}.auth-visual-pills span{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid rgba(255,255,255,.13);border-radius:999px;background:rgba(255,255,255,.06);color:rgba(239,247,255,.78);font-size:10px}.auth-visual-pills i{color:var(--auth-blue)}
-.auth-form-wrap{display:flex;flex-direction:column;justify-content:center;min-width:0;padding:clamp(25px,5vw,58px);background:color-mix(in srgb,var(--surface) 98%,transparent)}.auth-mobile-brand{display:none}.auth-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.auth-secure{display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-size:10px}.auth-secure i{color:#52d69b}.auth-form-wrap h1{margin:0;color:var(--text);font-size:clamp(25px,4vw,34px);line-height:1.2;letter-spacing:-.8px}.auth-form-wrap>p:not(.auth-switch):not(.auth-message){margin:9px 0 22px;color:var(--muted);font-size:13px;line-height:1.75}.auth-progress{display:grid;gap:8px;margin-bottom:26px}.auth-progress-head{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:10px;font-weight:800}.auth-progress-head b{color:var(--auth-blue);font-size:11px}.auth-progress-track{height:5px;overflow:hidden;border-radius:999px;background:color-mix(in srgb,var(--primary-soft) 66%,var(--surface-2))}.auth-progress-track i{display:block;width:33%;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--auth-violet),var(--auth-blue));box-shadow:0 0 15px rgba(82,201,244,.36);transition:width .38s var(--auth-ease)}.auth-form{display:grid;gap:16px}.auth-steps{min-width:0}.auth-step{display:grid;gap:22px;animation:authStepIn .34s var(--auth-ease) both}.auth-step-heading{display:flex;align-items:flex-start;gap:11px}.auth-step-number{display:grid;place-items:center;width:35px;height:35px;flex:none;border:1px solid color-mix(in srgb,var(--auth-blue) 35%,var(--auth-line));border-radius:12px;background:color-mix(in srgb,var(--auth-blue) 12%,var(--surface-2));color:var(--auth-blue);font-size:10px;font-weight:900}.auth-step-heading h2{margin:0;color:var(--text);font-size:17px;line-height:1.35}.auth-step-heading p{margin:3px 0 0;color:var(--muted);font-size:11px;line-height:1.55}.auth-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.auth-form label{display:grid;gap:7px;min-width:0;color:var(--text);font-size:12px;font-weight:800}.auth-input-wrap{position:relative;display:flex;align-items:center;min-width:0}.auth-input-wrap>i{position:absolute;right:13px;z-index:1;color:var(--muted);font-size:13px;pointer-events:none}.auth-form input,.auth-form select{width:100%;min-height:51px;box-sizing:border-box;padding:12px 38px 12px 13px;border:1px solid var(--auth-line);border-radius:14px;background:color-mix(in srgb,var(--surface-2) 85%,transparent);color:var(--text);font:inherit;font-size:14px;outline:0;transition:border-color .18s var(--auth-ease),box-shadow .18s var(--auth-ease),transform .18s var(--auth-ease)}.auth-form select{appearance:auto}.auth-form input::placeholder{color:var(--muted)}.auth-form input:focus,.auth-form select:focus{border-color:color-mix(in srgb,var(--auth-blue) 80%,white);box-shadow:0 0 0 4px rgba(82,201,244,.12),0 8px 20px rgba(24,93,158,.08);transform:translateY(-1px)}.auth-login-fields{display:grid;gap:22px;animation:authStepIn .34s var(--auth-ease) both}.auth-login-fields .auth-step-number{font-size:13px}.auth-message{min-height:24px;margin:0;color:#f08a8a;font-size:12px;line-height:1.65}.auth-message.success{color:#53c991}.auth-actions{display:flex;align-items:center;gap:9px}.auth-next,.auth-submit{flex:1;justify-content:center;min-height:51px;border:0;border-radius:14px;background:linear-gradient(110deg,var(--auth-blue),var(--auth-violet));box-shadow:0 11px 24px rgba(67,157,229,.2);color:#071522;font-size:13px!important;font-weight:900!important;transition:transform .18s var(--auth-ease),filter .18s var(--auth-ease),box-shadow .18s var(--auth-ease)}.auth-next:hover,.auth-submit:hover{filter:saturate(1.1) brightness(1.04);transform:translateY(-2px);box-shadow:0 15px 27px rgba(67,157,229,.26)}.auth-next:active,.auth-submit:active{transform:scale(.975)}.auth-back{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:84px;min-height:51px;padding:0 13px;border:1px solid var(--auth-line);border-radius:14px;background:var(--surface-2);color:var(--text);font:inherit;font-size:12px;font-weight:800;cursor:pointer;transition:transform .18s var(--auth-ease),border-color .18s var(--auth-ease)}.auth-back:hover{border-color:color-mix(in srgb,var(--auth-blue) 45%,var(--auth-line));transform:translateY(-1px)}.auth-switch{margin:17px 0 0!important;text-align:center;color:var(--muted);font-size:12px!important}.auth-switch button{padding:4px;border:0;background:transparent;color:var(--auth-blue);font:inherit;font-weight:900;cursor:pointer}.auth-footer-note{display:flex;align-items:flex-start;justify-content:center;gap:6px;margin-top:18px;color:var(--muted);font-size:10px;line-height:1.55;text-align:center}.auth-footer-note i{flex:none;margin-top:2px;color:#52d69b}.auth-form [hidden],.auth-progress[hidden]{display:none!important}
-@keyframes authStepIn{from{opacity:0;transform:translateX(-15px)}to{opacity:1;transform:translateX(0)}}
-@media(prefers-reduced-motion:reduce){.auth-step,.auth-login-fields{animation:none}.auth-progress-track i,.auth-form input,.auth-form select,.auth-next,.auth-submit,.auth-back{transition:none}}
-@media(max-width:760px){.auth-page{display:block;padding:0;background:linear-gradient(180deg,#0a1425 0%,var(--bg) 38%)}.auth-shell{display:block;min-height:100dvh;border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none}.auth-visual{min-height:205px;padding:24px 22px 28px;border-radius:0 0 30px 30px}.auth-visual-brand{display:none}.auth-visual-copy{margin:22px 0 0;max-width:100%}.auth-visual-eyebrow{margin-bottom:9px;font-size:10px}.auth-visual-copy h2{font-size:28px;letter-spacing:-1px}.auth-visual-copy h2 br{display:none}.auth-visual-copy p{max-width:330px;margin-top:8px;font-size:11px;line-height:1.6}.auth-visual-pills{display:none}.auth-form-wrap{display:block;margin:-1px 12px 0;padding:25px 18px 28px;border:1px solid var(--auth-line);border-radius:24px;background:color-mix(in srgb,var(--surface) 97%,transparent);box-shadow:0 20px 45px rgba(0,0,0,.22)}.auth-mobile-brand{display:flex;margin-bottom:22px}.auth-mobile-brand .brand-mark{width:37px;height:37px;font-size:16px}.auth-mobile-brand strong{font-size:17px}.auth-mobile-brand small{display:block;margin-top:2px;color:var(--muted);font-size:10px}.auth-topline{margin-bottom:14px}.auth-progress{margin-bottom:22px}.auth-form-wrap>p:not(.auth-switch):not(.auth-message){margin-bottom:19px}.auth-grid{grid-template-columns:1fr}.auth-step{gap:18px}.auth-step-heading h2{font-size:16px}.auth-actions{position:sticky;bottom:8px;z-index:4;margin:0 -2px;padding-top:3px;background:linear-gradient(180deg,transparent 0%,color-mix(in srgb,var(--surface) 95%,transparent) 20%)}.auth-footer-note{padding-bottom:env(safe-area-inset-bottom)}}
-@media(max-width:360px){.auth-form-wrap{margin:0 8px;padding:22px 14px}.auth-visual{padding-inline:18px}.auth-visual-copy h2{font-size:25px}.auth-form input,.auth-form select{min-height:48px}}
-
-/* تخطيط المصادقة المضغوط للهاتف: إبقاء المحتوى الوظيفي ظاهرًا ضمن شاشة واحدة */
-@media (max-width:760px) {
-  .auth-page { min-height:100svh; height:100svh; overflow:hidden; }
-  .auth-shell { height:100%; min-height:0; overflow:hidden; }
-  .auth-visual { min-height:0; height:25svh; max-height:180px; padding:16px 18px 18px; }
-  .auth-visual-copy { margin:8px 0 0; }
-  .auth-visual-eyebrow { margin-bottom:5px; font-size:9px; }
-  .auth-visual-copy h2 { font-size:clamp(22px,7vw,28px); line-height:1.1; }
-  .auth-visual-copy p { max-width:100%; margin-top:6px; font-size:10px; line-height:1.45; }
-  .auth-form-wrap { height:75svh; min-height:0; margin:-1px 8px 0; padding:14px 14px max(14px,env(safe-area-inset-bottom)); overflow:hidden; box-sizing:border-box; border-radius:20px; }
-  .auth-mobile-brand { margin-bottom:10px; }
-  .auth-mobile-brand .brand-mark { width:32px; height:32px; font-size:14px; }
-  .auth-mobile-brand strong { font-size:15px; }
-  .auth-mobile-brand small { font-size:9px; }
-  .auth-topline { margin-bottom:8px; }
-  .auth-progress { gap:5px; margin-bottom:12px; }
-  .auth-form-wrap h1 { font-size:22px; }
-  .auth-form-wrap>p:not(.auth-switch):not(.auth-message) { margin:4px 0 10px; font-size:11px; line-height:1.4; }
-  .auth-form { gap:8px; }
-  .auth-step { gap:10px; }
-  .auth-step-heading { gap:7px; }
-  .auth-step-number { width:29px; height:29px; border-radius:10px; font-size:9px; }
-  .auth-step-heading h2 { font-size:14px; }
-  .auth-step-heading p { margin-top:1px; font-size:9px; line-height:1.35; }
-  .auth-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
-  .auth-form label { gap:4px; font-size:10px; }
-  .auth-input-wrap>i { right:9px; font-size:11px; }
-  .auth-form input,.auth-form select { min-height:43px; padding:8px 28px 8px 8px; border-radius:11px; font-size:12px; }
-  .auth-login-fields { gap:10px; }
-  .auth-login-fields .auth-step-number { font-size:11px; }
-  .auth-message { min-height:16px; font-size:10px; line-height:1.35; }
-  .auth-actions { position:static; gap:6px; margin:0; padding-top:0; background:none; }
-  .auth-next,.auth-submit,.auth-back { min-height:43px; border-radius:11px; font-size:11px!important; }
-  .auth-back { min-width:62px; padding:0 8px; }
-  .auth-switch { margin:8px 0 0!important; font-size:10px!important; }
-  .auth-switch button { padding:2px; }
-  .auth-footer-note { margin-top:8px; font-size:9px; line-height:1.3; }
-}
-
-@media (max-width:360px), (max-height:700px) and (max-width:760px) {
-  .auth-visual { height:20svh; max-height:140px; padding:12px 15px 14px; }
-  .auth-visual-copy { margin:4px 0 0; }
-  .auth-visual-copy h2 { font-size:22px; }
-  .auth-visual-copy p,.auth-step-heading p { display:none; }
-  .auth-form-wrap { height:80svh; padding:10px 12px max(10px,env(safe-area-inset-bottom)); }
-  .auth-mobile-brand { margin-bottom:7px; }
-  .auth-progress { margin-bottom:8px; }
-  .auth-form-wrap h1 { font-size:20px; }
-  .auth-form-wrap>p:not(.auth-switch):not(.auth-message) { margin:2px 0 7px; }
-  .auth-step-heading { gap:6px; }
-  .auth-step-number { width:26px; height:26px; }
-  .auth-step { gap:8px; }
-  .auth-form label { font-size:9px; }
-  .auth-form input,.auth-form select { min-height:40px; padding:7px 26px 7px 7px; font-size:11px; }
-  .auth-message { min-height:13px; font-size:9px; }
-  .auth-actions .auth-next,.auth-actions .auth-submit,.auth-actions .auth-back { min-height:40px; }
-  .auth-switch { margin-top:5px!important; font-size:9px!important; }
-  .auth-footer-note { margin-top:5px; font-size:8px; }
-}
-
-.auth-message.is-visible{display:block;padding:9px 11px;border:1px solid rgba(240,138,138,.28);border-radius:11px;background:rgba(240,138,138,.08);font-weight:800}.auth-message.success.is-visible{border-color:rgba(83,201,145,.28);background:rgba(83,201,145,.08)}.auth-form label.has-error>span{color:#f08a8a}.auth-form input.has-error,.auth-form select.has-error{border-color:#f08a8a!important;box-shadow:0 0 0 3px rgba(240,138,138,.12)!important}
-
-</style>
   <link rel="stylesheet" href="assets/bundle/nabd-theme.9fcd0995.css">
   <script src="assets/bundle/nabd-navigation.73210ac4.js"></script>
 <meta name="nabd-single-file" content="true">
 
-<style id="nabd-auth-reference-design">
-/* Login screen inspired by the supplied mobile reference, retaining Nabd colors. */
-.auth-page{position:relative;isolation:isolate;min-height:100dvh;overflow:hidden;padding:clamp(18px,5vh,56px) 14px;background:radial-gradient(circle at 50% 12%,rgba(var(--nabd-primary-rgb),.2),transparent 30%),radial-gradient(circle at 10% 92%,rgba(99,102,241,.14),transparent 32%),var(--nabd-bg)!important}
-.auth-page:before{content:"";position:absolute;z-index:-1;inset:7% 8% 10%;border:1px solid rgba(var(--nabd-primary-rgb),.17);border-radius:48% 52% 45% 55%;box-shadow:0 0 80px rgba(var(--nabd-primary-rgb),.08),inset 0 0 70px rgba(var(--nabd-primary-rgb),.04);pointer-events:none}
-.auth-orb{filter:blur(1px)!important;opacity:.3!important}
-.auth-shell{display:block!important;width:min(100%,570px)!important;margin:0 auto!important;background:transparent!important;box-shadow:none!important}
-.auth-visual{display:none!important}
-.auth-form-wrap{position:relative!important;overflow:visible!important;width:100%!important;max-width:none!important;padding:clamp(18px,5vw,42px) clamp(18px,7vw,54px) 24px!important;border:1px solid rgba(var(--nabd-primary-rgb),.18)!important;border-radius:42% 42% 30px 30px / 18% 18% 30px 30px!important;background:linear-gradient(145deg,color-mix(in srgb,var(--nabd-surface) 95%,transparent),color-mix(in srgb,var(--nabd-primary) 5%,var(--nabd-surface-2)))!important;box-shadow:0 25px 70px rgba(0,0,0,.2),0 0 45px rgba(var(--nabd-primary-rgb),.1),inset 0 1px 0 rgba(255,255,255,.1)!important}
-.auth-form-wrap:before{content:"";position:absolute;z-index:-1;inset:-18px -10px -18px;border:1px solid rgba(var(--nabd-primary-rgb),.12);border-radius:50%;box-shadow:0 0 34px rgba(var(--nabd-primary-rgb),.1);pointer-events:none}
-.auth-mobile-brand{justify-content:center!important;margin-bottom:4px!important}.auth-mobile-brand .brand-mark{width:38px!important;height:38px!important;border-radius:13px!important;background:linear-gradient(135deg,var(--nabd-primary),#6366f1)!important;box-shadow:0 8px 22px rgba(var(--nabd-primary-rgb),.3)!important}.auth-mobile-brand strong{font-size:16px!important}.auth-mobile-brand small{font-size:9px!important;color:var(--nabd-muted)!important}
-.auth-login-emblem{position:relative;display:grid;place-items:center;width:82px;height:82px;margin:8px auto 8px;border-radius:50%;background:linear-gradient(145deg,var(--nabd-primary),#6366f1);box-shadow:0 0 0 8px rgba(var(--nabd-primary-rgb),.1),0 14px 30px rgba(var(--nabd-primary-rgb),.3),inset 0 2px 8px rgba(255,255,255,.3);animation:authEmblemFloat 3s ease-in-out infinite}
-.auth-login-emblem>span{display:grid;place-items:center;width:55px;height:55px;border:1px solid rgba(255,255,255,.45);border-radius:50%;color:#fff;font-size:24px;background:rgba(0,0,0,.1);box-shadow:inset 0 0 16px rgba(255,255,255,.12)}
-.auth-emblem-spark{position:absolute;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 10px #fff;animation:authSpark 2.4s ease-in-out infinite}.spark-one{top:6px;right:15px}.spark-two{bottom:12px;left:8px;width:5px;height:5px;animation-delay:.6s}.spark-three{top:27px;left:-3px;width:4px;height:4px;animation-delay:1.1s}
-.auth-topline{justify-content:center!important;margin-top:0!important}.auth-kicker{font-size:10px!important}.auth-secure{display:none!important}.auth-progress{margin:14px auto 18px!important;max-width:300px!important}.auth-progress-head{font-size:10px!important}.auth-progress-track{height:5px!important;border-radius:99px!important;background:rgba(var(--nabd-primary-rgb),.12)!important}.auth-progress-track i{border-radius:99px!important;background:linear-gradient(90deg,var(--nabd-primary),#6366f1)!important}
-.auth-form-wrap>h1,.auth-form-wrap>p#authSubtitle{text-align:center!important}.auth-form-wrap>h1{font-size:clamp(27px,7vw,36px)!important;letter-spacing:-.8px!important;margin:0!important}.auth-form-wrap>p#authSubtitle{font-size:12px!important;color:var(--nabd-muted)!important;margin:8px 0 20px!important}
-.auth-step-heading{align-items:center!important;justify-content:center!important;text-align:center!important;margin-bottom:16px!important}.auth-step-heading>div h2{font-size:17px!important}.auth-step-heading>div p{font-size:10px!important;color:var(--nabd-muted)!important}.auth-step-number{display:grid!important;place-items:center!important;width:34px!important;height:34px!important;flex:none!important;margin-inline:auto!important;border:1px solid rgba(var(--nabd-primary-rgb),.3)!important;border-radius:50%!important;background:rgba(var(--nabd-primary-rgb),.13)!important;color:var(--nabd-primary)!important;font-size:12px!important}
-.auth-grid{gap:11px!important}.auth-grid label>span{font-size:10px!important;color:var(--nabd-muted)!important}.auth-input-wrap{min-height:50px!important;border-radius:15px!important;border:1px solid rgba(var(--nabd-primary-rgb),.15)!important;background:color-mix(in srgb,var(--nabd-surface-2) 82%,transparent)!important;box-shadow:inset 0 2px 8px rgba(0,0,0,.06)!important;transition:border-color .18s,box-shadow .18s,transform .18s}.auth-input-wrap:focus-within{border-color:var(--nabd-primary)!important;box-shadow:0 0 0 3px rgba(var(--nabd-primary-rgb),.13),inset 0 2px 8px rgba(0,0,0,.04)!important;transform:translateY(-1px)}.auth-input-wrap>i{color:var(--nabd-primary)!important}.auth-input-wrap input,.auth-input-wrap select{font-size:13px!important}.auth-actions{margin-top:18px!important;gap:9px!important}.auth-actions button{min-height:48px!important;border-radius:16px!important}.auth-next,.auth-submit{background:linear-gradient(135deg,var(--nabd-primary),#6366f1)!important;color:#fff!important;box-shadow:0 10px 24px rgba(var(--nabd-primary-rgb),.25)!important}.auth-next:hover,.auth-submit:hover{transform:translateY(-2px)!important;filter:saturate(1.1)}.auth-switch{text-align:center!important;font-size:11px!important}.auth-switch button{color:var(--nabd-primary)!important;font-weight:900!important}.auth-footer-note{justify-content:center!important;border-top:1px solid rgba(var(--nabd-primary-rgb),.12)!important;color:var(--nabd-muted)!important;font-size:9px!important}.auth-footer-note i{color:var(--nabd-primary)!important}
-[data-theme="light"] .auth-page{background:radial-gradient(circle at 50% 12%,rgba(var(--nabd-primary-rgb),.16),transparent 32%),var(--nabd-bg)!important}.auth-login-fields .auth-step-heading{margin-bottom:18px!important}
-@keyframes authEmblemFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-5px) rotate(2deg)}}@keyframes authSpark{0%,100%{opacity:.35;transform:scale(.7)}50%{opacity:1;transform:scale(1.3)}}
-@media(max-width:520px){.auth-page{padding:22px 12px 28px!important}.auth-form-wrap{padding:18px 17px 22px!important;border-radius:38% 38% 28px 28px / 14% 14% 28px 28px!important}.auth-page:before{inset:9% 3% 5%}.auth-login-emblem{width:74px;height:74px}.auth-login-emblem>span{width:49px;height:49px;font-size:21px}.auth-grid{grid-template-columns:1fr!important}.auth-form-wrap>h1{font-size:27px!important}}
-@media(prefers-reduced-motion:reduce){.auth-login-emblem,.auth-emblem-spark{animation:none!important}}
-</style>
 <link rel="stylesheet" href="nabd-pro.css">
-<link rel="stylesheet" href="nabd-auth.css">
+<link rel="stylesheet" href="auth-pro.css">
 <script src="nabd-smooth.js" defer></script>
 <script src="screen-guard.js" defer></script></head>
 <body data-page="auth">
-  <main class="auth-page">
-    <div class="auth-orb auth-orb-one"></div>
-    <div class="auth-orb auth-orb-two"></div>
-    <section class="auth-shell" aria-labelledby="authTitle">
-      <aside class="auth-visual" aria-label="نبض التفوق، رحلتك الدراسية">
-        <div class="auth-visual-grid"></div>
-        <div class="auth-visual-brand"><span class="auth-visual-mark"><i class="fa-solid fa-wave-square"></i></span><span><b>نبض التفوق</b><small>خطوتك الأذكى نحو النجاح</small></span></div>
-        <div class="auth-visual-copy"><span class="auth-visual-eyebrow"><i class="fa-solid fa-sparkles"></i> تجربة مصممة للطلاب</span><h2>ابدأ من خطوة<br><strong>وواصل التفوق.</strong></h2><p>نظّم دراستك، تابع تقدمك، واحتفظ بكل ما يهمك في مساحة واحدة.</p></div>
-        <div class="auth-visual-pills"><span><i class="fa-solid fa-shield-heart"></i> بياناتك محفوظة</span><span><i class="fa-solid fa-bolt"></i> تجربة سريعة</span></div>
-      </aside>
-      <section class="auth-form-wrap">
-        <div class="auth-mobile-brand"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><strong>نبض التفوق</strong><small>منصتك الدراسية</small></span></div>
-        <div class="auth-login-emblem" aria-hidden="true"><span><i class="fa-solid fa-arrow-right-to-bracket"></i></span><i class="auth-emblem-spark spark-one"></i><i class="auth-emblem-spark spark-two"></i><i class="auth-emblem-spark spark-three"></i></div>
-        <div class="auth-topline"><span class="auth-kicker" id="authKicker">إنشاء حساب جديد</span><span class="auth-secure"><i class="fa-solid fa-lock"></i> اتصال آمن</span></div>
-        <div class="auth-progress" id="authProgress" aria-label="تقدم إنشاء الحساب">
-          <div class="auth-progress-head"><span id="authStepLabel">الخطوة 1 من 3</span><b id="authProgressValue">33%</b></div>
-          <div class="auth-progress-track"><i id="authProgressBar"></i></div>
-        </div>
-        <h1 id="authTitle">أنشئ حسابك</h1>
-        <p id="authSubtitle">ابدأ بمعلوماتك الأساسية، وأكمل حسابك بخطوات قصيرة.</p>
-        <form id="authForm" class="auth-form" novalidate>
+  <div class="lg-bg" aria-hidden="true"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i><span class="grid"></span><i class="sp"></i><i class="sp"></i><i class="sp"></i><i class="sp"></i><i class="sp"></i></div>
+  <main class="lg-page">
+    <header class="lg-hero">
+      <div class="lg-logo"><span class="lg-ring"></span><span class="lg-ring r2"></span><img src="assets/exam-card/emblem.webp" alt="نبض التفوق" width="74" height="74"></div>
+      <h1 class="lg-brand">نبض التفوق</h1>
+      <p class="lg-tag">خطوتك الأذكى نحو النجاح</p>
+    </header>
+    <section class="lg-card" aria-labelledby="authTitle">
+      <div class="lg-tabs" id="lgTabs" data-mode="signup" role="tablist" aria-label="نوع الدخول"><i class="lg-tabs-ind"></i><button type="button" role="tab" id="tabSignup" aria-selected="true">حساب جديد</button><button type="button" role="tab" id="tabLogin" aria-selected="false">تسجيل الدخول</button></div>
+      <div><button class="lg-google" type="button" id="googleBtn"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span>المتابعة عبر Google</span></button><div class="lg-or"><span>أو بالبريد الإلكتروني</span></div></div>
+      <div class="auth-progress" id="authProgress" aria-label="تقدم إنشاء الحساب"><div class="auth-progress-head"><span id="authStepLabel">الخطوة 1 من 3</span><b id="authProgressValue">33%</b></div><div class="auth-progress-track"><i id="authProgressBar"></i></div></div>
+      <div><h2 id="authTitle">أنشئ حسابك</h2><p id="authSubtitle">ابدأ بمعلوماتك الأساسية، وأكمل حسابك بخطوات قصيرة.</p><span id="authKicker" class="auth-kicker-hidden"></span></div>
+      <form id="authForm" class="auth-form" novalidate>
           <div class="auth-steps" id="signupFields">
             <section class="auth-step is-active" data-auth-step="0" aria-labelledby="authStepOneTitle">
               <div class="auth-step-heading"><span class="auth-step-number">01</span><div><h2 id="authStepOneTitle">لنبدأ بالتعريف بك</h2><p>نحتاج اسمك كما تحب أن يظهر داخل التطبيق.</p></div></div>
@@ -165,11 +60,9 @@
             <div class="auth-grid"><label><span>البريد الإلكتروني</span><div class="auth-input-wrap"><i class="fa-regular fa-envelope"></i><input name="login_email" type="email" autocomplete="email" inputmode="email"></div></label><label><span>كلمة السر</span><div class="auth-input-wrap"><i class="fa-solid fa-key"></i><input name="login_password" type="password" autocomplete="current-password"></div></label></div>
           </div>
           <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
-          <div class="auth-actions"><button class="auth-back" type="button" id="authBack" hidden><i class="fa-solid fa-arrow-right"></i><span>رجوع</span></button><button class="primary-button auth-next" type="button" id="authNext"><span>التالي</span><i class="fa-solid fa-arrow-left"></i></button><button class="primary-button auth-submit" type="submit" id="authSubmit" hidden><i class="fa-solid fa-user-plus"></i><span>إنشاء الحساب</span></button></div>
-        </form>
-        <p class="auth-switch"><span id="authSwitchText">لديك حساب بالفعل؟</span><button type="button" id="authModeToggle">تسجيل الدخول</button></p>
-        <div class="auth-footer-note"><i class="fa-solid fa-circle-check"></i><span>نحافظ على بياناتك لتبقى تجربتك متصلة وآمنة.</span></div>
-      </section>
+          <div class="auth-actions"><button class="auth-back" type="button" id="authBack" hidden><i class="fa-solid fa-arrow-right"></i><span>رجوع</span></button><button class="auth-next" type="button" id="authNext"><span>التالي</span><i class="fa-solid fa-arrow-left"></i></button><button class="auth-submit" type="submit" id="authSubmit" hidden><i class="fa-solid fa-user-plus"></i><span>إنشاء الحساب</span></button></div>
+      </form>
+      <div><p class="auth-switch"><span id="authSwitchText">لديك حساب بالفعل؟</span><button type="button" id="authModeToggle">تسجيل الدخول</button></p><div class="lg-note"><i class="fa-solid fa-shield-halved"></i><span>بياناتك محمية ومتصلة بحسابك بأمان</span></div></div>
     </section>
   </main>
   <script src="assets/bundle/supabase.f9ccb1e9.js"></script>
@@ -197,8 +90,21 @@
   const message = document.querySelector('#authMessage');
   const toggle = document.querySelector('#authModeToggle');
   const switchText = document.querySelector('#authSwitchText');
+  const tabs = document.querySelector('#lgTabs');
+  const tabSignup = document.querySelector('#tabSignup');
+  const tabLogin = document.querySelector('#tabLogin');
+  const googleBtn = document.querySelector('#googleBtn');
   let signupMode = true;
   let currentStep = 0;
+
+  // إظهار/إخفاء كلمة السر
+  document.querySelectorAll('input[type="password"]').forEach(input => {
+    const wrap = input.closest('.auth-input-wrap'); if (!wrap) return;
+    const eye = document.createElement('button'); eye.type = 'button'; eye.className = 'lg-eye'; eye.setAttribute('aria-label', 'إظهار كلمة السر'); eye.innerHTML = '<i class="fa-regular fa-eye"></i>';
+    eye.addEventListener('click', () => { const show = input.type === 'password'; input.type = show ? 'text' : 'password'; eye.innerHTML = show ? '<i class="fa-regular fa-eye-slash"></i>' : '<i class="fa-regular fa-eye"></i>'; });
+    wrap.appendChild(eye);
+  });
+  const leaveTo = url => { document.body.classList.add('lg-leave'); window.setTimeout(() => window.location.replace(url), 380); };
 
   const signupCopy = [
     { title: 'أنشئ حسابك', subtitle: 'ابدأ بمعلوماتك الأساسية، وأكمل حسابك بخطوات قصيرة.' },
@@ -286,6 +192,7 @@
       input.required = !signupMode;
       input.disabled = signupMode;
     });
+    tabs?.setAttribute('data-mode', signupMode ? 'signup' : 'login'); tabSignup?.setAttribute('aria-selected', String(signupMode)); tabLogin?.setAttribute('aria-selected', String(!signupMode));
     kicker.textContent = signupMode ? 'إنشاء حساب جديد' : 'تسجيل الدخول';
     title.textContent = signupMode ? signupCopy[0].title : 'مرحبًا بعودتك';
     subtitle.textContent = signupMode ? signupCopy[0].subtitle : 'أدخل بياناتك للوصول إلى مساحتك الدراسية.';
@@ -302,6 +209,8 @@
   form?.addEventListener('invalid', event => { event.preventDefault(); showFieldError(event.target); }, true);
   form?.addEventListener('input', event => { event.target.classList.remove('has-error'); event.target.closest('label')?.classList.remove('has-error'); if (message?.textContent) setMessage(''); });
   toggle?.addEventListener('click', () => setMode(!signupMode));
+  tabSignup?.addEventListener('click', () => { if (!signupMode) setMode(true); });
+  tabLogin?.addEventListener('click', () => { if (signupMode) setMode(false); });
   next?.addEventListener('click', () => {
     if (!validateCurrentStep()) return;
     showStep(currentStep + 1, 'forward');
@@ -345,11 +254,11 @@
           form.elements.login_email.value = data.email;
           return;
         }
-        window.location.replace('index.html');
+        leaveTo('index.html');
       } else {
         const { data: result, error } = await client.auth.signInWithPassword({ email: data.email, password: data.password });
         if (error) throw error;
-        if (result.user) window.location.replace('index.html');
+        if (result.user) leaveTo('index.html');
       }
     } catch (error) {
       console.error('خطأ في المصادقة أو حفظ الملف الشخصي:', error);
@@ -369,8 +278,47 @@
     if (error) throw error;
   }
 
+  // الملف الشخصي لحسابات Google الجديدة: نُنشئ سجلاً مبدئياً من بيانات الحساب
+  async function ensureProfile(user) {
+    try {
+      const { data: row } = await client.from('student_profiles').select('user_id').eq('user_id', user.id).maybeSingle();
+      if (row) return;
+      const meta = user.user_metadata || {};
+      const full = String(meta.full_name || meta.name || '').trim().split(/\s+/);
+      await client.from('student_profiles').upsert({ user_id: user.id, first_name: meta.given_name || full[0] || 'طالب', family_name: meta.family_name || full.slice(1).join(' ') || '', email: user.email }, { onConflict: 'user_id' });
+    } catch (error) { console.warn('تعذر إنشاء الملف المبدئي', error); }
+  }
+  const googleErrors = error => {
+    const raw = String(error?.message || '').toLowerCase();
+    if (/provider is not enabled|unsupported provider/.test(raw)) return 'تسجيل الدخول عبر Google غير مفعّل بعد من إعدادات الخدمة.';
+    return friendlyError(error);
+  };
+  googleBtn?.addEventListener('click', async () => {
+    if (!client) { setMessage('تعذر الاتصال بخدمة الحسابات حاليًا. أعد تحميل الصفحة.'); return; }
+    setMessage(''); googleBtn.disabled = true;
+    try {
+      if (window.NabdAndroid?.googleSignIn) { window.NabdAndroid.googleSignIn(); return; }
+      if (window.NabdAndroid) { setMessage('تسجيل Google داخل التطبيق يحتاج تحديث التطبيق إلى أحدث إصدار.'); return; }
+      const redirectTo = new URL('auth.html', window.location.href).href;
+      const { error } = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo, queryParams: { prompt: 'select_account' } } });
+      if (error) throw error;
+    } catch (error) { setMessage(googleErrors(error)); }
+    finally { window.setTimeout(() => { googleBtn.disabled = false; }, 1200); }
+  });
+  // يستدعيها تطبيق الأندرويد بعد نجاح Google Sign-In الأصلي (رمز الهوية)
+  window.nabdGoogleIdToken = async (idToken, nonce) => {
+    try {
+      const { error } = await client.auth.signInWithIdToken({ provider: 'google', token: idToken, ...(nonce ? { nonce } : {}) });
+      if (error) throw error;
+      const { data } = await client.auth.getUser(); if (data?.user) await ensureProfile(data.user);
+      leaveTo('index.html');
+    } catch (error) { setMessage(googleErrors(error)); }
+    if (googleBtn) googleBtn.disabled = false;
+  };
+  window.nabdGoogleError = message => { setMessage(message || 'تعذر تسجيل الدخول عبر Google.'); if (googleBtn) googleBtn.disabled = false; };
+
   if (client?.auth?.getSession) {
-    client.auth.getSession().then(({ data }) => { if (data.session) window.location.replace('index.html'); }).catch(() => {});
+    client.auth.getSession().then(async ({ data }) => { if (data.session) { await ensureProfile(data.session.user); window.location.replace('index.html'); } }).catch(() => {});
   }
   setMode(true);
   window.setTimeout(() => window.nabdNativeReady?.(), 700);
