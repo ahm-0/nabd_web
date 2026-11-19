@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-19-admin-motion-v39';
+const CACHE_VERSION = '2026-11-19-home-fix-v40';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 

@@ -115,3 +115,4 @@ html[data-theme="light"] .lg-google{border:1px solid var(--lg-line);box-shadow:0
 @media(max-height:700px){.lg-hero .lg-tag{display:none}.lg-logo{width:68px;height:68px}.lg-logo img{width:58px;height:58px}}
 @media(min-width:900px){.lg-page{gap:26px}.lg-card{width:480px;padding:26px 24px 22px}}
 @media(prefers-reduced-motion:reduce){.lg-bg .blob,.lg-bg .sp,.lg-logo,.lg-ring,.auth-next::after,.auth-submit::after{animation:none!important}.lg-card,.lg-card>*,.lg-hero{animation:none!important}}
+.lg-social{display:block}.lg-social .lg-google{margin-top:10px}.lg-social .lg-or{margin:16px 0 0}

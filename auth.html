@@ -38,7 +38,7 @@
     </header>
     <section class="lg-card" aria-labelledby="authTitle">
       <div class="lg-tabs" id="lgTabs" data-mode="signup" role="tablist" aria-label="نوع الدخول"><i class="lg-tabs-ind"></i><button type="button" role="tab" id="tabSignup" aria-selected="true">حساب جديد</button><button type="button" role="tab" id="tabLogin" aria-selected="false">تسجيل الدخول</button></div>
-      <div><button class="lg-google" type="button" id="googleBtn"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span>المتابعة عبر Google</span></button><div class="lg-or"><span>أو بالبريد الإلكتروني</span></div></div>
+      
       <div class="auth-progress" id="authProgress" aria-label="تقدم إنشاء الحساب"><div class="auth-progress-head"><span id="authStepLabel">الخطوة 1 من 3</span><b id="authProgressValue">33%</b></div><div class="auth-progress-track"><i id="authProgressBar"></i></div></div>
       <div><h2 id="authTitle">أنشئ حسابك</h2><p id="authSubtitle">ابدأ بمعلوماتك الأساسية، وأكمل حسابك بخطوات قصيرة.</p><span id="authKicker" class="auth-kicker-hidden"></span></div>
       <form id="authForm" class="auth-form" novalidate>
@@ -63,6 +63,7 @@
           <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
           <div class="auth-actions"><button class="auth-back" type="button" id="authBack" hidden><i class="fa-solid fa-arrow-right"></i><span>رجوع</span></button><button class="auth-next" type="button" id="authNext"><span>التالي</span><i class="fa-solid fa-arrow-left"></i></button><button class="auth-submit" type="submit" id="authSubmit" hidden><i class="fa-solid fa-user-plus"></i><span>إنشاء الحساب</span></button></div>
       </form>
+      <div class="lg-social"><div class="lg-or"><span>أو تابع باستخدام</span></div><button class="lg-google" type="button" id="googleBtn"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span>المتابعة عبر Google</span></button></div>
       <div><p class="auth-switch"><span id="authSwitchText">لديك حساب بالفعل؟</span><button type="button" id="authModeToggle">تسجيل الدخول</button></p><div class="lg-note"><i class="fa-solid fa-shield-halved"></i><span>بياناتك محمية ومتصلة بحسابك بأمان</span></div></div>
     </section>
   </main>
