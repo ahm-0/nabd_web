@@ -22,10 +22,44 @@ https://nabd0.github.io/app/`;
       $('#pfLvlNext').textContent = `باقي ${hi - total} نقطة للوصول إلى المستوى ${l + 1}`;
     } catch { /* صامت */ }
   }
+  /* صورة بطاقة التطبيق للمشاركة (نفس آلية مشاركة عداد الامتحان) */
+  const FONT = 'system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Arabic",Tahoma,Arial,sans-serif';
+  async function cardDataUrl() {
+    const cv = document.createElement('canvas'); cv.width = 1080; cv.height = 1080; const x = cv.getContext('2d');
+    const g = x.createLinearGradient(0, 0, 1080, 1080); g.addColorStop(0, '#071324'); g.addColorStop(1, '#1b3a8a'); x.fillStyle = g; x.fillRect(0, 0, 1080, 1080);
+    x.direction = 'rtl'; x.textAlign = 'center'; x.fillStyle = '#fff';
+    try { const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = 'assets/exam-card/emblem.webp'; }); x.drawImage(img, 390, 150, 300, 300); } catch { /* بدون شعار */ }
+    x.font = `800 96px ${FONT}`; x.fillText('نبض التفوق', 540, 580);
+    x.font = `600 46px ${FONT}`; x.fillStyle = '#cfe0ff'; x.fillText('رفيقك الأول نحو النجاح', 540, 660);
+    x.font = `500 40px ${FONT}`; x.fillText('عداد الامتحانات • التفاعل • المنافسة على الصدارة', 540, 745);
+    x.fillStyle = '#f59e0b'; x.beginPath(); x.roundRect(210, 840, 660, 110, 55); x.fill();
+    x.fillStyle = '#2a1a00'; x.font = `800 44px ${FONT}`; x.fillText('حمّل الآن من Google Play', 540, 910);
+    return cv.toDataURL('image/png');
+  }
+  const cap_ = n => window.Capacitor?.Plugins?.[n] || null;
   async function shareApp() {
-    const P = window.nabdPoints;
-    try { if (window.NabdAndroid?.shareText) { const w = P?.awardOnShareLeave('app_share'); try { await window.NabdAndroid.shareText(SHARE_TEXT); } catch (e) { w?.cancel(); } return; } } catch { /* تابع */ }
-    try { if (navigator.share) { await navigator.share({ text: SHARE_TEXT }); P?.award('app_share'); return; } } catch (e) { return; /* إلغاء المشاركة = لا نقاط */ }
+    const P = window.nabdPoints, A = window.NabdAndroid;
+    try {
+      if (A?.shareText) { const w = P?.awardOnShareLeave('app_share'); try { await A.shareText(SHARE_TEXT); } catch { w?.cancel(); } return; }
+      if (A?.shareImage) { const w = P?.awardOnShareLeave('app_share'); try { await A.shareImage(await cardDataUrl(), 'نبض التفوق', SHARE_TEXT); } catch { w?.cancel(); } return; }
+      const shareP = cap_('Share'), fs = cap_('Filesystem');
+      if (window.Capacitor?.isNativePlatform?.() && shareP?.share) {
+        const w = P?.awardOnShareLeave('app_share');
+        try {
+          if (fs?.writeFile) { const d = await cardDataUrl(); const saved = await fs.writeFile({ path: `nabd-app-${Date.now()}.png`, data: d.split(',')[1], directory: 'CACHE', recursive: true }); if (saved?.uri) { await shareP.share({ title: 'نبض التفوق', text: SHARE_TEXT, files: [saved.uri], dialogTitle: 'مشاركة التطبيق' }); return; } }
+          await shareP.share({ title: 'نبض التفوق', text: SHARE_TEXT, dialogTitle: 'مشاركة التطبيق' });
+        } catch { w?.cancel(); }
+        return;
+      }
+      if (navigator.share) {
+        try {
+          const blob = await (await fetch(await cardDataUrl())).blob(); const file = new File([blob], 'nabd-app.png', { type: 'image/png' });
+          if (navigator.canShare?.({ files: [file] })) await navigator.share({ title: 'نبض التفوق', text: SHARE_TEXT, files: [file] }); else await navigator.share({ title: 'نبض التفوق', text: SHARE_TEXT });
+          P?.award('app_share');
+        } catch { /* إلغاء المشاركة = لا نقاط */ }
+        return;
+      }
+    } catch { /* تابع للنسخ */ }
     try { await navigator.clipboard.writeText(SHARE_TEXT); toast('تم نسخ نص المشاركة، الصقه في أي تطبيق.'); } catch { toast('تعذر فتح المشاركة.'); }
   }
   function openHow() {

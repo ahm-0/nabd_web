@@ -10,7 +10,7 @@
     bac: { tab: 'بكالوريا', name: 'البكالوريا', title: 'امتحانات البكالوريا', fallback: '2027-06-05T08:00:00' },
     nine: { tab: 'تاسع', name: 'التاسع', title: 'امتحانات التاسع', fallback: '2027-06-02T08:00:00' }
   };
-  const FONT = '"Cairo","Readex Pro",system-ui,sans-serif';
+  const FONT = 'system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Arabic","Noto Naskh Arabic","Droid Arabic Naskh",Tahoma,Arial,sans-serif';
   const $ = (s, r = document) => r.querySelector(s);
   const toast = msg => { const t = $('#toast'); if (!t) return; t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2600); };
 

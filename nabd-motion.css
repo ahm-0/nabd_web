@@ -25,3 +25,7 @@ body{animation:nm-page .3s ease}
 
 /* أداء: إيقاف الانتقال الشامل بين الصفحات */
 @view-transition{navigation:none}
+
+/* أداء الجوال: بلا ضبابية خلفية، وتأجيل رسم العناصر خارج الشاشة */
+@media (max-width:980px){*,*::before,*::after{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}}
+.news-card,.pt-row,.admin-user-card{content-visibility:auto;contain-intrinsic-size:auto 160px}
