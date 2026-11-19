@@ -462,7 +462,14 @@ html .verified-badge.big i { font-size: 30px; }
 .verify-state textarea { width: 100%; box-sizing: border-box; margin-top: 6px; padding: 10px 12px; border-radius: 14px; font-family: inherit; font-size: 14px; resize: none; }
 .verify-wait { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-size: 28px; color: #ffb84d; background: rgba(255,184,77,.14); }
 
-/* أنواع التوثيق */
-html .verified-badge.vb-admin { background: radial-gradient(circle at 30% 25%, #ffe9a0 0%, #ffbf2e 45%, #d98a00 100%); filter: drop-shadow(0 1px 3px rgba(217,138,0,.55)); }
-html .verified-badge.vb-teacher { background: radial-gradient(circle at 30% 25%, #a8f5c8 0%, #2fd18a 45%, #0e9a62 100%); filter: drop-shadow(0 1px 3px rgba(14,154,98,.5)); }
-html .verified-badge.vb-developer { background: radial-gradient(circle at 30% 25%, #d9c2ff 0%, #9a5cff 45%, #5b2ad6 100%); filter: drop-shadow(0 1px 3px rgba(91,42,214,.5)); }
+
+/* ==== شارة التوثيق الموحّدة: ختم أزرق متعرج بعلامة داكنة (نفس التصميم في كل الصفحات والدردشة) ==== */
+html body .verified-badge, html body .verified, html body .chat-verified-badge {
+  display: inline-block !important; width: 16px !important; height: 16px !important; min-width: 16px; margin-inline-start: 4px !important; vertical-align: 1px !important; position: relative; top: -1px;
+  clip-path: none !important; border-radius: 0 !important; background: url('assets/badge/verified.svg') center / contain no-repeat !important; box-shadow: none !important; filter: none !important; border: 0 !important;
+  font-size: 0 !important; line-height: 0 !important; color: transparent !important; text-shadow: none !important; flex: none; overflow: hidden; padding: 0 !important;
+}
+html body .verified-badge::before, html body .verified-badge::after, html body .verified::before, html body .verified::after { display: none !important; content: none !important; }
+html body .verified-badge i, html body .verified i, html body .chat-verified-badge i { display: none !important; }
+html body .profile-main .verified-badge, html body .pf-name .verified-badge { width: 18px !important; height: 18px !important; min-width: 18px; vertical-align: 2px !important; top: -2px; }
+html body .verified-badge.big { width: 72px !important; height: 72px !important; min-width: 72px; margin: 0 !important; top: 0; vertical-align: baseline !important; }

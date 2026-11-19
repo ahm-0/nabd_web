@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-19-chat-staff-v36';
+const CACHE_VERSION = '2026-11-19-badge-guard-v37';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -78,6 +78,8 @@ const APP_SHELL = [
   './nabd-smooth.js',
   './nabd-ui.css',
   './exam-card.css',
+  './screen-guard.js',
+  './assets/badge/verified.svg',
   './exam-card.js',
   './assets/exam-card/emblem.webp',
   './vendor/html2canvas/html2canvas.min.js',

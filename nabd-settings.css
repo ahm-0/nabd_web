@@ -82,3 +82,10 @@ body[data-page="settings"] .st-admin .st-arrow { color: #fff; }
 
 body[data-page="settings"] .st-foot { display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 12px; color: var(--st-muted); }
 body[data-page="settings"] .st-foot b { direction: ltr; letter-spacing: .4px; }
+
+body[data-page="settings"] .st-ico.rose { background: linear-gradient(145deg,#ff7a8a,#e0324f); }
+.shot-note{margin:0 0 12px;font-size:12px;line-height:1.9;opacity:.8}
+.shot-list{display:grid;gap:6px}
+.shot-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(127,150,190,.1);border:1px solid rgba(127,150,190,.16);cursor:pointer}
+.shot-item b{flex:1;font-size:13px;font-weight:700}
+.shot-ico{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:rgba(224,50,79,.14);color:#ff7a8a;font-size:13px}
