@@ -53,18 +53,17 @@ html body[data-page="curriculum"] .study-track-card.track-literary{--acr:214,71,
 html body[data-page="curriculum"] .study-track-card{min-height:190px;padding:18px 14px!important}
 html body[data-page="curriculum"] .study-track-icon{width:56px;height:56px;font-size:24px}
 
-/* الجامعات: ترتيب وتمييز بطاقة المفاضلة */
-html body[data-page="universities"] .study-card:nth-child(1){order:1;--acr:47,107,255}
-html body[data-page="universities"] .study-card:nth-child(2){order:2;--acr:214,71,143}
-html body[data-page="universities"] .study-card:nth-child(4){order:3;grid-column:1/-1;flex-direction:row;align-items:center;gap:14px;background:linear-gradient(135deg,#f59e0b,#e5791a)!important}
-html body[data-page="universities"] .study-card:nth-child(4) .study-card-icon{background:rgba(255,255,255,.25)!important;width:54px;height:54px;font-size:23px}
-html body[data-page="universities"] .study-card:nth-child(4) .study-card-copy b,
-html body[data-page="universities"] .study-card:nth-child(4) .study-card-copy small{color:#fff!important}
-html body[data-page="universities"] .study-card:nth-child(4)>i.fa-chevron-left{position:static;color:#fff;opacity:.8}
-html body[data-page="universities"] .study-card:nth-child(3){order:4;--acr:117,101,230}
-html body[data-page="universities"] .study-card:nth-child(5){order:5;--acr:245,158,11}
-html body[data-page="universities"] .study-card:nth-child(6){order:6;--acr:239,68,68}
-html body[data-page="universities"] .study-card:nth-child(7){order:7;--acr:22,163,74}
+/* الجامعات: خمس بطاقات رئيسية ثم بطاقتان منتهيتان في الأسفل */
+html body[data-page="universities"] .study-card:nth-child(1){--acr:47,107,255}
+html body[data-page="universities"] .study-card:nth-child(2){--acr:214,71,143}
+html body[data-page="universities"] .study-card:nth-child(3){--acr:117,101,230}
+html body[data-page="universities"] .study-card:nth-child(4){--acr:239,68,68}
+html body[data-page="universities"] .study-card:nth-child(5){--acr:22,163,74;grid-column:1/-1}
+html body[data-page="universities"] .study-card.is-ended{grid-column:1/-1;flex-direction:row!important;align-items:center!important;gap:12px;padding:12px 14px!important;--acr:140,150,170;opacity:.85}
+html body[data-page="universities"] .study-card.is-ended .study-card-icon{width:40px;height:40px;font-size:17px;border-radius:13px!important}
+html body[data-page="universities"] .study-card.is-ended .study-card-copy small{display:none}
+html body[data-page="universities"] .study-card.is-ended>i.fa-chevron-left{display:none}
+.ended-tag{flex:none;font-style:normal;font-size:11px;font-weight:800;padding:4px 10px;border-radius:99px;color:#fff;background:#7b8aa8}
 html body[data-page="universities"] .study-page-note{display:flex;gap:10px;align-items:flex-start;margin:0!important;padding:4px 6px!important;border:0!important;background:transparent!important;box-shadow:none!important;font-size:11.5px;color:var(--muted,#7b8aa8)}
 html body[data-page="universities"] .study-page-note p{margin:0}
 @media (max-width:340px){html body[data-page] .study-track-cards,html body[data-page="universities"] .study-card-list{grid-template-columns:1fr}}
@@ -78,3 +77,10 @@ html body[data-page="universities"] .study-card-copy{text-align:start!important;
 html body[data-page] .curriculum-track-head .eyebrow,html body[data-page="universities"] .study-page-eyebrow{width:fit-content;max-width:100%}
 html body[data-page="universities"] .study-page-head>div{display:grid;justify-items:start}
 html body[data-page="universities"] .study-page-head{flex-direction:row-reverse!important}
+
+/* «قريبًا» */
+.is-soon{opacity:.82;cursor:default;pointer-events:none}
+.is-soon .study-track-icon{background:#8c96aa!important}
+.soon-tag{position:absolute;inset-block-start:12px;inset-inline-end:12px;font-style:normal;font-size:11px;font-weight:800;padding:4px 10px;border-radius:99px;color:#fff!important;background:#f59e0b;line-height:1.4}
+html body[data-page="nine"] .study-track-card.is-soon{grid-column:1/-1!important;flex-direction:row;align-items:center;--acr:140,150,170}
+html body[data-page="nine"] .study-track-card.is-soon .study-track-copy small{display:none}

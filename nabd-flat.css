@@ -1,0 +1,122 @@
+/* تصميم مسطّح موحّد: كتب · ملخصات · أسئلة الدورات · حدود النجاح · القنوات · السبر · صفحات البكالوريا · الجامعات */
+body:is([data-page="library"],[data-page="predictions"],[data-page="tests"],[data-page="success-limits"],[data-page="service"],[data-page="screening-exam"],[data-page="baccalaureate-science"],[data-page="baccalaureate-literary"],[data-page="university-majors"],[data-page="university-directory"],[data-page="university-info"],[data-page="university-admission-2026"]){
+  --fl-tint:rgba(150,170,230,.12);--fl-r:22px;--fl-text:var(--text,#0e1b33);--fl-muted:var(--muted,#6b7a99)}
+html[data-theme="dark"] body:is([data-page="library"],[data-page="predictions"],[data-page="tests"],[data-page="success-limits"],[data-page="service"],[data-page="screening-exam"],[data-page="baccalaureate-science"],[data-page="baccalaureate-literary"],[data-page="university-majors"],[data-page="university-directory"],[data-page="university-info"]){--fl-tint:rgba(150,170,230,.14)}
+/* ألوان الترويسة لكل صفحة */
+body[data-page="library"]{--ha:#2f6bff;--hb:#12b5d8}
+body[data-page="predictions"]{--ha:#7565e6;--hb:#d6478f}
+body[data-page="tests"]{--ha:#0f9e8e;--hb:#2f6bff}
+body[data-page="success-limits"]{--ha:#16a34a;--hb:#0f9e8e}
+body[data-page="service"]{--ha:#2f6bff;--hb:#7565e6}
+body[data-page="screening-exam"]{--ha:#e5791a;--hb:#d6478f}
+body[data-page="baccalaureate-science"]{--ha:#2f6bff;--hb:#12b5d8}
+body[data-page="baccalaureate-literary"]{--ha:#d6478f;--hb:#7565e6}
+body[data-page="university-majors"]{--ha:#6a55e8;--hb:#2f6bff}
+body[data-page="university-directory"]{--ha:#d6478f;--hb:#6a55e8}
+body[data-page="university-info"]{--ha:#e5791a;--hb:#f0a82e}
+body[data-page="university-admission-2026"]{--ha:#e5791a;--hb:#d6478f}
+
+/* ---- الترويسات ---- */
+:is(.library-hero,.predictions-hero,.assessment-hero,.channels-hero,.screening-hero,.major-directory-hero,.directory-hero,.admission-2026-card,body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-page-head){
+  position:relative;overflow:hidden;display:flex!important;flex-direction:row-reverse;align-items:center;justify-content:space-between;gap:14px;
+  margin:0 0 4px!important;padding:20px 18px!important;border:0!important;border-radius:var(--fl-r)!important;box-shadow:none!important;color:#fff!important;
+  background:linear-gradient(135deg,var(--ha),var(--hb))!important}
+:is(.library-hero,.predictions-hero,.assessment-hero,.channels-hero,.screening-hero,.major-directory-hero,.directory-hero,.admission-2026-card)::after{content:"";position:absolute;inset-inline-start:-40px;bottom:-60px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.12);pointer-events:none}
+:is(.library-hero,.predictions-hero,.assessment-hero,.channels-hero,.screening-hero,.major-directory-hero,.directory-hero,.admission-2026-card) :is(h1,h2,h3){margin:0!important;font-size:20px!important;font-weight:800!important;color:#fff!important}
+:is(.library-hero,.predictions-hero,.assessment-hero,.channels-hero,.screening-hero,.major-directory-hero,.directory-hero,.admission-2026-card) :is(p,.eyebrow,.study-page-eyebrow,.channels-hero-actions .outline-button){color:rgba(255,255,255,.9)!important}
+/* إخفاء غير المهم */
+:is(.library-hero p,.predictions-hero p,.assessment-hero p,.directory-hero p,.major-directory-hero p,.channels-hero p,.screening-intro,.prediction-update,.responsible-note,.channels-intro,.channels-note,.study-page-note,.university-data-note,.university-exploration-guide,.university-coverage-panel,.university-search-hint,.eyebrow,.study-page-eyebrow,.study-back-link,.channels-hero-actions .outline-button,.channels-hero-mark,.assessment-hero-stats,.admission-2026-note,.channel-number,.channel-kicker){display:none!important}
+.channels-hero-actions{margin-top:8px}
+:is(.library-hero,.predictions-hero,.assessment-hero,.channels-hero,.screening-hero,.major-directory-hero,.directory-hero) :is(.library-hero-icon,.directory-hero-mark,.major-directory-mark,.screening-hero-icon){display:grid!important;place-items:center;width:54px;height:54px;border-radius:18px!important;background:rgba(255,255,255,.2)!important;color:#fff!important;border:0!important}
+
+/* ---- اللوحات والحقول ---- */
+body:is([data-page="library"],[data-page="predictions"],[data-page="tests"],[data-page="success-limits"],[data-page="service"],[data-page="screening-exam"],[data-page="university-majors"],[data-page="university-directory"],[data-page="university-info"]) :is(.panel,.library-toolbar,.assessment-toolbar,.prediction-filters,.screening-section,.screening-warning,.screening-fact,.university-advanced-filters,.directory-tools){
+  border:0!important;box-shadow:none!important;background:var(--fl-tint)!important;border-radius:var(--fl-r)!important}
+body:is([data-page="library"],[data-page="predictions"],[data-page="tests"],[data-page="university-majors"],[data-page="university-directory"]) :is(input[type="search"],input[type="text"],select,.major-search,.university-search-box){border:0!important;box-shadow:none!important;border-radius:16px!important;background:rgba(150,170,230,.14)!important}
+:is(.segmented-control,.assessment-filters,.directory-filters,.prediction-filters){border:0!important;background:transparent!important;gap:8px;flex-wrap:wrap}
+:is(.segmented-control,.assessment-filters,.directory-filters,.prediction-filters) button{border:0!important;border-radius:99px!important;padding:8px 16px;background:rgba(150,170,230,.16)!important;color:var(--fl-text)!important;font-weight:700;box-shadow:none!important}
+:is(.segmented-control,.assessment-filters,.directory-filters,.prediction-filters) button.active{color:#fff!important;background:linear-gradient(135deg,var(--ha),var(--hb))!important}
+
+/* ---- البطاقات ---- */
+:is(.library-card,.prediction-card,.test-card,.channel-card,.university-card,.major-list-card,.university-announcement-card,.university-info-card){border:0!important;box-shadow:none!important;border-radius:var(--fl-r)!important;background:var(--fl-tint)!important;padding:16px!important}
+:is(.library-card,.prediction-card,.test-card) h3{font-size:15px!important;font-weight:800;line-height:1.5;color:var(--fl-text)!important}
+:is(.library-card,.prediction-card,.test-card) :is(button,.primary-button,.outline-button,a.primary-button){border:0!important;border-radius:14px!important;box-shadow:none!important;font-weight:700}
+:is(.library-card,.prediction-card,.test-card) .outline-button,:is(.library-card,.prediction-card,.test-card) button:not(.primary-button){background:rgba(150,170,230,.18)!important;color:var(--fl-text)!important}
+:is(.library-card,.prediction-card,.test-card) :is(.primary-button,[data-test-start],[data-open-library]){color:#fff!important;background:linear-gradient(135deg,var(--ha),var(--hb))!important}
+:is(.test-subject-chip,.test-level,.library-category,.prediction-stage,.prediction-source){border:0!important;border-radius:99px!important}
+.library-card-icon{border:0!important;border-radius:16px!important;background:rgba(var(--acr,76,140,255),.16)!important}
+/* القنوات */
+.channels-list{display:grid;gap:12px}
+.channel-card{display:grid;gap:12px}
+.channel-services span{border:0!important;border-radius:12px!important;background:rgba(150,170,230,.14)!important}
+.channel-join-button{border:0!important;border-radius:14px!important;box-shadow:none!important;color:#fff!important;font-weight:800;background:linear-gradient(135deg,var(--ha),var(--hb))!important}
+.channel-join-button.is-disabled{background:rgba(150,170,230,.25)!important;color:var(--fl-muted)!important}
+.channel-whatsapp .channel-logo{background:#25d366!important;color:#fff!important}.channel-telegram .channel-logo{background:#2aa3e0!important;color:#fff!important}
+.channel-instagram .channel-logo{background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af)!important;color:#fff!important}.channel-facebook .channel-logo{background:#1877f2!important;color:#fff!important}
+.channel-logo{border:0!important;border-radius:16px!important}
+
+/* ---- حدود النجاح (study-page-shell بدون صفحة جامعات) ---- */
+body[data-page="success-limits"] .study-page-head{position:relative;overflow:hidden;display:flex!important;flex-direction:row-reverse;align-items:center;justify-content:space-between;gap:14px;padding:20px 18px!important;border:0!important;border-radius:var(--fl-r)!important;box-shadow:none!important;color:#fff!important;background:linear-gradient(135deg,var(--ha),var(--hb))!important}
+body[data-page="success-limits"] .study-page-head :is(h2,h3,p){color:#fff!important;margin:0!important}
+body[data-page="success-limits"] .study-page-head h2{font-size:20px!important;font-weight:800}
+body[data-page="success-limits"] .study-page-head-icon{display:grid;place-items:center;width:54px;height:54px;border-radius:18px!important;background:rgba(255,255,255,.2)!important;color:#fff!important;border:0!important}
+body[data-page="success-limits"] .study-card-list{grid-template-columns:1fr!important}
+body[data-page="success-limits"] .study-card,
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-card{border:0!important;box-shadow:none!important;border-radius:var(--fl-r)!important}
+body[data-page="success-limits"] .study-card{background:var(--fl-tint)!important}
+body[data-page="success-limits"] .study-card-icon{border:0!important;border-radius:15px!important}
+
+/* ---- صفحات البكالوريا (علمي/أدبي): بطاقات ملوّنة 2×3 ---- */
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-page-shell{display:grid;gap:14px;background:transparent!important;border:0!important;padding:0!important}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-page-head{margin:0!important}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-page-head :is(h2,p){color:#fff!important;margin:0!important}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-page-head h2{font-size:21px!important;font-weight:800}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-page-head-icon{display:grid;place-items:center;flex:none;width:56px;height:56px;border-radius:19px!important;font-size:24px;background:rgba(255,255,255,.2)!important;color:#fff!important;border:0!important}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-card-list{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-card{--acr:76,140,255;position:relative;display:flex!important;flex-direction:column;align-items:flex-start!important;gap:10px;min-height:0!important;padding:16px 14px!important;overflow:visible!important;background:rgba(var(--acr),.14)!important}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-card:nth-child(1){--acr:47,107,255}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-card:nth-child(2){--acr:117,101,230}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-card:nth-child(3){--acr:42,163,224}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-card:nth-child(4){--acr:22,163,74}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-card:nth-child(5){--acr:229,121,26}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-card-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:15px!important;font-size:20px;color:#fff!important;border:0!important;background:rgb(var(--acr))!important}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-card-copy{display:grid;gap:3px;text-align:start}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-card-copy b{font-size:14px!important;font-weight:800;color:var(--fl-text)!important}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-card-copy small{font-size:11.5px!important;line-height:1.6;color:var(--fl-muted)!important}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-card>i.fa-chevron-left{position:absolute;inset-block-start:14px;inset-inline-end:14px;font-size:11px;opacity:.45}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-card:nth-child(5){grid-column:1/-1;flex-direction:row;align-items:center!important}
+
+/* ---- «قريبًا» ---- */
+.is-soon{--acr:140,150,170!important;opacity:.8;cursor:default;pointer-events:none}
+.is-soon .study-card-icon,.is-soon .study-track-icon{background:#8c96aa!important}
+.soon-tag{position:absolute;inset-block-start:12px;inset-inline-end:12px;font-style:normal;font-size:11px;font-weight:800;padding:4px 10px;border-radius:99px;color:#fff;background:#f59e0b}
+body:is([data-page="baccalaureate-science"],[data-page="baccalaureate-literary"]) .study-card.is-soon{grid-column:1/-1;flex-direction:row;align-items:center!important;background:rgba(140,150,170,.14)!important}
+body[data-page="nine"] .study-track-card.is-soon{grid-column:1/-1;flex-direction:row;align-items:center;--acr:140,150,170}
+
+/* ---- السبر الترشيحي ---- */
+.screening-section,.screening-warning{padding:16px!important;margin-top:12px}
+.screening-fact{padding:12px!important;border-radius:16px!important}
+.screening-page table{border:0!important;border-collapse:separate;border-spacing:0 6px}.screening-page :is(th,td){border:0!important;background:rgba(150,170,230,.1)}
+.screening-page tr :is(th:first-child,td:first-child){border-radius:0 12px 12px 0}.screening-page tr :is(th:last-child,td:last-child){border-radius:12px 0 0 12px}
+
+/* ---- الجامعات ---- */
+:is(.university-card){padding:0!important;overflow:hidden}
+.university-card-trigger{border:0!important;background:transparent!important;padding:14px!important}
+.university-card-icon{border:0!important;border-radius:15px!important}
+.major-list-card{display:flex;gap:12px;align-items:center}
+:is(.directory-hero,.major-directory-hero) :is(.primary-button,.outline-button){border:0!important}
+.admission-2026-card{flex-direction:column!important;align-items:flex-start!important}
+.admission-2026-cta{border:0!important;border-radius:14px!important;background:#fff!important;color:#c2410c!important;font-weight:800}
+
+/* الترويسات تتغلّب على قاعدة اللوحات */
+body[data-page] :is(.library-hero,.predictions-hero,.assessment-hero,.channels-hero,.screening-hero,.major-directory-hero,.directory-hero,.admission-2026-card,.study-page-head){background:linear-gradient(135deg,var(--ha),var(--hb))!important;color:#fff!important}
+.channels-hero{flex-direction:column!important;align-items:stretch!important;gap:10px}
+.channels-hero .primary-button{background:#fff!important;color:#1d4ed8!important;border:0!important;border-radius:14px!important;font-weight:800}
+.channels-hero h1,.channels-hero h2{font-size:18px!important;line-height:1.6}
+:is(.library-toolbar,.assessment-toolbar,.prediction-filters,.directory-tools,.major-directory-head,.university-search-box) label,.major-search,.university-search-box{border:0!important;box-shadow:none!important;border-radius:16px!important;background:rgba(150,170,230,.16)!important}
+:is(.library-toolbar,.assessment-toolbar,.prediction-filters,.directory-tools,.major-search,.university-search-box) input{background:transparent!important;border:0!important;box-shadow:none!important}
+body[data-page] :is(.library-toolbar,.assessment-toolbar,.prediction-filters,.directory-tools,.major-search,.university-search-box) input[type="search"],body[data-page] :is(.library-toolbar,.assessment-toolbar,.prediction-filters,.directory-tools,.major-search,.university-search-box) input[type="text"]{background:transparent!important}
+.university-card-trigger>span:not(.university-card-icon),.university-card-title,.university-card-trigger :is(strong,small,div){background:transparent!important;border:0!important;box-shadow:none!important}
+.university-directory-page,.major-directory-page{padding-inline:0!important;max-width:100%}
+.university-directory-page>*,.major-directory-page>*{margin-inline:0!important}
+.university-card-title span,.university-card-title b{background:transparent!important;padding-inline:0!important;border:0!important}
