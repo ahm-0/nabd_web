@@ -5,7 +5,7 @@
 @keyframes nm-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 @keyframes nm-spin{to{transform:rotate(360deg)}}
 @keyframes nm-wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
-@keyframes nm-shine{from{background-position:-200% 0}to{background-position:200% 0}}
+@keyframes nm-shine{from{background-position:0 0}to{background-position:200% 0}}
 body{animation:nm-page .3s ease}
 .nx-tile,.st-row,.st-admin{animation:nm-rise .5s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--i,0)*45ms);transition:transform .18s ease,box-shadow .18s ease,filter .18s}
 .nx-tile:active,.st-row:active,.st-admin:active,button:active{transform:scale(.96)}

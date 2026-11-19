@@ -19,16 +19,9 @@
       const { data: s } = await c.auth.getSession(); if (!s?.session) return -1;
       const { data } = await c.rpc('points_award', { p_action: action });
       const n = Number(data) || 0;
-      if (n > 0) showToast(n);
       return n;
     } catch { return 0; }
   };
-  function showToast(n) {
-    let t = document.getElementById('nabdPtsToast');
-    if (!t) { t = document.createElement('div'); t.id = 'nabdPtsToast'; t.style.cssText = 'position:fixed;top:calc(14px + env(safe-area-inset-top));left:50%;transform:translate(-50%,-20px);z-index:2147482000;padding:8px 16px;border-radius:999px;background:linear-gradient(135deg,#f6b93b,#f59e0b);color:#2a1a00;font:800 13px Cairo,sans-serif;box-shadow:0 8px 22px rgba(0,0,0,.3);opacity:0;transition:.3s;pointer-events:none'; document.body.appendChild(t); }
-    t.textContent = `+${n} نقطة ⭐`; t.style.opacity = '1'; t.style.transform = 'translate(-50%,0)';
-    clearTimeout(t._h); t._h = setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translate(-50%,-20px)'; }, 1800);
-  }
   window.nabdPoints = { award };
   /* فتح التطبيق مرة يوميًا */
   const day = new Date().toISOString().slice(0, 10);

@@ -24,3 +24,7 @@ html[data-theme="light"] body[data-page="points"]{--pt-card:#fff;--pt-line:rgba(
 .pt-row .nm{flex:1;min-width:0;display:grid}.pt-row .nm b{font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pt-row .nm small{font-size:11px;color:var(--pt-muted)}
 .pt-row .sc{font-weight:800;color:#f59e0b}.pt-row.me{background:rgba(76,140,255,.12);border-radius:12px}
 .pt-empty{text-align:center;color:var(--pt-muted);padding:20px;font-size:13px}
+.pt-prize{display:flex;align-items:center;gap:12px;padding:14px;border-radius:18px;color:#2a1a00;font-weight:800;font-size:13.5px;line-height:1.7;background:linear-gradient(120deg,#ffd76a,#f59e0b,#ffd76a);background-size:200% 100%;box-shadow:0 10px 24px rgba(245,158,11,.35);animation:nm-shine 4s linear infinite}
+.pt-prize i{font-size:26px;flex:none}
+.pt-pod,.pt-row{cursor:pointer}.pt-row:active,.pt-pod:active{opacity:.75}
+.pt-actions{display:grid;gap:10px}.pt-act{display:flex;gap:10px;align-items:center;justify-content:center;padding:14px;border-radius:14px;font-weight:800;text-decoration:none;color:#fff;background:linear-gradient(135deg,#2f6bff,#7565e6)}.pt-act.alt{background:rgba(150,170,230,.18);color:inherit}
