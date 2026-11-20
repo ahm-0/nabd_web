@@ -244,3 +244,11 @@ input,textarea{font:inherit;color:inherit}
 :root[data-theme=light] .staff-tag{color:#8a6a1f}
 .verified,.verified.vk-verified,.verified.vk-admin,.verified.vk-teacher,.verified.vk-developer{display:inline-block;width:16px;height:16px;margin-inline-start:4px;background:url('assets/badge/verified.svg') center/contain no-repeat;font-size:0;color:transparent;position:relative;top:-1px;vertical-align:1px;border-radius:0;flex:none}
 #blockBtn.active{color:#ff6b6b}
+
+.attach{width:44px;height:44px;border-radius:50%;flex:none;display:grid;place-items:center;color:var(--accent);background:transparent}
+.attach .ic{width:23px;height:23px}
+.img-prev{display:flex;align-items:center;gap:10px;padding:6px 8px;margin-bottom:6px;border-radius:14px;background:var(--bg)}
+.img-prev img{width:48px;height:48px;border-radius:10px;object-fit:cover}.img-prev span{flex:1;font-size:13px;opacity:.75}
+.msg-img{display:block;padding:0;border:0;background:none;margin:0 0 4px;border-radius:12px;overflow:hidden;max-width:240px}
+.msg-img img{display:block;width:100%;max-height:300px;object-fit:cover;border-radius:12px;background:rgba(150,170,230,.15)}
+.img-view{position:fixed;inset:0;z-index:99;display:grid;place-items:center;background:rgba(0,0,0,.9);padding:12px}.img-view img{max-width:100%;max-height:100%;border-radius:8px}

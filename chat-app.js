@@ -45,6 +45,9 @@
     lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>'
   };
   const ic = (name, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[name] || ''}</svg>`;
+  const IMG_RE = /^\[\[img:(https:\/\/[^\]\s]+)\]\]\s*/;
+  const imgOf = body => { const m = IMG_RE.exec(body || ''); return m ? { url: m[1], cap: body.slice(m[0].length) } : null; };
+  const plain = body => { const i = imgOf(body); return i ? `📷 ${i.cap || 'صورة'}` : (body || ''); };
   const linkify = text => esc(text).replace(/(https?:\/\/[^\s<]+)/g, url => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
   const hueOf = text => { let h = 0; const s = String(text || ''); for (let i = 0; i < s.length; i += 1) h = (h * 31 + s.charCodeAt(i)) % 360; return h; };
   const initials = name => String(name || '?').trim().split(/\s+/).slice(0, 2).map(w => Array.from(w)[0] || '').join('') || '؟';
@@ -269,7 +272,7 @@
     html += convs.map(c => {
       const unread = Number(c.unread_count || 0);
       const mine = c.last_sender_id === S.uid;
-      const preview = c.last_message ? `${mine ? '<b>أنت:</b> ' : ''}${esc(c.last_message)}` : 'ابدأ المحادثة';
+      const preview = c.last_message ? `${mine ? '<b>أنت:</b> ' : ''}${esc(plain(c.last_message))}` : 'ابدأ المحادثة';
       const active = S.view.type === 'private' && S.view.userId === c.other_user_id;
       return `<button class="conv ${unread ? 'unread' : ''} ${active ? 'active' : ''}" type="button" data-open="${esc(c.other_user_id)}">${avatarHTML(c.other_user_id, c.other_name)}<div class="body"><div class="row1"><span class="name">${esc(c.other_name || 'مستخدم')}${badgeHTML({ mod: c.other_is_moderator, ver: S.profiles.get(c.other_user_id)?.ver, vt: S.profiles.get(c.other_user_id)?.vt })}</span><span class="time">${listTime(c.last_message_at)}</span></div><div class="row2"><span class="preview">${preview}</span>${unread ? `<span class="count">${unread > 99 ? '99+' : unread}</span>` : ''}</div></div></button>`;
     }).join('');
@@ -317,9 +320,9 @@
     if (pub && !mine && first) { const p = S.profiles.get(m.sid); h += `<div class="who-name" data-profile="${esc(m.sid)}">${esc(nameOf(m.sid))}${badgeHTML(p)}${staff ? '<span class="staff-tag inline"><i>✦</i> مشرف</span>' : ''}</div>`; }
     if (m.rid || m.rbody) {
       const list = cur()?.msgs;
-      h += `<button type="button" class="quote" data-goto="${esc(m.rid || '')}"><b>${esc(replyName(m, list) || 'رسالة')}</b><span>${esc(m.rbody || 'رسالة غير متاحة')}</span></button>`;
+      h += `<button type="button" class="quote" data-goto="${esc(m.rid || '')}"><b>${esc(replyName(m, list) || 'رسالة')}</b><span>${esc(plain(m.rbody) || 'رسالة غير متاحة')}</span></button>`;
     }
-    h += `<p dir="auto">${linkify(m.body)}</p>`;
+    { const im = imgOf(m.body); if (im) { h += `<button type="button" class="msg-img" data-img="${esc(im.url)}"><img src="${esc(im.url)}" alt="صورة" loading="lazy" decoding="async"></button>`; if (im.cap) h += `<p dir="auto">${linkify(im.cap)}</p>`; } else h += `<p dir="auto">${linkify(m.body)}</p>`; }
     if (pub) {
       const chips = Object.entries(m.reacts || {}).filter(([, n]) => n > 0).map(([e, n]) => `<button type="button" class="react ${m.my === e ? 'me' : ''}" data-react="${e}">${e}<i>${n}</i></button>`).join('');
       if (chips) h += `<div class="reacts">${chips}</div>`;
@@ -570,7 +573,28 @@
 
   /* ───────── المؤلّف ───────── */
   function autosize() { E.input.style.height = 'auto'; E.input.style.height = `${Math.min(140, E.input.scrollHeight)}px`; }
-  function syncSend() { E.sendBtn.disabled = E.input.disabled || !E.input.value.trim(); const n = E.input.value.length; E.counter.hidden = n < 850; E.counter.textContent = `${n}/1000`; E.counter.classList.toggle('warn', n >= 980); }
+  function syncSend() { E.sendBtn.disabled = E.input.disabled || (!E.input.value.trim() && !pendImg); const n = E.input.value.length; E.counter.hidden = n < 850; E.counter.textContent = `${n}/1000`; E.counter.classList.toggle('warn', n >= 980); }
+  let pendImg = null;
+  const clearImg = () => { if (pendImg) URL.revokeObjectURL(pendImg.prev); pendImg = null; $('#imgPrev').hidden = true; $('#imgFile').value = ''; syncSend(); };
+  const shrink = file => new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { const k = Math.min(1, 1280 / Math.max(im.width, im.height)); const c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(url); c.toBlob(b => b ? res(b) : rej(new Error('تعذر معالجة الصورة')), 'image/jpeg', .82); };
+    im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('ملف الصورة غير صالح')); }; im.src = url;
+  });
+  $('#attachBtn').addEventListener('click', () => { if (S.editing) return; $('#imgFile').click(); });
+  $('#imgPrevX').addEventListener('click', clearImg);
+  $('#imgFile').addEventListener('change', async e => {
+    const f = e.target.files[0]; if (!f) return;
+    if (!/^image\//.test(f.type)) { e.target.value = ''; return toast('اختر ملف صورة'); }
+    try { const blob = await shrink(f); pendImg = { blob, prev: URL.createObjectURL(blob) }; $('#imgPrevImg').src = pendImg.prev; $('#imgPrev').hidden = false; syncSend(); E.input.focus(); }
+    catch (err) { toast(err.message || 'تعذر قراءة الصورة'); e.target.value = ''; }
+  });
+  async function uploadChatImage(blob) {
+    const path = `chat/${S.uid}/${uuid()}.jpg`;
+    const { error } = await sb.storage.from('nabd').upload(path, blob, { contentType: 'image/jpeg', cacheControl: '31536000', upsert: false });
+    if (error) throw error;
+    return sb.storage.from('nabd').getPublicUrl(path).data.publicUrl;
+  }
   const isTouch = matchMedia('(pointer:coarse)').matches;
   let lastTypingSent = 0;
   E.input.addEventListener('input', () => {
@@ -579,17 +603,22 @@
   });
   E.input.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey && !isTouch && !event.isComposing) { event.preventDefault(); E.composer.requestSubmit(); } });
   E.input.addEventListener('focus', () => { setTimeout(() => { if (S.atBottom) scrollBottom(false); }, 250); });
-  E.composer.addEventListener('submit', event => { event.preventDefault(); const text = E.input.value.trim(); if (!text) return; if (S.editing) return void submitEdit(text); void sendMessage(text); });
+  E.composer.addEventListener('submit', event => { event.preventDefault(); const text = E.input.value.trim(); if (!text && !pendImg) return; if (S.editing) return void submitEdit(text);
+    if (!pendImg) return void sendMessage(text);
+    const img = pendImg; E.sendBtn.disabled = true; toast('جارٍ رفع الصورة…');
+    uploadChatImage(img.blob).then(url => { clearImg(); void sendMessage(`[[img:${url}]]${text ? '\n' + text : ''}`.slice(0, 1000)); }).catch(err => { syncSend(); toast(errText(err)); });
+  });
+  document.addEventListener('click', e => { const b = e.target.closest?.('.msg-img'); if (!b) return; const v = document.createElement('div'); v.className = 'img-view'; v.innerHTML = `<img src="${esc(b.dataset.img)}" alt="">`; v.onclick = () => v.remove(); document.body.appendChild(v); });
 
   function setContext(kind, msg) {
     E.ctx.hidden = false;
     E.ctxTitle.textContent = kind === 'edit' ? 'تعديل الرسالة' : `رد على ${msg.sid === S.uid ? 'نفسك' : nameOf(msg.sid)}`;
-    E.ctxText.textContent = msg.body;
+    E.ctxText.textContent = plain(msg.body);
     E.ctxIc.innerHTML = kind === 'edit' ? IC.edit : IC.reply;
   }
   $('#ctxCancel').addEventListener('click', () => { const wasEdit = !!S.editing; resetComposer(); if (wasEdit) { E.input.value = ''; autosize(); syncSend(); } });
   function startReply(msg) { S.editing = null; S.replyTo = msg; setContext('reply', msg); E.sendBtn.classList.remove('edit'); E.sendBtn.innerHTML = ic('send'); E.input.focus(); }
-  function startEdit(msg) { S.replyTo = null; S.editing = msg; setContext('edit', msg); E.input.value = msg.body; autosize(); syncSend(); E.sendBtn.classList.add('edit'); E.sendBtn.innerHTML = ic('check'); E.input.focus(); }
+  function startEdit(msg) { if (imgOf(msg.body)) return toast('لا يمكن تعديل رسالة صورة'); S.replyTo = null; S.editing = msg; setContext('edit', msg); E.input.value = msg.body; autosize(); syncSend(); E.sendBtn.classList.add('edit'); E.sendBtn.innerHTML = ic('check'); E.input.focus(); }
 
   async function sendMessage(text) {
     const c = cur(); if (!c) return;
