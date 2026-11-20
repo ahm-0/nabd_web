@@ -1,0 +1,51 @@
+/* أدوات الدراسة: برنامج الختم · تنظيم الوقت · تنظيم الصور · المعدل · المحفوظات — تصميم مسطّح موحّد */
+body:is([data-page="completion"],[data-page="study-schedule"],[data-page="gallery"],[data-page="calculator"],[data-page="saved"]){--tl-tint:rgba(150,170,230,.13);--tl-r:22px;--tl-text:var(--text,#0e1b33);--tl-muted:var(--muted,#6b7a99)}
+body[data-page="completion"]{--ha:#0f9e8e;--hb:#2f6bff}
+body[data-page="study-schedule"]{--ha:#7565e6;--hb:#2f6bff}
+body[data-page="gallery"]{--ha:#d6478f;--hb:#7565e6}
+body[data-page="calculator"]{--ha:#16a34a;--hb:#0f9e8e}
+body[data-page="saved"]{--ha:#e5791a;--hb:#f0a82e}
+/* الترويسات */
+body[data-page] :is(.completion-hero,.study-schedule-hero,.gallery-head,.calculator-head,.saved-items-hero){position:relative;overflow:hidden;display:flex!important;flex-direction:row-reverse;align-items:center;justify-content:space-between;gap:14px;margin:0 0 4px!important;padding:20px 18px!important;border:0!important;border-radius:var(--tl-r)!important;box-shadow:none!important;color:#fff!important;background:linear-gradient(135deg,var(--ha),var(--hb))!important}
+:is(.completion-hero,.study-schedule-hero,.gallery-head,.calculator-head,.saved-items-hero)::after{content:"";position:absolute;inset-inline-start:-40px;bottom:-60px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.12);pointer-events:none}
+:is(.completion-hero,.study-schedule-hero,.gallery-head,.calculator-head,.saved-items-hero) :is(h1,h2,h3){margin:0!important;font-size:20px!important;font-weight:800!important;color:#fff!important}
+:is(.completion-hero,.study-schedule-hero,.gallery-head,.calculator-head,.saved-items-hero) p{margin:4px 0 0!important;font-size:12.5px!important;color:rgba(255,255,255,.9)!important}
+:is(.completion-hero,.study-schedule-hero,.gallery-head,.calculator-head,.saved-items-hero) :is(.tool-head-icon,.saved-items-hero-icon,.study-hero-orb){display:grid!important;place-items:center;flex:none;width:54px;height:54px;border-radius:18px!important;background:rgba(255,255,255,.2)!important;color:#fff!important;border:0!important;box-shadow:none!important;position:static!important;filter:none!important}
+/* إخفاء غير المهم */
+:is(.completion-hero .eyebrow,.study-schedule-hero .eyebrow,.gallery-head .eyebrow,.calculator-head .eyebrow,.saved-items-hero .eyebrow,.study-native-note,.saved-items-back,.completion-update,.grade-summary-strip,.completion-schedule-count,.gallery-upload-copy small){display:none!important}
+.study-add-button,.completion-hero .primary-button{border:0!important;border-radius:14px!important;background:#fff!important;color:#1d4ed8!important;font-weight:800;box-shadow:none!important}
+/* اللوحات */
+body:is([data-page="completion"],[data-page="study-schedule"],[data-page="gallery"],[data-page="calculator"],[data-page="saved"]) :is(.panel,.completion-baccalaureate,.completion-schedule-shell,.study-board,.gallery-upload,.grade-mode,.calculator-stage,.grade-workspace,.custom-grade-builder,.grade-result,.saved-items-tools){border:0!important;box-shadow:none!important;background:var(--tl-tint)!important;border-radius:var(--tl-r)!important}
+:is(.completion-hero,.study-schedule-hero,.saved-items-hero,.gallery-head,.calculator-head).panel{background:linear-gradient(135deg,var(--ha),var(--hb))!important}
+/* حقول وأزرار */
+body:is([data-page="completion"],[data-page="study-schedule"],[data-page="gallery"],[data-page="calculator"],[data-page="saved"]) :is(input,select,textarea,.saved-items-search,.date-control){border:0!important;box-shadow:none!important;border-radius:14px!important;background:rgba(150,170,230,.16)!important;color:var(--tl-text)}
+body:is([data-page="completion"],[data-page="study-schedule"],[data-page="gallery"],[data-page="calculator"],[data-page="saved"]) .saved-items-search input{background:transparent!important}
+body:is([data-page="completion"],[data-page="study-schedule"],[data-page="gallery"],[data-page="calculator"],[data-page="saved"]) :is(.outline-button,.completion-schedule-action){border:0!important;border-radius:14px!important;box-shadow:none!important;background:rgba(150,170,230,.2)!important;color:var(--tl-text)!important;font-weight:700}
+body:is([data-page="completion"],[data-page="study-schedule"],[data-page="gallery"],[data-page="calculator"],[data-page="saved"]) :is(.primary-button,.upload-gallery-button){border:0!important;border-radius:14px!important;box-shadow:none!important;color:#fff!important;font-weight:800;background:linear-gradient(135deg,var(--ha),var(--hb))!important}
+/* تبويبات */
+:is(.completion-program-tabs,.completion-track-switch,.study-tabs,.segmented-control,.saved-items-filters){display:flex;gap:8px;flex-wrap:wrap;border:0!important;background:transparent!important;padding:0!important}
+:is(.completion-program-tab,.completion-track-card,.study-tabs button,.segmented-control button,.saved-items-filters button){border:0!important;border-radius:99px!important;box-shadow:none!important;padding:8px 16px;font-weight:700;color:var(--tl-text)!important;background:rgba(150,170,230,.18)!important}
+:is(.completion-program-tab,.completion-track-card,.study-tabs button,.segmented-control button,.saved-items-filters button):is(.active,[aria-selected="true"]){color:#fff!important;background:linear-gradient(135deg,var(--ha),var(--hb))!important}
+.completion-track-card{border-radius:18px!important;flex:1}
+/* عناصر القوائم */
+:is(.completion-schedule-row,.completion-card,.study-task-card,.saved-item-card,.grade-subjects>*,.custom-grade-list>*){border:0!important;box-shadow:none!important;border-radius:18px!important;background:rgba(150,170,230,.12)!important}
+.completion-schedule-index{border:0!important;border-radius:12px!important;background:linear-gradient(135deg,var(--ha),var(--hb))!important;color:#fff!important}
+.completion-progress,.completion-percent{border:0!important}
+.study-empty,.completion-empty{border:0!important;background:rgba(150,170,230,.1)!important;border-radius:var(--tl-r)!important}
+.study-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.study-gallery>*{border:0!important;border-radius:18px!important;overflow:hidden}
+.gallery-clear{border:0!important;border-radius:14px!important;background:rgba(239,68,68,.14)!important;color:#ef4444!important}
+.grade-chip{border:0!important;border-radius:99px!important}
+.completion-hero{flex-direction:column!important;align-items:stretch!important}
+.completion-hero>*{min-width:0;max-width:100%}
+.completion-hero .primary-button{width:100%;justify-content:center}
+.completion-track-switch{display:grid!important;grid-template-columns:1fr 1fr;gap:10px}
+.completion-track-card{border-radius:18px!important;min-width:0;display:flex;align-items:center;gap:10px;padding:12px!important}
+.completion-track-card *{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;min-width:0}
+.completion-program-tabs{display:flex!important}
+body[data-page] :is(.completion-hero,.study-schedule-hero,.saved-items-hero,.gallery-head,.calculator-head){background:linear-gradient(135deg,var(--ha),var(--hb))!important}
+body[data-page] .completion-hero :is(h1,h2,h3,p,span,small){color:#fff!important}
+.completion-track-card.active :is(b,small,span,em,i){color:#fff!important}
+.completion-track-card:not(.active) :is(b,small,span,em){color:var(--tl-text)!important}
+.grade-subjects input{width:92px!important;min-width:92px;padding-inline:8px!important;text-align:center}
+body[data-page] .completion-hero .primary-button,body[data-page] .completion-hero .primary-button *{background:#fff!important;color:#1d4ed8!important}

@@ -382,12 +382,12 @@ html body[data-page="home"] .app { animation: none !important; }
 .nx-sec-h h2::before{content:"";position:absolute;inset-inline-start:0;top:3px;bottom:3px;width:4px;border-radius:4px;background:linear-gradient(180deg,var(--nx-accent,#4cc7ff),#7565e6)}
 .nx-sec-h span{font-size:11.5px;color:var(--nx-muted)}
 body[data-page="home"] .nx-home{gap:18px}
-body[data-page="home"] .nx-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-body[data-page="home"] .nx-grid>.nx-tile{flex:none;grid-column:span 1;aspect-ratio:1/1.08;border-radius:18px;padding:8px 4px;gap:5px}
+body[data-page="home"] .nx-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+body[data-page="home"] .nx-grid>.nx-tile{flex:none;grid-column:span 2;aspect-ratio:1/1.08;border-radius:18px;padding:8px 4px;gap:5px}
 body[data-page="home"] .nx-grid>.nx-tile small{display:none}
 body[data-page="home"] .nx-grid>.nx-tile b{font-size:11.5px;line-height:1.25}
 body[data-page="home"] .nx-grid>.nx-tile .nx-ico{width:38px;height:38px;border-radius:12px;font-size:17px}
-body[data-page="home"] .nx-grid>.nx-tile:nth-child(-n+2){grid-column:span 2;aspect-ratio:auto;flex-direction:row;justify-content:flex-start;gap:12px;padding:14px;text-align:start}
+body[data-page="home"] .nx-grid>.nx-tile:nth-child(-n+2){grid-column:span 3;aspect-ratio:auto;flex-direction:row;justify-content:flex-start;gap:12px;padding:14px;text-align:start}
 body[data-page="home"] .nx-grid>.nx-tile:nth-child(-n+2) .nx-ico{width:46px;height:46px;font-size:20px;flex:none}
 body[data-page="home"] .nx-grid>.nx-tile:nth-child(-n+2) b{font-size:14px}
 body[data-page="home"] .nx-grid>.nx-tile:nth-child(-n+2) small{display:block;font-size:11px}

@@ -25,6 +25,7 @@
 <meta name="nabd-single-file" content="true">
 <link rel="stylesheet" href="nabd-pro.css">
 <link rel="stylesheet" href="nabd-motion.css">
+<link rel="stylesheet" href="nabd-tools.css">
 <script src="nabd-smooth.js" defer></script>
 <script src="screen-guard.js" defer></script><script src="nabd-points.js" defer></script><script src="nabd-motion.js" defer></script></head>
 <body data-page="saved">
@@ -32,7 +33,7 @@
     <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
     <div class="layout"><main class="main-content saved-items-page">
       <header class="saved-items-hero panel"><div class="saved-items-hero-icon"><i class="fa-solid fa-bookmark"></i></div><div><span class="eyebrow"><i class="fa-solid fa-heart"></i> مساحتك الخاصة</span><h2>المحفوظات</h2><p>كل ما حفظته من برامج الدراسة والكتب والدروس والاختبارات والجامعات في مكان واحد.</p></div><a href="completion-program.html" class="saved-items-back" aria-label="فتح برنامج الختم"><i class="fa-solid fa-list-check"></i></a></header>
-      <section class="saved-items-tools"><label class="saved-items-search"><i class="fa-solid fa-magnifying-glass"></i><input id="savedItemsSearch" type="search" placeholder="ابحث في المحفوظات"></label><nav class="saved-items-filters" id="savedItemsFilters" aria-label="تصفية المحفوظات"><button class="active" type="button" data-saved-filter="all">الكل</button><button type="button" data-saved-filter="برنامج ختم المنهاج">البرامج</button><button type="button" data-saved-filter="كتاب أو ملف">الكتب</button><button type="button" data-saved-filter="اختبار إلكتروني">الاختبارات</button><button type="button" data-saved-filter="جامعة">الجامعات</button><button type="button" data-saved-filter="درس أو خدمة">الدروس والخدمات</button></nav></section>
+      <section class="saved-items-tools"><label class="saved-items-search"><i class="fa-solid fa-magnifying-glass"></i><input id="savedItemsSearch" type="search" placeholder="ابحث في المحفوظات"></label><nav class="saved-items-filters" id="savedItemsFilters" aria-label="تصفية المحفوظات"><button class="active" type="button" data-saved-filter="all">الكل</button><button type="button" data-saved-filter="__pred">التوقعات</button><button type="button" data-saved-filter="برنامج ختم المنهاج">البرامج</button><button type="button" data-saved-filter="كتاب أو ملف">الكتب</button><button type="button" data-saved-filter="اختبار إلكتروني">الاختبارات</button><button type="button" data-saved-filter="جامعة">الجامعات</button><button type="button" data-saved-filter="درس أو خدمة">الدروس والخدمات</button></nav></section>
       <section class="saved-items-grid" id="savedItemsGrid" aria-live="polite"></section>
       <section class="saved-items-empty panel hidden" id="savedItemsEmpty"><span><i class="fa-regular fa-bookmark"></i></span><h3>لا توجد محفوظات بعد</h3><p>اضغط زر الحفظ في أي برنامج أو كتاب أو اختبار أو جامعة لتجده هنا بسرعة.</p><a class="primary-button" href="index.html"><i class="fa-solid fa-compass"></i> استكشاف الخدمات</a></section>
     </main></div>

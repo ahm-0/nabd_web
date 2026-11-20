@@ -180,7 +180,7 @@
   let activeSavedFilter = 'all';
   function renderSavedItems() {
     const grid = $('#savedItemsGrid'); const empty = $('#savedItemsEmpty'); if (!grid || !empty) return;
-    const query = String($('#savedItemsSearch')?.value || '').trim().toLowerCase(); const filtered = savedItems.filter(item => (activeSavedFilter === 'all' || item.type === activeSavedFilter) && `${item.title} ${item.subtitle} ${item.type}`.toLowerCase().includes(query));
+    const query = String($('#savedItemsSearch')?.value || '').trim().toLowerCase(); const filtered = savedItems.filter(item => (activeSavedFilter === 'all' || item.type === activeSavedFilter || (activeSavedFilter === '__pred' && ['محور مراجعة', 'تدريب مركز'].includes(item.type))) && `${item.title} ${item.subtitle} ${item.type}`.toLowerCase().includes(query));
     grid.innerHTML = filtered.map(item => { const href = String(item.href || '').trim(); const open = href ? `<a class="saved-item-open" href="${escapeHTML(href)}"><i class="fa-solid fa-arrow-left"></i> فتح</a>` : ''; return `<article class="saved-item-card panel"><span class="saved-item-icon"><i class="fa-solid ${escapeHTML(item.icon || 'fa-bookmark')}"></i></span><div class="saved-item-copy"><span>${escapeHTML(item.type || 'محتوى')}</span><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.subtitle || 'عنصر محفوظ في منصة نبض التفوق')}</p></div><footer>${open}${savedToggleButtonMarkup(item, 'compact')}</footer></article>`; }).join('');
     const noResults = !filtered.length; grid.classList.toggle('hidden', noResults); empty.classList.toggle('hidden', !noResults); const emptyTitle = empty.querySelector('h3'); const emptyText = empty.querySelector('p'); if (emptyTitle && emptyText) { if (savedItems.length && (query || activeSavedFilter !== 'all')) { emptyTitle.textContent = 'لا توجد نتائج مطابقة'; emptyText.textContent = 'غيّر كلمة البحث أو مرشح المحفوظات للعثور على عناصر أخرى.'; } else { emptyTitle.textContent = 'لا توجد محفوظات بعد'; emptyText.textContent = 'اضغط زر الحفظ في أي برنامج أو كتاب أو اختبار أو جامعة لتجده هنا بسرعة.'; } }
   }
@@ -1560,7 +1560,8 @@
       { text: 'متى يُفضل مراجعة أخطاء الاختبار؟', options: ['بعد الحصول على النتيجة مباشرة', 'بعد شهر دون ملاحظات', 'لا حاجة لمراجعتها', 'قبل بدء الاختبار فقط'], correct: 0, explain: 'المراجعة المباشرة تربط الخطأ بتفسيره وتساعد على منع تكراره.' }
     ] }
   ];
-  let activeTestFilter = 'all'; let activeTestId = ''; let activeTestIndex = 0; let activeTestAnswers = {};
+  const TEST_STAGES = { 'physics-motion': ['nine', 'science'], 'arabic-grammar': ['nine', 'science', 'literary'], 'math-functions': ['nine', 'science'], 'general-study': ['nine', 'science', 'literary'] };
+  let activeTestFilter = (() => { const q = new URLSearchParams(location.search).get('stage'); return ['nine', 'science', 'literary'].includes(q) ? q : 'nine'; })(); let activeTestId = ''; let activeTestIndex = 0; let activeTestAnswers = {};
   const savedTestHistory = () => { const history = readStorage('test_history', []); return Array.isArray(history) ? history : []; };
   const saveTestHistory = history => { try { localStorage.setItem(STORE + 'test_history', JSON.stringify(history.slice(0, 20))); } catch { toast('تعذر حفظ نتيجة الاختبار محليًا.'); } };
   const activeTest = () => testCatalogData.find(test => test.id === activeTestId);
@@ -1568,7 +1569,7 @@
   function renderTestCatalog() {
     const catalog = $('#testCatalog'); if (!catalog) return;
     const query = String($('#testSearch')?.value || '').trim().toLowerCase();
-    const filtered = testCatalogData.filter(test => (activeTestFilter === 'all' || test.category === activeTestFilter) && `${test.title} ${test.subject} ${test.level}`.toLowerCase().includes(query));
+    const filtered = testCatalogData.filter(test => (TEST_STAGES[test.id] || ['nine', 'science', 'literary']).includes(activeTestFilter) && `${test.title} ${test.subject} ${test.level}`.toLowerCase().includes(query));
     const history = savedTestHistory(); const best = history.reduce((highest, record) => Math.max(highest, Number(record.percentage) || 0), 0);
     if ($('#testAvailableCount')) $('#testAvailableCount').textContent = testCatalogData.length;
     if ($('#testBestScore')) $('#testBestScore').textContent = history.length ? `${best.toFixed(0)}%` : '—';
@@ -1600,6 +1601,7 @@
   function initTests() {
     if (!$('#testCatalog')) return; renderTestCatalog();
     $('#testSearch')?.addEventListener('input', renderTestCatalog);
+    $$('[data-test-filter]').forEach(item => item.classList.toggle('active', item.dataset.testFilter === activeTestFilter));
     $$('[data-test-filter]').forEach(button => button.addEventListener('click', () => { activeTestFilter = button.dataset.testFilter; $$('[data-test-filter]').forEach(item => item.classList.toggle('active', item === button)); renderTestCatalog(); }));
     $('#testCatalog')?.addEventListener('click', event => { const start = event.target.closest('[data-start-test]'); if (start) startTest(start.dataset.startTest); });
     $('#testSession')?.addEventListener('click', event => { const answer = event.target.closest('[data-test-answer]'); const navigation = event.target.closest('[data-test-nav]'); if (answer) chooseTestAnswer(answer.dataset.testAnswer); if (navigation) moveTestQuestion(navigation.dataset.testNav === 'next' ? 1 : -1); if (event.target.closest('[data-finish-test]')) finishTest(); if (event.target.closest('[data-exit-test]')) exitTest(); });
@@ -1990,7 +1992,7 @@
     { id: 'nine-science', stage: 'nine', subject: 'العلوم العامة', title: 'التجارب والمفاهيم الأساسية', type: 'محور مراجعة', source: 'إرشادي · مراجعة فهم', points: ['ارسم خطوات التجربة وملاحظاتها.', 'راجع المصطلح مع مثال بسيط.', 'حل أسئلة متنوعة بدل حفظ النص فقط.'], updated: '20 آب 2026' },
     { id: 'nine-math', stage: 'nine', subject: 'الرياضيات', title: 'الجبر والهندسة والمسائل', type: 'تدريب مركز', source: 'إرشادي · حل مسائل', points: ['راجع القاعدة مع مثال واحد على الأقل.', 'افصل بين معطيات المسألة والمطلوب.', 'تحقق من الناتج بالتعويض عند الإمكان.'], updated: '20 آب 2026' }
   ];
-  let activePredictionFilter = 'all';
+  let activePredictionFilter = (() => { const q = new URLSearchParams(location.search).get('stage'); return ['nine', 'science', 'literary'].includes(q) ? q : 'nine'; })();
 
   function renderPredictions() {
     const grid = $('#predictionGrid'); if (!grid) return; const query = String($('#predictionSearch')?.value || '').trim().toLowerCase();
