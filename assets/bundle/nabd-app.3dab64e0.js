@@ -1062,10 +1062,11 @@
   function renderFeed() {
     const feed = $('#feed');
     if (!feed) return;
-    const entries = [...posts];
+    const entries = PAGE === 'news' ? [...posts].reverse() : [...posts];
     const visible = entries;
     const listing = visible.length ? visible.map(postTemplate).join('') : '<div class="empty-feed"><i class="fa-regular fa-newspaper"></i><b>لا توجد منشورات منشورة حاليًا.</b><span>ستظهر هنا الأخبار التي ينشرها المشرف.</span></div>';
     feed.innerHTML = listing;
+    if (PAGE === 'news' && (!feed.dataset.shown || window.__newsToEnd)) { feed.dataset.shown = '1'; window.__newsToEnd = false; const goEnd = () => window.scrollTo(0, document.documentElement.scrollHeight); goEnd(); requestAnimationFrame(goEnd); setTimeout(goEnd, 350); }
     const postCount = $('#profilePosts');
     if (postCount) postCount.textContent = posts.filter(post => post.mine).length;
   }
@@ -1111,6 +1112,7 @@
       if (error) throw error;
       const draft = { id: postId, name: fullName(), meta: `${student.stage} · إدارة الأخبار`, text, images, likes: 0, liked: false, comments: [], remote: true, mine: true, verified: true, createdAt: new Date().toISOString() };
       posts.unshift(draft);
+      window.__newsToEnd = true;
       uploadImages = [];
       const input = $('#postText');
       if (input) { input.value = ''; input.style.height = ''; }
