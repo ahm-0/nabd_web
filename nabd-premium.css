@@ -1,0 +1,37 @@
+/* القسم المميز + إدارته — تصميم مسطّح بدون زوائد */
+body:is([data-page="premium"],[data-page="premium-admin"]){--pm-a:#e5791a;--pm-b:#f0a82e;--pm-tint:rgba(150,170,230,.13);--pm-text:var(--text,#0e1b33);--pm-muted:var(--muted,#6b7a99)}
+body[data-page="premium"] .premium-page,body[data-page="premium-admin"] .premium-admin-page{display:grid;gap:14px;max-width:640px;margin-inline:auto}
+/* بانر العنوان */
+body[data-page="premium"] .premium-toolbar,body[data-page="premium-admin"] .premium-hero{position:relative;overflow:hidden;display:flex!important;align-items:center;justify-content:space-between;gap:12px;margin:0!important;padding:20px 18px!important;border:0!important;border-radius:22px!important;box-shadow:none!important;color:#fff!important;background:linear-gradient(135deg,var(--pm-a),var(--pm-b))!important}
+.premium-toolbar::after,.premium-hero::after{content:"";position:absolute;inset-inline-start:-40px;bottom:-60px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.14);pointer-events:none}
+.premium-toolbar h3,.premium-hero h2{margin:0!important;font-size:20px!important;font-weight:800!important;color:#fff!important}
+.premium-toolbar p,.premium-hero p{margin:4px 0 0!important;font-size:12.5px!important;color:rgba(255,255,255,.92)!important}
+.premium-hero .eyebrow{display:none!important}
+.premium-hero-icon{display:grid;place-items:center;flex:none;width:54px;height:54px;border-radius:18px;font-size:24px;color:#fff;background:rgba(255,255,255,.22)!important;border:0!important}
+.premium-back{flex:none;border:0!important;border-radius:99px!important;padding:8px 14px;font-weight:800;color:#b45309!important;background:#fff!important;box-shadow:none!important}
+/* شبكة البطاقات */
+body[data-page="premium"] .premium-grid{display:grid!important;grid-template-columns:1fr;gap:10px}
+body[data-page="premium"] .premium-card{display:flex;align-items:center;gap:12px;width:100%;padding:14px!important;border:0!important;border-radius:20px!important;box-shadow:none!important;text-align:start;color:var(--pm-text)!important;background:var(--pm-tint)!important;transition:transform .15s}
+body[data-page="premium"] .premium-card:active{transform:scale(.98)}
+.premium-card-icon{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:15px!important;border:0!important;font-size:20px;color:#fff!important;background:linear-gradient(135deg,var(--pm-a),var(--pm-b))!important}
+.premium-card-copy{display:grid;gap:2px;min-width:0;flex:1}.premium-card-copy b{font-size:14.5px;font-weight:800}.premium-card-copy small,.premium-card-copy span{font-size:12px;color:var(--pm-muted)}
+.premium-card>i.fa-chevron-left{opacity:.45;font-size:12px}
+.premium-empty{display:grid;justify-items:center;gap:6px;padding:40px 16px;text-align:center;border:0!important;border-radius:22px;background:var(--pm-tint)!important}
+.premium-empty i{font-size:30px;color:var(--pm-a)}.premium-empty h3{margin:4px 0 0;font-size:15px}.premium-empty p{margin:0;font-size:12.5px;color:var(--pm-muted)}
+/* الإدارة */
+.premium-admin-gate{display:grid;justify-items:center;gap:6px;padding:36px 16px;text-align:center;border:0!important;border-radius:22px;background:var(--pm-tint)!important}
+.premium-admin-gate i{font-size:30px;color:var(--pm-a)}.premium-admin-gate h2{margin:4px 0 0;font-size:16px}.premium-admin-gate p{margin:0;font-size:12.5px;color:var(--pm-muted)}
+.premium-admin-nav{display:flex;gap:8px;overflow-x:auto;padding:2px 0;scrollbar-width:none}.premium-admin-nav::-webkit-scrollbar{display:none}
+.premium-admin-nav button{flex:none;border:0!important;border-radius:99px!important;padding:8px 16px;font-weight:700;color:var(--pm-text)!important;background:rgba(150,170,230,.18)!important;box-shadow:none!important}
+.premium-admin-nav button.active{color:#fff!important;background:linear-gradient(135deg,var(--pm-a),var(--pm-b))!important}
+.premium-admin-card{padding:16px!important;border:0!important;border-radius:22px!important;box-shadow:none!important;background:var(--pm-tint)!important}
+.premium-admin-card h3{margin:0 0 12px;font-size:16px;font-weight:800}
+.premium-admin-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.premium-admin-form-grid .full{grid-column:1/-1}
+.premium-admin-form label{display:grid;gap:5px;font-size:12px;font-weight:700;color:var(--pm-muted)}
+.premium-admin-form :is(input:not([type=checkbox]),select,textarea){width:100%;padding:11px 12px;border:0!important;border-radius:14px!important;box-shadow:none!important;background:rgba(150,170,230,.18)!important;color:var(--pm-text)}
+.premium-checkbox{display:flex!important;align-items:center;gap:8px}
+.form-actions{display:flex;gap:8px;margin-top:12px}
+.premium-admin-card .primary-button{border:0!important;border-radius:14px!important;box-shadow:none!important;font-weight:800;color:#fff!important;background:linear-gradient(135deg,var(--pm-a),var(--pm-b))!important}
+.premium-admin-card .outline-button{border:0!important;border-radius:14px!important;box-shadow:none!important;background:rgba(150,170,230,.22)!important;color:var(--pm-text)!important}
+.premium-admin-list{display:grid;gap:8px;margin-top:14px}.premium-admin-list>*{padding:12px;border:0!important;border-radius:16px!important;background:rgba(150,170,230,.12)!important;box-shadow:none!important}
+.premium-note,.premium-admin-status{font-size:11.5px;color:var(--pm-muted)}

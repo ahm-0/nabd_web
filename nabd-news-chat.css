@@ -1,0 +1,21 @@
+/* الأخبار بتصميم الدردشة: رسائل المشرفين فقط، القراءة والإعجاب للجميع — بلا تعليقات */
+body[data-page="news"] .nw-head{padding:calc(80px + env(safe-area-inset-top)) 16px 8px}
+body[data-page="news"] .nw-head h2{font-size:19px}
+body[data-page="news"] .nw-head p{font-size:11.5px}
+body[data-page="news"] #feed{display:grid!important;gap:8px;padding:4px 12px}
+body[data-page="news"] #feed>.post{position:relative;display:block;width:fit-content;max-width:min(92%,520px);margin:0!important;padding:10px 12px 8px!important;border:0!important;border-radius:6px 18px 18px 18px!important;box-shadow:none!important;background:rgba(47,111,224,.11)!important;color:var(--nw-text)!important;animation:nm-rise .35s ease backwards}
+html[data-theme="dark"] body[data-page="news"] #feed>.post{background:rgba(108,180,255,.12)!important}
+body[data-page="news"] .post-head{display:flex;align-items:center;gap:8px;padding:0 0 6px!important;margin:0!important;border:0!important}
+body[data-page="news"] .post-head .avatar{width:30px!important;height:30px!important;min-width:30px;font-size:13px!important;border-radius:50%!important}
+body[data-page="news"] .post-author{display:grid;gap:0;min-width:0}
+body[data-page="news"] .post-author-name{font-size:13px!important;font-weight:800}
+body[data-page="news"] .post-author>span:last-child{font-size:10.5px!important;color:var(--nw-muted)}
+body[data-page="news"] .post-menu{width:26px!important;height:26px!important;margin-inline-start:6px}
+body[data-page="news"] .post-content{padding:0 0 4px!important;font-size:14px!important;line-height:1.85!important;margin:0!important}
+body[data-page="news"] .post-images{margin:6px 0 4px!important;border-radius:14px!important;overflow:hidden}
+body[data-page="news"] .post-insights,body[data-page="news"] .comments,body[data-page="news"] .post-media-indicator,body[data-page="news"] .post-tools [data-action="comments"],body[data-page="news"] .post-tools [data-action="share"]{display:none!important}
+body[data-page="news"] .post-tools{display:flex!important;justify-content:flex-end;margin:0!important;padding:0!important;border:0!important;background:transparent!important}
+body[data-page="news"] .post-tools .tool-button{height:26px!important;min-height:0!important;padding:0 10px!important;border:0!important;border-radius:99px!important;font-size:11.5px!important;background:rgba(150,170,230,.2)!important;color:var(--nw-muted)!important}
+body[data-page="news"] .post-tools .tool-button.liked{color:#ef4444!important;background:rgba(239,68,68,.12)!important}
+body[data-page="news"] .news-composer-dock .compose{border:0!important;box-shadow:0 -2px 14px rgba(0,0,0,.08)!important}
+body[data-page="news"] .compose-dock-head label{font-size:12px}
