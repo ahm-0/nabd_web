@@ -1056,9 +1056,24 @@
     if (!feed) return;
     const entries = PAGE === 'news' ? [...posts].reverse() : [...posts];
     const visible = entries;
-    const listing = visible.length ? visible.map(postTemplate).join('') : '<div class="empty-feed"><i class="fa-regular fa-newspaper"></i><b>لا توجد منشورات منشورة حاليًا.</b><span>ستظهر هنا الأخبار التي ينشرها المشرف.</span></div>';
+    const dayLabel = value => { const d = new Date(value); if (Number.isNaN(d.getTime())) return ''; const k = x => x.toDateString(); const now = new Date(); if (k(d) === k(now)) return 'اليوم'; if (k(d) === k(new Date(now - 864e5))) return 'أمس'; return d.toLocaleDateString('ar-SY', { weekday: 'long', day: 'numeric', month: 'long', year: d.getFullYear() === now.getFullYear() ? undefined : 'numeric' }); };
+    let seenAt = ''; try { seenAt = localStorage.getItem('nabd_news_seen') || ''; } catch { /* تجاهل */ }
+    if (PAGE === 'news' && window.__newsSeenAtOpen === undefined) window.__newsSeenAtOpen = seenAt;
+    const seenOpen = window.__newsSeenAtOpen || '';
+    let lastDay = '', unreadDone = false;
+    const newsHtml = () => visible.map(post => {
+      let pre = '';
+      if (PAGE === 'news') {
+        const day = dayLabel(post.createdAt);
+        if (day && day !== lastDay) { lastDay = day; pre += `<div class="nw-day"><span>${day}</span></div>`; }
+        if (!unreadDone && seenOpen && !post.mine && post.createdAt && new Date(post.createdAt) > new Date(seenOpen)) { unreadDone = true; pre += '<div class="nw-unread" id="nwUnread"><span>رسائل غير مقروءة</span></div>'; }
+      }
+      return pre + postTemplate(post);
+    }).join('');
+    const listing = visible.length ? newsHtml() : '<div class="empty-feed"><i class="fa-regular fa-newspaper"></i><b>لا توجد منشورات منشورة حاليًا.</b><span>ستظهر هنا الأخبار التي ينشرها المشرف.</span></div>';
     feed.innerHTML = listing;
-    if (PAGE === 'news' && (!feed.dataset.shown || window.__newsToEnd)) { feed.dataset.shown = '1'; window.__newsToEnd = false; const goEnd = () => window.scrollTo(0, document.documentElement.scrollHeight); goEnd(); requestAnimationFrame(goEnd); setTimeout(goEnd, 350); }
+    if (PAGE === 'news' && (!feed.dataset.shown || window.__newsToEnd)) { feed.dataset.shown = '1'; window.__newsToEnd = false; const goEnd = () => { const u = document.getElementById('nwUnread'); if (u) window.scrollTo(0, Math.max(0, u.getBoundingClientRect().top + window.scrollY - 70)); else window.scrollTo(0, document.documentElement.scrollHeight); }; goEnd(); requestAnimationFrame(goEnd); setTimeout(goEnd, 350); }
+    if (PAGE === 'news' && posts.length && !window.__newsSeenBound) { window.__newsSeenBound = true; const mark = () => { try { const newest = posts.reduce((a, p) => (p.createdAt && p.createdAt > a ? p.createdAt : a), ''); if (newest) localStorage.setItem('nabd_news_seen', newest); } catch { /* تجاهل */ } }; setTimeout(mark, 3000); window.addEventListener('pagehide', mark); document.addEventListener('visibilitychange', () => { if (document.hidden) mark(); }); }
     const postCount = $('#profilePosts');
     if (postCount) postCount.textContent = posts.filter(post => post.mine).length;
   }
