@@ -3377,18 +3377,39 @@
   let monOffset = 0, monEnd = false, monBusy = false, monThread = null, monOldest = null, monMsgs = [];
   const monName = (u, t) => (u === t.user_a ? t.name_a : u === t.user_b ? t.name_b : 'مستخدم');
   const monTime = v => { const d = new Date(v); return Number.isNaN(d.getTime()) ? '' : d.toLocaleString('ar-SY', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); };
+  const monOnce = (body, id) => { const m = /^\[\[once:([^\]\s]+)\]\]\s*/.exec(body || ''); if (!m) return null; const cap = body.slice(m[0].length); return `<button type="button" class="ap-mon-once" data-mon-once="${escapeHTML(id)}"><i class="fa-solid fa-eye"></i> صورة لمرة واحدة — اضغط للعرض (مراقبة)</button>${cap ? `<p dir="auto">${escapeHTML(cap)}</p>` : ''}`; };
   const monBody = body => { const m = /^\[\[img:(https:\/\/[^\]\s]+)\]\]\s*/.exec(body || ''); if (!m) return `<p dir="auto">${escapeHTML(body || '')}</p>`; const cap = body.slice(m[0].length); return `<a href="${escapeHTML(m[1])}" target="_blank" rel="noopener"><img class="ap-mon-img" src="${escapeHTML(m[1])}" alt="صورة" loading="lazy"></a>${cap ? `<p dir="auto">${escapeHTML(cap)}</p>` : ''}`; };
   let monThreads = [];
   async function loadMonitor(reset = true) {
     const list = $('#apMonList'); if (!list || !supabaseClient || monBusy) return; monBusy = true;
     if (reset) { monOffset = 0; monEnd = false; monThreads = []; list.innerHTML = '<div class="admin-empty">جارٍ التحميل</div>'; }
     const q = String($('#apMonSearch')?.value || '').trim();
-    const { data, error } = await supabaseClient.rpc('admin_monitor_threads', { p_search: q || null, p_limit: 30, p_offset: monOffset });
+    const { data, error } = await supabaseClient.rpc('admin_monitor_threads_v2', { p_search: q || null, p_limit: 30, p_offset: monOffset });
     monBusy = false;
     if (error || !Array.isArray(data)) { list.innerHTML = '<div class="admin-empty">غير مصرّح أو تعذر التحميل.</div>'; return; }
     monThreads = monThreads.concat(data); monOffset += data.length; if (data.length < 30) monEnd = true;
-    list.innerHTML = monThreads.length ? monThreads.map(t => `<button type="button" class="ap-mon-row" data-mon-thread="${escapeHTML(t.thread_id)}"><span class="ap-mon-names"><b>${escapeHTML(t.name_a)}</b><i class="fa-solid fa-arrows-left-right"></i><b>${escapeHTML(t.name_b)}</b></span><small>${escapeHTML(String(t.last_body || '').replace(/^\[\[img:[^\]]*\]\]\s*/, '📷 ').slice(0, 70))}</small><em>${Number(t.msg_count) || 0} رسالة · ${monTime(t.last_message_at)}</em></button>`).join('') + (monEnd ? '' : '<button type="button" class="ap-btn blue" id="apMonMore" style="margin:10px auto;display:block">عرض المزيد</button>') : '<div class="admin-empty">لا توجد محادثات.</div>';
+    list.innerHTML = monThreads.length ? monThreads.map(t => `<button type="button" class="ap-mon-row" data-mon-thread="${escapeHTML(t.thread_id)}"><span class="ap-mon-names"><b>${escapeHTML(t.name_a)}</b><i class="fa-solid fa-arrows-left-right"></i><b>${escapeHTML(t.name_b)}</b></span><small>${escapeHTML(String(t.last_body || '').replace(/^\[\[img:[^\]]*\]\]\s*/, '📷 ').slice(0, 70))}</small><em>${Number(t.msg_count) || 0} رسالة · ${monTime(t.last_message_at)}</em>${Number(t.new_count) > 0 ? `<span class="ap-mon-new">${Number(t.new_count) > 99 ? '99+' : Number(t.new_count)}</span>` : ''}</button>`).join('') + (monEnd ? '' : '<button type="button" class="ap-btn blue" id="apMonMore" style="margin:10px auto;display:block">عرض المزيد</button>') : '<div class="admin-empty">لا توجد محادثات.</div>';
   }
+  async function viewMonitorOnce(id, btn) {
+    btn.disabled = true;
+    try {
+      const { data: path, error } = await supabaseClient.rpc('admin_monitor_once_open', { p_message: id }); if (error) throw error;
+      const { data, error: e2 } = await supabaseClient.storage.from('chat-once').createSignedUrl(path, 90); if (e2) throw e2;
+      const blob = await (await fetch(data.signedUrl)).blob(); const url = URL.createObjectURL(blob);
+      const v = document.createElement('div'); v.id = 'apMonImgView'; v.className = 'ap-mon-imgview';
+      v.innerHTML = `<button type="button" data-mon-img-close aria-label="إغلاق">✕</button><img src="${url}" alt="صورة لمرة واحدة"><small>عرض مراقبة — لا يُحتسب كفتح من المستلم</small>`;
+      document.body.appendChild(v); v.addEventListener('click', ev => { if (ev.target === v) v.remove(); });
+      new MutationObserver((_, ob) => { if (!document.body.contains(v)) { URL.revokeObjectURL(url); ob.disconnect(); } }).observe(document.body, { childList: true });
+    } catch (err) { alert('تعذر عرض الصورة: ' + (err?.message || 'غير مصرّح')); }
+    finally { btn.disabled = false; }
+  }
+  async function refreshMonitorBadges() {
+    if (!supabaseClient || !remoteAdminVerified) return;
+    const { data } = await supabaseClient.rpc('admin_monitor_unseen_total'); const n = Number(data) || 0;
+    document.querySelectorAll('[data-admin-tab="monitor"]').forEach(b => { let k = b.querySelector(':scope > .ap-tab-badge'); if (!n) { k?.remove(); return; } if (!k) { k = document.createElement('b'); k.className = 'ap-tab-badge'; b.appendChild(k); } k.textContent = n > 99 ? '99+' : String(n); });
+    document.querySelectorAll('#apMonList .ap-mon-row').forEach(() => {});
+  }
+  setInterval(() => { if (!document.hidden) void refreshMonitorBadges(); }, 45000); setTimeout(() => void refreshMonitorBadges(), 2500);
   async function openMonitorThread(id) {
     const t = monThreads.find(x => x.thread_id === id); if (!t) return;
     monThread = t; monOldest = null; monMsgs = [];
@@ -3396,6 +3417,7 @@
     $('#apMonMsgs').innerHTML = '<div class="admin-empty">جارٍ التحميل</div>';
     $('#apMonSheet').classList.remove('hidden'); document.body.classList.add('ap-sheet-open'); pushSheet('thread');
     void supabaseClient.rpc('admin_monitor_log_view', { p_thread: id });
+    void supabaseClient.rpc('admin_monitor_mark_seen', { p_thread: id }).then(() => { t.new_count = 0; refreshMonitorBadges(); });
     await loadMonitorMessages(true);
   }
   async function loadMonitorMessages(first) {
@@ -3406,7 +3428,7 @@
     if (data.length) monOldest = data[data.length - 1].created_at;
     monMsgs = monMsgs.concat(data);
     const asc = [...monMsgs].reverse(); let lastDay = '';
-    const html = asc.map(m => { const d = new Date(m.created_at).toLocaleDateString('ar-SY', { weekday: 'long', day: 'numeric', month: 'long' }); const sep = d !== lastDay ? `<div class="ap-mon-day"><span>${d}</span></div>` : ''; lastDay = d; const side = m.sender_id === monThread.user_a ? 'a' : 'b'; return `${sep}<div class="ap-mon-msg ${side}${m.deleted_at ? ' is-del' : ''}"><b>${escapeHTML(monName(m.sender_id, monThread))}</b>${monBody(m.body)}<small>${monTime(m.created_at)}${m.edited_at ? ' · معدّلة' : ''}${m.deleted_at ? ' · محذوفة' : ''}</small></div>`; }).join('');
+    const html = asc.map(m => { const d = new Date(m.created_at).toLocaleDateString('ar-SY', { weekday: 'long', day: 'numeric', month: 'long' }); const sep = d !== lastDay ? `<div class="ap-mon-day"><span>${d}</span></div>` : ''; lastDay = d; const side = m.sender_id === monThread.user_a ? 'a' : 'b'; return `${sep}<div class="ap-mon-msg ${side}${m.deleted_at ? ' is-del' : ''}"><b>${escapeHTML(monName(m.sender_id, monThread))}</b>${monOnce(m.body, m.id) || monBody(m.body)}<small>${monTime(m.created_at)}${m.edited_at ? ' · معدّلة' : ''}${m.deleted_at ? ' · محذوفة' : ''}</small></div>`; }).join('');
     box.innerHTML = (data.length >= 60 ? '<button type="button" class="ap-btn blue" id="apMonOlder" style="margin:6px auto;display:block">عرض الأقدم</button>' : '') + (html || '<div class="admin-empty">لا توجد رسائل.</div>');
     if (first) box.scrollTop = box.scrollHeight;
   }
@@ -3417,6 +3439,8 @@
       if (event.target.closest('[data-ap-mon-close]')) { closeSheet('thread'); return; }
       const monRow = event.target.closest('[data-mon-thread]'); if (monRow) { event.preventDefault(); void openMonitorThread(monRow.dataset.monThread); return; }
       if (event.target.closest('#apMonOlder')) { void loadMonitorMessages(false); return; }
+      const onceBtn = event.target.closest('[data-mon-once]'); if (onceBtn) { void viewMonitorOnce(onceBtn.dataset.monOnce, onceBtn); return; }
+      if (event.target.closest('[data-mon-img-close]')) { document.getElementById('apMonImgView')?.remove(); return; }
       const ua = event.target.closest('[data-u-ban],[data-u-verify],[data-u-unverify],[data-u-role-save]'); if (ua) { event.preventDefault(); void handleUserAction(ua); return; }
       const v = event.target.closest('[data-verify-act]'); if (v) { event.preventDefault(); void handleVerifyAction(v); return; }
       const del = event.target.closest('[data-chat-del]'); if (del) { event.preventDefault(); if (!window.confirm('حذف هذه الرسالة؟')) return; del.disabled = true; const { error } = await supabaseClient.rpc('chat_moderate_delete_message', { p_message: del.dataset.chatDel }); if (error) { del.disabled = false; return toast('تعذر حذف الرسالة.'); } toast('تم حذف الرسالة.'); void loadChatFeed(); return; }
