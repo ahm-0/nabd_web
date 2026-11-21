@@ -50,9 +50,9 @@
   const ONCE_RE = /^\[\[once:([^\]\s]+)\]\]\s*/;
   const onceOf = body => { const m = ONCE_RE.exec(body || ''); return m ? { path: m[1], cap: body.slice(m[0].length) } : null; };
   const shotOf = body => /^\[\[sys:shot:[0-9a-f-]{36}\]\]$/.test(body || '');
-  const onceState = new Map();
-  const plain = body => shotOf(body) ? '📸 لقطة شاشة' : onceOf(body) ? '👁 صورة لمرة واحدة' : (() => { const i = imgOf(body); return i ? `📷 ${i.cap || 'صورة'}` : (body || ''); })();
-  const linkify = text => esc(text).replace(/(https?:\/\/[^\s<]+)/g, url => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+  const onceState = new Map(), onceShots = new Map();
+  const plain = body => window.nabdMentions?.hasToken(body) ? window.nabdMentions.strip(body) : shotOf(body) ? '📸 لقطة شاشة' : onceOf(body) ? '👁 صورة لمرة واحدة' : (() => { const i = imgOf(body); return i ? `📷 ${i.cap || 'صورة'}` : (body || ''); })();
+  const linkify = text => { const h = esc(text).replace(/(https?:\/\/[^\s<]+)/g, url => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`); return window.nabdMentions ? window.nabdMentions.render(h) : h; };
   const hueOf = text => { let h = 0; const s = String(text || ''); for (let i = 0; i < s.length; i += 1) h = (h * 31 + s.charCodeAt(i)) % 360; return h; };
   const initials = name => String(name || '?').trim().split(/\s+/).slice(0, 2).map(w => Array.from(w)[0] || '').join('') || '؟';
   const fullName = (a, b, c) => [a, b, c].map(v => String(v || '').trim()).filter(Boolean).join(' ').replace(/\s+/g, ' ');
@@ -317,7 +317,7 @@
     const mine = m.sid === S.uid, pub = m.scope === 'public';
     const first = gap(prev, m), last = gap(m, next);
     const staff = pub && (mine ? S.me.mod : S.profiles.get(m.sid)?.mod);
-    if (shotOf(m.body)) return `<div class="sys-note" data-id="${esc(m.id)}">📸 ${mine ? 'تم تسجيل لقطة شاشة لصورة المرة الواحدة' : `${esc(nameOf(m.sid))} أخذ لقطة شاشة لصورتك`}</div>`;
+    if (shotOf(m.body)) return mine ? '' : `<div class="sys-note" data-id="${esc(m.id)}">📸 ${mine ? 'تم تسجيل لقطة شاشة لصورة المرة الواحدة' : `${esc(nameOf(m.sid))} أخذ لقطة شاشة لصورتك`}</div>`;
     let h = `<div class="row ${mine ? 'mine' : 'other'} ${staff ? 'staff' : ''} ${first ? 'first' : ''} ${isNew ? 'new' : ''}" data-id="${esc(m.id)}" style="--h:${hueOf(m.sid)}">`;
     if (pub && !mine) h += `<div class="av-col">${last ? `<button type="button" data-profile="${esc(m.sid)}" aria-label="الملف">${avatarHTML(m.sid, nameOf(m.sid), 'sm')}</button>` : ''}</div>`;
     h += '<div class="bubble">';
@@ -327,7 +327,7 @@
       const list = cur()?.msgs;
       h += `<button type="button" class="quote" data-goto="${esc(m.rid || '')}"><b>${esc(replyName(m, list) || 'رسالة')}</b><span>${esc(plain(m.rbody) || 'رسالة غير متاحة')}</span></button>`;
     }
-    { const oc = onceOf(m.body); if (oc) { const seen = onceState.get(m.id) === true; h += mine ? `<div class="once-card ${seen ? 'seen' : ''}"><i>👁</i><b>صورة لمرة واحدة</b><small>${seen ? 'تم فتحها' : 'لم تُفتح بعد'}</small></div>` : `<button type="button" class="once-card ${seen ? 'seen' : ''}" data-once="${esc(m.id)}" ${seen ? 'disabled' : ''}><i>👁</i><b>${seen ? 'فُتحت الصورة' : 'اضغط لعرض الصورة'}</b><small>مرة واحدة فقط</small></button>`; if (oc.cap) h += `<p dir="auto">${linkify(oc.cap)}</p>`; } else
+    { const oc = onceOf(m.body); if (oc) { const seen = onceState.get(m.id) === true; h += mine ? `<div class="once-card ${seen ? 'seen' : ''}"><i>👁</i><b>صورة لمرة واحدة</b><small>${seen ? 'تم فتحها' : 'لم تُفتح بعد'}</small></div>${onceShots.has(m.id) ? `<div class="shot-alert">📸 ${esc(nameOf(cur()?.other || S.view.userId) || 'المستلم')} حاول التقاط لقطة شاشة لصورتك${onceShots.get(m.id) > 1 ? ` (${onceShots.get(m.id)} مرات)` : ''}</div>` : ''}` : `<button type="button" class="once-card ${seen ? 'seen' : ''}" data-once="${esc(m.id)}" ${seen ? 'disabled' : ''}><i>👁</i><b>${seen ? 'فُتحت الصورة' : 'اضغط لعرض الصورة'}</b><small>مرة واحدة فقط</small></button>`; if (oc.cap) h += `<p dir="auto">${linkify(oc.cap)}</p>`; } else
     { const im = imgOf(m.body); if (im) { h += `<button type="button" class="msg-img" data-img="${esc(im.url)}"><img src="${esc(im.url)}" alt="صورة" loading="lazy" decoding="async"></button>`; if (im.cap) h += `<p dir="auto">${linkify(im.cap)}</p>`; } else h += `<p dir="auto">${linkify(m.body)}</p>`; } }
     if (pub) {
       const chips = Object.entries(m.reacts || {}).filter(([, n]) => n > 0).map(([e, n]) => `<button type="button" class="react ${m.my === e ? 'me' : ''}" data-react="${e}">${e}<i>${n}</i></button>`).join('');
@@ -408,7 +408,7 @@
       c.hasMore = (rows || []).length >= PAGE;
       const wasLoaded = c.loaded;
       mergeLatest(c, fetched); c.loaded = true;
-      if (c.scope === 'private' && fetched.some(x => onceOf(x.body))) { try { const st = await rpc('chat_once_state', { p_thread: c.id }); (st || []).forEach(r => onceState.set(r.message_id, !!r.viewed)); } catch { /* تجاهل */ } }
+      if (c.scope === 'private' && fetched.some(x => onceOf(x.body))) { try { const st = await rpc('chat_once_state_v2', { p_thread: c.id }); (st || []).forEach(r => { onceState.set(r.message_id, !!r.viewed); if (r.shot_at) onceShots.set(r.message_id, Number(r.shot_count) || 1); }); } catch { /* تجاهل */ } }
       if (c.scope === 'public') { const pin = c.msgs.find(m => m.pinned); if (pin) c.pinned = { id: pin.id, body: pin.body }; }
       if (cur() === c && (!silent || signature(c.msgs) !== before || !wasLoaded)) renderMsgs({ stick: !wasLoaded ? true : undefined });
       if (c.scope === 'public') { renderListSoon(); saveCache(); }
@@ -618,7 +618,7 @@
   });
   E.input.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey && !isTouch && !event.isComposing) { event.preventDefault(); E.composer.requestSubmit(); } });
   E.input.addEventListener('focus', () => { setTimeout(() => { if (S.atBottom) scrollBottom(false); }, 250); });
-  E.composer.addEventListener('submit', event => { event.preventDefault(); const text = E.input.value.trim(); if (!text && !pendImg) return; if (S.editing) return void submitEdit(text);
+  E.composer.addEventListener('submit', event => { event.preventDefault(); let text = E.input.value.trim(); text = window.nabdMentions ? window.nabdMentions.encode(E.input, text) : text; if (text.length > 1000) return toast('الرسالة طويلة بسبب الإشارات'); if (!text && !pendImg) return; if (S.editing) return void submitEdit(text);
     if (!pendImg) return void sendMessage(text);
     const img = pendImg; E.sendBtn.disabled = true; toast('جارٍ رفع الصورة…');
     const once = img.once && S.view.type === 'private';
@@ -632,9 +632,8 @@
       const { data, error } = await sb.storage.from('chat-once').createSignedUrl(path, 60); if (error) throw error;
       const blob = await (await fetch(data.signedUrl)).blob(); const url = URL.createObjectURL(blob);
       onceState.set(id, true);
-      const wm = esc(nameOf(S.uid) || 'نبض التفوق');
       const v = document.createElement('div'); v.className = 'once-view'; v.oncontextmenu = ev => ev.preventDefault();
-      v.innerHTML = `<div class="once-top"><span>👁 صورة لمرة واحدة</span><button type="button" data-once-close aria-label="إغلاق">✕</button></div><div class="once-img" style="background-image:url('${url}')"></div><div class="once-wm">${Array.from({ length: 24 }, () => `<span>${wm}</span>`).join('')}</div>`;
+      v.innerHTML = `<div class="once-top"><span>👁 صورة لمرة واحدة</span><button type="button" data-once-close aria-label="إغلاق">✕</button></div><div class="once-img" style="background-image:url('${url}')"></div>`;
       document.body.appendChild(v); onceView = { id, url, el: v, reported: false };
       { const pol = window.NabdScreenGuard?.policy?.() || {}; if (pol.chat_once !== false) { try { window.NabdAndroid?.setSecureScreen?.(true); } catch { /* تجاهل */ } try { window.Capacitor?.Plugins?.PrivacyScreen?.enable?.(); } catch { /* تجاهل */ } onceView.lock = true; } }
       renderMsgs();
@@ -645,6 +644,8 @@
   }
   function closeOnce() { if (!onceView) return; URL.revokeObjectURL(onceView.url); onceView.el.remove(); onceView = null; try { window.NabdScreenGuard?.apply?.(); } catch { /* تجاهل */ } }
   async function reportShot() { if (!onceView || onceView.reported) return; onceView.reported = true; try { await rpc('chat_once_report_screenshot', { p_message: onceView.id }); } catch (e) { console.warn(e); } }
+  window.nabdMentions?.attach(E.input, { people: () => [...S.profiles.keys()].filter(id => id !== S.uid).map(id => ({ id, name: nameOf(id) })) });
+  window.addEventListener('nabd-mention-user', e => { e.preventDefault(); if (e.detail && e.detail !== S.uid) void profileSheet(e.detail); });
   window.nabdScreenshotDetected = () => { void reportShot(); };
   document.addEventListener('keyup', e => { if (!onceView) return; const k = e.key; if (k === 'PrintScreen' || (e.metaKey && e.shiftKey && ['3', '4', '5'].includes(k)) || (e.metaKey && e.shiftKey && (k === 's' || k === 'S'))) void reportShot(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden) closeOnce(); });
@@ -660,7 +661,7 @@
   }
   $('#ctxCancel').addEventListener('click', () => { const wasEdit = !!S.editing; resetComposer(); if (wasEdit) { E.input.value = ''; autosize(); syncSend(); } });
   function startReply(msg) { S.editing = null; S.replyTo = msg; setContext('reply', msg); E.sendBtn.classList.remove('edit'); E.sendBtn.innerHTML = ic('send'); E.input.focus(); }
-  function startEdit(msg) { if (imgOf(msg.body)) return toast('لا يمكن تعديل رسالة صورة'); S.replyTo = null; S.editing = msg; setContext('edit', msg); E.input.value = msg.body; autosize(); syncSend(); E.sendBtn.classList.add('edit'); E.sendBtn.innerHTML = ic('check'); E.input.focus(); }
+  function startEdit(msg) { if (imgOf(msg.body)) return toast('لا يمكن تعديل رسالة صورة'); S.replyTo = null; S.editing = msg; setContext('edit', msg); E.input.value = window.nabdMentions ? window.nabdMentions.decode(E.input, msg.body) : msg.body; autosize(); syncSend(); E.sendBtn.classList.add('edit'); E.sendBtn.innerHTML = ic('check'); E.input.focus(); }
 
   async function sendMessage(text, opts = {}) {
     const c = cur(); if (!c) return;

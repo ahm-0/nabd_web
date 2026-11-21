@@ -145,8 +145,10 @@ html[data-theme=light] .news-material-main{background:radial-gradient(circle at 
   <div class="toast" id="toast"></div>
   <script src="assets/bundle/supabase.f9ccb1e9.js"></script>
 <script src="assets/bundle/supabase-client.291eac98.js"></script>
-<script src="assets/bundle/nabd-app.3dab64e0.js"></script>
+<script src="nabd-mentions.js"></script>
+  <script src="assets/bundle/nabd-app.3dab64e0.js"></script>
 <script src="assets/bundle/material-ui.82fe7dde.js"></script>
 <script>(()=>{const d=document.getElementById("newsComposerDock");if(!d||!window.ResizeObserver)return;const set=()=>document.documentElement.style.setProperty("--nw-comp",(d.offsetHeight||0)+"px");new ResizeObserver(set).observe(d);set();})();</script>
+<script>(()=>{const p=()=>{const m=window.nabdMentions;if(!m)return;const t=document.getElementById("postText");if(t)m.attach(t,{people:()=>[]});};setTimeout(p,600);document.addEventListener("focusin",e=>{const i=e.target.closest&&e.target.closest(".comment-form input");if(i&&window.nabdMentions)window.nabdMentions.attach(i,{people:()=>[]});});})();</script>
 </body>
 </html>

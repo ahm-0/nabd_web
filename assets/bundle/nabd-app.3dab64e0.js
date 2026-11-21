@@ -979,7 +979,8 @@
       output += `<a class="post-link" data-external-url="${escapeHTML(href)}" href="${escapeHTML(href)}" target="_blank" rel="noopener noreferrer">${escapeHTML(clean)}</a>${escapeHTML(trailing)}`;
       cursor = start + raw.length;
     }
-    return output + escapeHTML(source.slice(cursor));
+    output += escapeHTML(source.slice(cursor));
+    return window.nabdMentions ? window.nabdMentions.render(output) : output;
   }
 
   function newsTextMarkup(post) {
@@ -1133,7 +1134,7 @@
 
   async function publishPost() {
     if (!newsIsAdmin) return toast('المشرف فقط يستطيع نشر الأخبار.');
-    const text = $('#postText')?.value.trim() || '';
+    const text = (window.nabdMentions ? window.nabdMentions.encode($('#postText'), $('#postText')?.value.trim() || '') : ($('#postText')?.value.trim() || ''));
     if (!text && !uploadImages.length) return toast('اكتب الخبر أو أرفق صورة قبل النشر.');
     if (text.length > 1200) return toast('يرجى اختصار الخبر إلى 1200 حرف أو أقل.');
     const button = $('#publishPost');
@@ -1257,7 +1258,7 @@
     const parentId = String(form.dataset.parentId || '');
     const post = feedPost(postId);
     const input = $('input[name="comment"], input', form);
-    const text = input?.value.trim();
+    const text = window.nabdMentions && input ? window.nabdMentions.encode(input, input.value.trim()) : input?.value.trim();
     if (!post || !text) return;
     const submit = $('button[type="submit"], button', form);
     if (submit) submit.disabled = true;

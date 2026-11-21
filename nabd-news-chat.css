@@ -125,3 +125,8 @@ body[data-page="news"] .compose-photo-button{width:44px;height:44px;border-radiu
 body[data-page="news"] .nw-support{white-space:nowrap}
 body[data-page="news"] .nw-support span{display:inline!important;width:auto!important;height:auto!important;border-radius:0!important;background:none!important;font-size:11.5px!important;color:#fff!important}
 body[data-page="news"] .nw-brand h1{font-size:16px!important}
+
+/* زر الدعم: شارة فقط + اسم ناعم أسفلها */
+body[data-page="news"] .nw-support{display:grid!important;justify-items:center;gap:2px;padding:0!important;border-radius:0!important;background:none!important;color:inherit!important}
+body[data-page="news"] .nw-support i{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;font-size:16px;color:#fff;background:#25b868}
+body[data-page="news"] .nw-support span{font-size:9.5px!important;font-weight:400!important;color:var(--nw-muted,#6b7a99)!important;line-height:1.1}

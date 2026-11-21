@@ -271,3 +271,5 @@ input,textarea{font:inherit;color:inherit}
 .once-wm{position:absolute;inset:60px 0 0;display:grid;grid-template-columns:repeat(3,1fr);align-content:space-around;pointer-events:none;overflow:hidden}
 .once-wm span{transform:rotate(-24deg);text-align:center;font-size:13px;color:rgba(255,255,255,.2);white-space:nowrap}
 .attach{background:rgba(47,111,224,.14)!important;color:var(--accent)!important}.attach .ic{width:22px;height:22px}
+.shot-alert{margin:2px 0 4px;padding:6px 10px;border-radius:12px;font-size:12px;font-weight:700;color:#b42318;background:rgba(255,89,116,.14)}
+.once-wm{display:none!important}
