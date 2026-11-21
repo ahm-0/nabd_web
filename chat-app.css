@@ -252,3 +252,8 @@ input,textarea{font:inherit;color:inherit}
 .msg-img{display:block;padding:0;border:0;background:none;margin:0 0 4px;border-radius:12px;overflow:hidden;max-width:240px}
 .msg-img img{display:block;width:100%;max-height:300px;object-fit:cover;border-radius:12px;background:rgba(150,170,230,.15)}
 .img-view{position:fixed;inset:0;z-index:99;display:grid;place-items:center;background:rgba(0,0,0,.9);padding:12px}.img-view img{max-width:100%;max-height:100%;border-radius:8px}
+
+.msk{display:grid;gap:12px;padding:16px 14px}
+.msk i{display:block;height:46px;width:64%;border-radius:16px 16px 16px 4px;background:linear-gradient(90deg,var(--panel) 25%,var(--panel2) 50%,var(--panel) 75%);background-size:200% 100%;animation:skl 1.3s infinite linear}
+.msk i.me{justify-self:end;border-radius:16px 16px 4px 16px;width:52%}.msk i:nth-child(3){height:78px}
+@keyframes skl{to{background-position:-200% 0}}

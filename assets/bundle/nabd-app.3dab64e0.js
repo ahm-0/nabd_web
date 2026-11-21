@@ -934,6 +934,7 @@
     if (error) throw error;
     posts = Array.isArray(data) ? data.map(mapRemoteNewsPost) : [];
     newsRemotePostsLoaded = true;
+    try { const raw = JSON.stringify(data); if (raw.length < 350000) localStorage.setItem('nabd_news_raw', raw); } catch { /* تجاهل */ }
   }
 
   function feedPost(id) {
@@ -1079,7 +1080,7 @@
     const listing = visible.length ? newsHtml() : '<div class="empty-feed"><i class="fa-regular fa-newspaper"></i><b>لا توجد منشورات منشورة حاليًا.</b><span>ستظهر هنا الأخبار التي ينشرها المشرف.</span></div>';
     feed.innerHTML = listing;
     if (PAGE === 'news' && (!feed.dataset.shown || window.__newsToEnd)) { feed.dataset.shown = '1'; window.__newsToEnd = false; const goEnd = () => { const u = document.getElementById('nwUnread'); if (u) window.scrollTo(0, Math.max(0, u.getBoundingClientRect().top + window.scrollY - 70)); else window.scrollTo(0, document.documentElement.scrollHeight); }; goEnd(); requestAnimationFrame(goEnd); setTimeout(goEnd, 350); }
-    if (PAGE === 'news' && posts.length && !window.__newsSeenBound) { window.__newsSeenBound = true; const mark = () => { try { const newest = posts.reduce((a, p) => (p.createdAt && p.createdAt > a ? p.createdAt : a), ''); if (newest) localStorage.setItem('nabd_news_seen', newest); } catch { /* تجاهل */ } }; setTimeout(mark, 3000); window.addEventListener('pagehide', mark); document.addEventListener('visibilitychange', () => { if (document.hidden) mark(); }); }
+    if (PAGE === 'news' && posts.length && !window.__newsSeenBound) { window.__newsSeenBound = true; const mark = () => { try { const newest = posts.reduce((a, p) => (p.createdAt && p.createdAt > a ? p.createdAt : a), ''); if (newest) localStorage.setItem('nabd_news_seen', newest); } catch { /* تجاهل */ } }; mark(); window.nabdBadges?.seenNews(); setTimeout(mark, 3000); window.addEventListener('pagehide', mark); document.addEventListener('visibilitychange', () => { if (document.hidden) mark(); }); }
     const postCount = $('#profilePosts');
     if (postCount) postCount.textContent = posts.filter(post => post.mine).length;
   }
@@ -1345,6 +1346,7 @@
 
     if (!supabaseClient) { setSectionLoading('.news-material-main', false); if (newsLoader) newsLoader.hidden = true; return; }
     try {
+      if (!newsRemotePostsLoaded && !posts.length) { try { const cached = JSON.parse(localStorage.getItem('nabd_news_raw') || 'null'); if (Array.isArray(cached) && cached.length) { posts = cached.map(mapRemoteNewsPost); renderFeed(); if (newsLoader) newsLoader.hidden = true; setSectionLoading('.news-material-main', false); } } catch { /* تجاهل */ } }
       await loadRemoteNewsPosts();
       const { data, error } = await supabaseClient.rpc('news_is_admin');
       newsIsAdmin = !error && data === true;

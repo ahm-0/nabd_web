@@ -55,7 +55,6 @@ body[data-page="news"] .nw-head>div{display:none}
 .nw-support{display:grid;justify-items:center;gap:1px;flex:none;color:inherit;text-decoration:none}
 .nw-support span{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;font-size:21px;color:#fff;background:#25d366}
 .nw-support small{font-size:9.5px;font-weight:700;color:var(--nw-muted)}
-body[data-page="news"] .news-loading-state{display:none!important}
 body[data-page="news"] .main-content,body[data-page="news"] .layout{padding-top:0!important;margin-top:0!important}
 .nw-day,.nw-unread{display:flex;justify-content:center;margin:10px 0 2px}
 .nw-day span{padding:3px 12px;border-radius:99px;font-size:11.5px;font-weight:700;color:var(--nw-muted);background:rgba(150,170,230,.2)}
@@ -63,3 +62,17 @@ body[data-page="news"] .main-content,body[data-page="news"] .layout{padding-top:
 body[data-page="news"] .nw-head{position:fixed!important;top:0;inset-inline:0;z-index:40}
 body[data-page="news"] .news-shell{padding-top:calc(60px + env(safe-area-inset-top))}
 .nw-unread{padding-inline:12px}
+
+/* رأس مطابق لتصميم الدردشة */
+body[data-page="news"] .nw-head{min-height:96px;padding:calc(14px + env(safe-area-inset-top)) 16px 14px!important;justify-content:space-between}
+.nw-brand{gap:14px}.nw-brand img{width:64px;height:64px;border-radius:50%}
+.nw-brand h1{font-size:21px;font-weight:800}.nw-brand small{margin-top:4px;font-size:14px}
+.nw-chev{display:grid;place-items:center;width:40px;height:40px;flex:none;color:inherit;font-size:20px;text-decoration:none}
+body[data-page="news"] .news-shell{padding-top:calc(98px + env(safe-area-inset-top))!important;padding-bottom:calc(66px + env(safe-area-inset-bottom))!important;min-height:100dvh;display:flex;flex-direction:column;justify-content:flex-end}
+body[data-page="news"] #feed{padding:6px 12px 4px!important}
+/* تحميل داخلي: هياكل رسائل */
+body[data-page="news"] .news-loading-state:not([hidden]){position:fixed;inset:calc(98px + env(safe-area-inset-top)) 0 calc(66px + env(safe-area-inset-bottom)) 0;z-index:15;display:grid!important;align-content:end;gap:12px;padding:14px 12px;background:var(--nw-bg,var(--bg,#f2f6ff))}
+body[data-page="news"] .news-loading-state>*{display:none}
+body[data-page="news"] .news-loading-state:not([hidden])::before,body[data-page="news"] .news-loading-state:not([hidden])::after{content:"";display:block;height:110px;width:86%;border-radius:6px 18px 18px 18px;background:linear-gradient(90deg,rgba(150,170,230,.16) 25%,rgba(150,170,230,.3) 50%,rgba(150,170,230,.16) 75%);background-size:200% 100%;animation:nwsk 1.3s linear infinite}
+body[data-page="news"] .news-loading-state:not([hidden])::after{height:78px;width:70%}
+@keyframes nwsk{to{background-position:-200% 0}}

@@ -498,7 +498,7 @@
     const c = S.pub; enterConversation();
     c.unreadFrom = seenAt ? (c.msgs.find(m => m.sid !== S.uid && m.at > seenAt)?.id || null) : null;
     setHeader({ avatar: brandAvatar('xs'), title: 'دردشة نبض التفوق', sub: statsText() });
-    applyPlatform(); showPinned(); renderMsgs({ stick: true }); renderList();
+    applyPlatform(); showPinned(); renderMsgs({ stick: true }); skelMsgs(c); renderList();
     const done = loadLatest(c, { silent: c.loaded });
     void refreshPinned(); void loadStats();
     await done;
@@ -509,8 +509,10 @@
     }
     markPublicSeen();
   }
+  const skelMsgs = c => { if (c && !c.loaded && !c.msgs.length) E.msgs.innerHTML = '<div class="msk"><i></i><i class="me"></i><i></i><i class="me"></i><i></i></div>'; };
   function markPublicSeen() {
     const last = S.pub.msgs[S.pub.msgs.length - 1]; if (!last || !S.uid) return;
+    try { window.nabdBadges?.seenChat(new Date(last.at).toISOString()); } catch { /* تجاهل */ }
     seenAt = last.at; localStorage.setItem(LS.seen + S.uid, seenAt); renderListSoon();
   }
 
@@ -535,7 +537,7 @@
       const p = S.profiles.get(userId) || {}, conv = S.convs.find(c => c.other_user_id === userId);
       setHeader({ avatar: avatarHTML(userId, p.name || conv?.other_name, 'xs'), title: p.name || conv?.other_name || 'مستخدم', sub: p.stage || 'محادثة خاصة', mod: p.mod || conv?.other_is_moderator, ver: p.ver, vt: p.vt });
     };
-    paintHeader(); renderMsgs({ stick: true }); renderList();
+    paintHeader(); renderMsgs({ stick: true }); skelMsgs(thread); renderList();
     joinTyping(thread.id);
     void ensureProfiles([userId]).then(() => { if (S.view.userId === userId) paintHeader(); });
     void loadBlocks();
