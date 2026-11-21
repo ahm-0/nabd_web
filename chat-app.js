@@ -47,7 +47,11 @@
   const ic = (name, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[name] || ''}</svg>`;
   const IMG_RE = /^\[\[img:(https:\/\/[^\]\s]+)\]\]\s*/;
   const imgOf = body => { const m = IMG_RE.exec(body || ''); return m ? { url: m[1], cap: body.slice(m[0].length) } : null; };
-  const plain = body => { const i = imgOf(body); return i ? `📷 ${i.cap || 'صورة'}` : (body || ''); };
+  const ONCE_RE = /^\[\[once:([^\]\s]+)\]\]\s*/;
+  const onceOf = body => { const m = ONCE_RE.exec(body || ''); return m ? { path: m[1], cap: body.slice(m[0].length) } : null; };
+  const shotOf = body => /^\[\[sys:shot:[0-9a-f-]{36}\]\]$/.test(body || '');
+  const onceState = new Map();
+  const plain = body => shotOf(body) ? '📸 لقطة شاشة' : onceOf(body) ? '👁 صورة لمرة واحدة' : (() => { const i = imgOf(body); return i ? `📷 ${i.cap || 'صورة'}` : (body || ''); })();
   const linkify = text => esc(text).replace(/(https?:\/\/[^\s<]+)/g, url => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
   const hueOf = text => { let h = 0; const s = String(text || ''); for (let i = 0; i < s.length; i += 1) h = (h * 31 + s.charCodeAt(i)) % 360; return h; };
   const initials = name => String(name || '?').trim().split(/\s+/).slice(0, 2).map(w => Array.from(w)[0] || '').join('') || '؟';
@@ -313,6 +317,7 @@
     const mine = m.sid === S.uid, pub = m.scope === 'public';
     const first = gap(prev, m), last = gap(m, next);
     const staff = pub && (mine ? S.me.mod : S.profiles.get(m.sid)?.mod);
+    if (shotOf(m.body)) return `<div class="sys-note" data-id="${esc(m.id)}">📸 ${mine ? 'تم تسجيل لقطة شاشة لصورة المرة الواحدة' : `${esc(nameOf(m.sid))} أخذ لقطة شاشة لصورتك`}</div>`;
     let h = `<div class="row ${mine ? 'mine' : 'other'} ${staff ? 'staff' : ''} ${first ? 'first' : ''} ${isNew ? 'new' : ''}" data-id="${esc(m.id)}" style="--h:${hueOf(m.sid)}">`;
     if (pub && !mine) h += `<div class="av-col">${last ? `<button type="button" data-profile="${esc(m.sid)}" aria-label="الملف">${avatarHTML(m.sid, nameOf(m.sid), 'sm')}</button>` : ''}</div>`;
     h += '<div class="bubble">';
@@ -322,7 +327,8 @@
       const list = cur()?.msgs;
       h += `<button type="button" class="quote" data-goto="${esc(m.rid || '')}"><b>${esc(replyName(m, list) || 'رسالة')}</b><span>${esc(plain(m.rbody) || 'رسالة غير متاحة')}</span></button>`;
     }
-    { const im = imgOf(m.body); if (im) { h += `<button type="button" class="msg-img" data-img="${esc(im.url)}"><img src="${esc(im.url)}" alt="صورة" loading="lazy" decoding="async"></button>`; if (im.cap) h += `<p dir="auto">${linkify(im.cap)}</p>`; } else h += `<p dir="auto">${linkify(m.body)}</p>`; }
+    { const oc = onceOf(m.body); if (oc) { const seen = onceState.get(m.id) === true; h += mine ? `<div class="once-card ${seen ? 'seen' : ''}"><i>👁</i><b>صورة لمرة واحدة</b><small>${seen ? 'تم فتحها' : 'لم تُفتح بعد'}</small></div>` : `<button type="button" class="once-card ${seen ? 'seen' : ''}" data-once="${esc(m.id)}" ${seen ? 'disabled' : ''}><i>👁</i><b>${seen ? 'فُتحت الصورة' : 'اضغط لعرض الصورة'}</b><small>مرة واحدة فقط</small></button>`; if (oc.cap) h += `<p dir="auto">${linkify(oc.cap)}</p>`; } else
+    { const im = imgOf(m.body); if (im) { h += `<button type="button" class="msg-img" data-img="${esc(im.url)}"><img src="${esc(im.url)}" alt="صورة" loading="lazy" decoding="async"></button>`; if (im.cap) h += `<p dir="auto">${linkify(im.cap)}</p>`; } else h += `<p dir="auto">${linkify(m.body)}</p>`; } }
     if (pub) {
       const chips = Object.entries(m.reacts || {}).filter(([, n]) => n > 0).map(([e, n]) => `<button type="button" class="react ${m.my === e ? 'me' : ''}" data-react="${e}">${e}<i>${n}</i></button>`).join('');
       if (chips) h += `<div class="reacts">${chips}</div>`;
@@ -402,6 +408,7 @@
       c.hasMore = (rows || []).length >= PAGE;
       const wasLoaded = c.loaded;
       mergeLatest(c, fetched); c.loaded = true;
+      if (c.scope === 'private' && fetched.some(x => onceOf(x.body))) { try { const st = await rpc('chat_once_state', { p_thread: c.id }); (st || []).forEach(r => onceState.set(r.message_id, !!r.viewed)); } catch { /* تجاهل */ } }
       if (c.scope === 'public') { const pin = c.msgs.find(m => m.pinned); if (pin) c.pinned = { id: pin.id, body: pin.body }; }
       if (cur() === c && (!silent || signature(c.msgs) !== before || !wasLoaded)) renderMsgs({ stick: !wasLoaded ? true : undefined });
       if (c.scope === 'public') { renderListSoon(); saveCache(); }
@@ -585,12 +592,18 @@
   });
   $('#attachBtn').addEventListener('click', () => { if (S.editing) return; $('#imgFile').click(); });
   $('#imgPrevX').addEventListener('click', clearImg);
+  $('#onceToggle').addEventListener('click', () => { if (!pendImg) return; pendImg.once = !pendImg.once; $('#onceToggle').classList.toggle('on', pendImg.once); $('#onceToggle').setAttribute('aria-pressed', String(pendImg.once)); });
   $('#imgFile').addEventListener('change', async e => {
     const f = e.target.files[0]; if (!f) return;
     if (!/^image\//.test(f.type)) { e.target.value = ''; return toast('اختر ملف صورة'); }
-    try { const blob = await shrink(f); pendImg = { blob, prev: URL.createObjectURL(blob) }; $('#imgPrevImg').src = pendImg.prev; $('#imgPrev').hidden = false; syncSend(); E.input.focus(); }
+    try { const blob = await shrink(f); pendImg = { blob, prev: URL.createObjectURL(blob), once: false }; { const t = $('#onceToggle'); t.hidden = S.view.type !== 'private'; t.classList.remove('on'); t.setAttribute('aria-pressed', 'false'); } $('#imgPrevImg').src = pendImg.prev; $('#imgPrev').hidden = false; syncSend(); E.input.focus(); }
     catch (err) { toast(err.message || 'تعذر قراءة الصورة'); e.target.value = ''; }
   });
+  async function uploadOnceImage(blob) {
+    const path = `${S.uid}/${uuid()}.jpg`;
+    const { error } = await sb.storage.from('chat-once').upload(path, blob, { contentType: 'image/jpeg', upsert: false });
+    if (error) throw error; return path;
+  }
   async function uploadChatImage(blob) {
     const path = `chat/${S.uid}/${uuid()}.jpg`;
     const { error } = await sb.storage.from('nabd').upload(path, blob, { contentType: 'image/jpeg', cacheControl: '31536000', upsert: false });
@@ -608,8 +621,35 @@
   E.composer.addEventListener('submit', event => { event.preventDefault(); const text = E.input.value.trim(); if (!text && !pendImg) return; if (S.editing) return void submitEdit(text);
     if (!pendImg) return void sendMessage(text);
     const img = pendImg; E.sendBtn.disabled = true; toast('جارٍ رفع الصورة…');
-    uploadChatImage(img.blob).then(url => { clearImg(); void sendMessage(`[[img:${url}]]${text ? '\n' + text : ''}`.slice(0, 1000)); }).catch(err => { syncSend(); toast(errText(err)); });
+    const once = img.once && S.view.type === 'private';
+    (once ? uploadOnceImage(img.blob) : uploadChatImage(img.blob)).then(ref => { clearImg(); void sendMessage(`[[${once ? 'once' : 'img'}:${ref}]]${text ? '\n' + text : ''}`.slice(0, 1000), once ? { once: ref } : {}); }).catch(err => { syncSend(); toast(errText(err)); });
   });
+  let onceView = null;
+  async function openOnce(id, btn) {
+    if (onceView) return; btn.disabled = true;
+    try {
+      const path = await rpc('chat_once_open', { p_message: id });
+      const { data, error } = await sb.storage.from('chat-once').createSignedUrl(path, 60); if (error) throw error;
+      const blob = await (await fetch(data.signedUrl)).blob(); const url = URL.createObjectURL(blob);
+      onceState.set(id, true);
+      const wm = esc(nameOf(S.uid) || 'نبض التفوق');
+      const v = document.createElement('div'); v.className = 'once-view'; v.oncontextmenu = ev => ev.preventDefault();
+      v.innerHTML = `<div class="once-top"><span>👁 صورة لمرة واحدة</span><button type="button" data-once-close aria-label="إغلاق">✕</button></div><div class="once-img" style="background-image:url('${url}')"></div><div class="once-wm">${Array.from({ length: 24 }, () => `<span>${wm}</span>`).join('')}</div>`;
+      document.body.appendChild(v); onceView = { id, url, el: v, reported: false };
+      try { window.NabdAndroid?.setSecureScreen?.(true); } catch { /* تجاهل */ }
+      renderMsgs();
+    } catch (err) {
+      btn.disabled = false;
+      if (err?.code === 'P0003') { onceState.set(id, true); renderMsgs(); toast('فُتحت هذه الصورة سابقًا'); } else toast(errText(err));
+    }
+  }
+  function closeOnce() { if (!onceView) return; URL.revokeObjectURL(onceView.url); onceView.el.remove(); onceView = null; try { window.NabdAndroid?.setSecureScreen?.(false); } catch { /* تجاهل */ } }
+  async function reportShot() { if (!onceView || onceView.reported) return; onceView.reported = true; try { await rpc('chat_once_report_screenshot', { p_message: onceView.id }); } catch (e) { console.warn(e); } }
+  window.nabdScreenshotDetected = () => { void reportShot(); };
+  document.addEventListener('keyup', e => { if (!onceView) return; const k = e.key; if (k === 'PrintScreen' || (e.metaKey && e.shiftKey && ['3', '4', '5'].includes(k)) || (e.metaKey && e.shiftKey && (k === 's' || k === 'S'))) void reportShot(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) closeOnce(); });
+  window.addEventListener('blur', () => closeOnce());
+  document.addEventListener('click', e => { if (e.target.closest?.('[data-once-close]')) { closeOnce(); return; } const o = e.target.closest?.('[data-once]'); if (o) void openOnce(o.dataset.once, o); });
   document.addEventListener('click', e => { const b = e.target.closest?.('.msg-img'); if (!b) return; const v = document.createElement('div'); v.className = 'img-view'; v.innerHTML = `<img src="${esc(b.dataset.img)}" alt="">`; v.onclick = () => v.remove(); document.body.appendChild(v); });
 
   function setContext(kind, msg) {
@@ -622,7 +662,7 @@
   function startReply(msg) { S.editing = null; S.replyTo = msg; setContext('reply', msg); E.sendBtn.classList.remove('edit'); E.sendBtn.innerHTML = ic('send'); E.input.focus(); }
   function startEdit(msg) { if (imgOf(msg.body)) return toast('لا يمكن تعديل رسالة صورة'); S.replyTo = null; S.editing = msg; setContext('edit', msg); E.input.value = msg.body; autosize(); syncSend(); E.sendBtn.classList.add('edit'); E.sendBtn.innerHTML = ic('check'); E.input.focus(); }
 
-  async function sendMessage(text) {
+  async function sendMessage(text, opts = {}) {
     const c = cur(); if (!c) return;
     const reply = S.replyTo;
     const m = { id: uuid(), scope: c.scope, sid: S.uid, body: text, at: new Date().toISOString(), status: 'sending', edited: false, rid: reply?.id || null, rbody: reply?.body || null, rname: reply ? (reply.sid === S.uid ? 'أنت' : nameOf(reply.sid)) : null, rsid: reply?.sid || null, reacts: {}, my: null, read: false, react: null };
@@ -631,6 +671,7 @@
     c.msgs.push(m); appendRow(m, true);
     if (c.scope === 'public') seenAt = m.at;
     await deliver(c, m);
+    if (opts.once && !m.status) { try { await rpc('chat_once_register', { p_message: m.id, p_path: opts.once }); } catch (e) { console.warn('تعذر تسجيل الصورة', e); } }
   }
   async function deliver(c, m) {
     m.status = 'sending'; patchRow(m.id);

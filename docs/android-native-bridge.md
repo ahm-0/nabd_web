@@ -39,3 +39,13 @@ fun googleSignIn() {
 
 ## shareText(text) — مشاركة نص التطبيق (اختياري)
 `window.NabdAndroid.shareText(text)` يفتح قائمة المشاركة بالنص كما هو (Intent.ACTION_SEND, text/plain). إن لم تتوفر تستخدم الصفحة `navigator.share`. تُمنح نقاط «نشر التطبيق» (50، مرة واحدة) فقط بعد مغادرة المستخدم التطبيق إلى تطبيق المشاركة والعودة؛ إغلاق القائمة دون اختيار تطبيق لا يمنح شيئًا.
+
+## 3) صور «المرة الواحدة» (تُعرض مرة واحدة في الدردشة الخاصة)
+عند فتح الصورة يستدعي الموقع `NabdAndroid.setSecureScreen(true)` (ويُلغيها عند الإغلاق)، فيمنع FLAG_SECURE لقطة الشاشة تماماً.
+وللتبليغ عن محاولة لقطة شاشة (أندرويد 14+) استدعِ من التطبيق داخل الـ WebView:
+
+```kotlin
+// Activity.onCreate — API 34+
+registerScreenCaptureCallback(mainExecutor) { webView.evaluateJavascript("window.nabdScreenshotDetected && window.nabdScreenshotDetected()", null) }
+```
+عند الاستدعاء يرسل الموقع إشعاراً داخل المحادثة لصاحب الصورة: «فلان أخذ لقطة شاشة لصورتك». ملاحظة: على المتصفح/الويب لا يمكن منع اللقطة، ويُكتشف فقط مفتاح PrintScreen واختصارات macOS.
