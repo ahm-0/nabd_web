@@ -242,3 +242,4 @@ body[data-page="supervision"] .ap-ls-chk{display:flex!important;align-items:cent
 body[data-page="supervision"] .ap-ls-btns{display:flex;gap:8px;margin-top:18px}
 body[data-page="supervision"] .ap-ls-btns button{flex:1;padding:12px;border-radius:14px;border:0;font-family:inherit;font-weight:800;background:rgba(150,150,255,.14);color:var(--ap-text);cursor:pointer}
 body[data-page="supervision"] .ap-ls-btns .ok{background:var(--ap-grad);color:#fff}body[data-page="supervision"] .ap-ls-btns .del{flex:none;color:#ff5974}
+body[data-page="supervision"] .ap-ls-bg[hidden]{display:none!important}

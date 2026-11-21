@@ -168,6 +168,7 @@
       buf: b => vp.classList.toggle('buf', b), tick: ui,
       error: () => toast('تعذر تشغيل الفيديو، تحقق من الرابط أو الاتصال')
     });
+    const ratio = (e, el = vp) => { const r = el.getBoundingClientRect(); return vp.classList.contains('rot') ? (e.clientY - r.top) / r.height : (e.clientX - r.left) / r.width; };
     const seekBy = d => { eng.seek(eng.cur + d); ui(); };
     const toggle = () => { eng.paused ? eng.play() : eng.pause(); setTimeout(setPlayIcon, 60); };
     $('#pp').onclick = e => { e.stopPropagation(); toggle(); showCtl(); };
@@ -178,7 +179,7 @@
     let lastTap = 0, lastX = 0, single = null;
     const ripple = side => { const el = $(side < 0 ? '#rpl' : '#rpr'); el.textContent = side < 0 ? '« 10 ث' : '10 ث »'; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 420); };
     $('#tap').addEventListener('click', e => {
-      const r = vp.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, now = Date.now();
+      const x = ratio(e), now = Date.now();
       if (now - lastTap < 320) {
         clearTimeout(single); lastTap = 0;
         if (x < 0.36) { seekBy(-10); ripple(-1); } else if (x > 0.64) { seekBy(10); ripple(1); } else toggle();
@@ -189,7 +190,7 @@
     });
     /* شريط التقدم */
     const seek = $('#seek');
-    const posOf = e => { const r = seek.getBoundingClientRect(); return Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)); };
+    const posOf = e => Math.max(0, Math.min(1, ratio(e, seek)));
     seek.addEventListener('pointerdown', e => { e.stopPropagation(); dragging = true; vp.classList.add('dragging'); seek.setPointerCapture(e.pointerId); const p = posOf(e); $('#pr').style.width = p * 100 + '%'; $('#kn').style.left = p * 100 + '%'; });
     seek.addEventListener('pointermove', e => { if (!dragging) return; const p = posOf(e); $('#pr').style.width = p * 100 + '%'; $('#kn').style.left = p * 100 + '%'; $('#tm').textContent = `${mmss(p * eng.dur)} / ${mmss(eng.dur)}`; });
     const endDrag = e => { if (!dragging) return; dragging = false; vp.classList.remove('dragging'); eng.seek(posOf(e) * eng.dur); showCtl(); };
@@ -198,17 +199,25 @@
     $('#spd').onclick = e => { e.stopPropagation(); $('#spm').classList.toggle('on'); showCtl(true); };
     $('#spm').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; curRate = Number(b.dataset.r); eng.rate(curRate); $('#spd').textContent = curRate + 'x'; $('#spm').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); $('#spm').classList.remove('on'); showCtl(); });
     /* ملء الشاشة + قفل الوضع الأفقي */
-    const fsIcon = () => { const on = document.fullscreenElement === vp || vp.classList.contains('fs'); $('#fs').innerHTML = `<i class="fa-solid fa-${on ? 'compress' : 'expand'}"></i>`; };
-    const onFs = () => { fsIcon(); if (!document.fullscreenElement) { try { screen.orientation?.unlock?.(); } catch {} } };
-    document.addEventListener('fullscreenchange', onFs);
+    const isFs = () => document.fullscreenElement === vp || document.webkitFullscreenElement === vp || vp.classList.contains('fs');
+    const fsIcon = () => { $('#fs').innerHTML = `<i class="fa-solid fa-${isFs() ? 'compress' : 'expand'}"></i>`; };
+    const unlock = () => { try { screen.orientation?.unlock?.(); } catch { /* غير مدعوم */ } };
+    const exitFs = () => { vp.classList.remove('fs', 'rot'); document.body.style.overflow = ''; unlock(); fsIcon(); showCtl(); };
+    const onFs = () => { if (!document.fullscreenElement && !document.webkitFullscreenElement && !vp.classList.contains('fs')) exitFs(); else fsIcon(); };
+    document.addEventListener('fullscreenchange', onFs); document.addEventListener('webkitfullscreenchange', onFs);
+    const onResize = () => { if (vp.classList.contains('rot') && innerWidth > innerHeight) vp.classList.remove('rot'); };
+    window.addEventListener('resize', onResize);
+    /* ملء الشاشة بالعرض: الواجهة الأصلية إن توفرت، وإلا وضع احتياطي (تغطية كاملة + تدوير للعرض) يعمل داخل WebView */
     $('#fs').onclick = async e => {
       e.stopPropagation();
-      if (document.fullscreenElement) { await document.exitFullscreen(); return; }
-      if (vp.classList.contains('fs')) { vp.classList.remove('fs'); fsIcon(); try { screen.orientation?.unlock?.(); } catch {} return; }
-      try { await (vp.requestFullscreen?.() || vp.webkitRequestFullscreen?.()); } catch { vp.classList.add('fs'); fsIcon(); }
-      if (!document.fullscreenElement && !vp.classList.contains('fs')) vp.classList.add('fs');
-      try { await screen.orientation?.lock?.('landscape'); } catch {}
-      fsIcon();
+      if (isFs()) { if (document.fullscreenElement) { try { await document.exitFullscreen(); } catch { /* تجاهل */ } } exitFs(); return; }
+      let native = false;
+      try { const req = vp.requestFullscreen || vp.webkitRequestFullscreen; if (req) { await req.call(vp); native = !!(document.fullscreenElement || document.webkitFullscreenElement); } } catch { native = false; }
+      let locked = false;
+      try { if (screen.orientation?.lock) { await screen.orientation.lock('landscape'); locked = true; } } catch { locked = false; }
+      if (!native) { vp.classList.add('fs'); document.body.style.overflow = 'hidden'; }
+      if (!locked && innerHeight > innerWidth) vp.classList.add('rot');
+      fsIcon(); showCtl();
     };
     /* لوحة المفاتيح */
     const key = e => {
@@ -217,7 +226,7 @@
       showCtl();
     };
     document.addEventListener('keydown', key);
-    cleanup = () => { document.removeEventListener('keydown', key); document.removeEventListener('fullscreenchange', onFs); clearTimeout(hideT); clearTimeout(single); if (document.fullscreenElement) document.exitFullscreen?.(); try { screen.orientation?.unlock?.(); } catch {} eng.destroy(); document.title = 'الدروس | نبض التفوق'; };
+    cleanup = () => { document.removeEventListener('keydown', key); document.removeEventListener('fullscreenchange', onFs); document.removeEventListener('webkitfullscreenchange', onFs); window.removeEventListener('resize', onResize); document.body.style.overflow = ''; clearTimeout(hideT); clearTimeout(single); if (document.fullscreenElement) document.exitFullscreen?.(); try { screen.orientation?.unlock?.(); } catch {} eng.destroy(); document.title = 'الدروس | نبض التفوق'; };
     setPlayIcon(); ui();
   }
 
