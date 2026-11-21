@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-11-19-news-chat-v61';
+const CACHE_VERSION = '2026-11-19-news-chat-v62';
 const STATIC_CACHE = `nabd-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nabd-runtime-${CACHE_VERSION}`;
 
@@ -65,6 +65,8 @@ const APP_SHELL = [
   './nabd-premium.css',
   './nabd-points.js',
   './nabd-mentions.js',
+  './lessons.css',
+  './lessons.js',
   './points.html',
   './points.css',
   './points-page.js',
