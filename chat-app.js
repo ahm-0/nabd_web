@@ -408,7 +408,7 @@
       c.hasMore = (rows || []).length >= PAGE;
       const wasLoaded = c.loaded;
       mergeLatest(c, fetched); c.loaded = true;
-      if (c.scope === 'private' && fetched.some(x => onceOf(x.body))) { try { const st = await rpc('chat_once_state_v2', { p_thread: c.id }); (st || []).forEach(r => { onceState.set(r.message_id, !!r.viewed); if (r.shot_at) onceShots.set(r.message_id, Number(r.shot_count) || 1); }); } catch { /* تجاهل */ } }
+      if (c.scope === 'private' && fetched.some(x => onceOf(x.body))) { rpc('chat_once_state_v2', { p_thread: c.id }).then(st => { let ch = false; (st || []).forEach(r => { if (onceState.get(r.message_id) !== !!r.viewed) ch = true; onceState.set(r.message_id, !!r.viewed); if (r.shot_at && onceShots.get(r.message_id) !== (Number(r.shot_count) || 1)) { ch = true; onceShots.set(r.message_id, Number(r.shot_count) || 1); } }); if (ch && cur() === c) renderMsgs(); }).catch(() => {}); }
       if (c.scope === 'public') { const pin = c.msgs.find(m => m.pinned); if (pin) c.pinned = { id: pin.id, body: pin.body }; }
       if (cur() === c && (!silent || signature(c.msgs) !== before || !wasLoaded)) renderMsgs({ stick: !wasLoaded ? true : undefined });
       if (c.scope === 'public') { renderListSoon(); saveCache(); }
@@ -644,7 +644,7 @@
   }
   function closeOnce() { if (!onceView) return; URL.revokeObjectURL(onceView.url); onceView.el.remove(); onceView = null; try { window.NabdScreenGuard?.apply?.(); } catch { /* تجاهل */ } }
   async function reportShot() { if (!onceView || onceView.reported) return; onceView.reported = true; try { await rpc('chat_once_report_screenshot', { p_message: onceView.id }); } catch (e) { console.warn(e); } }
-  window.nabdMentions?.attach(E.input, { people: () => [...S.profiles.keys()].filter(id => id !== S.uid).map(id => ({ id, name: nameOf(id) })) });
+  window.nabdMentions?.attach(E.input, { exclude: ['chat'], people: () => [...S.profiles.keys()].filter(id => id !== S.uid).map(id => ({ id, name: nameOf(id) })) });
   window.addEventListener('nabd-mention-user', e => { e.preventDefault(); if (e.detail && e.detail !== S.uid) void profileSheet(e.detail); });
   window.nabdScreenshotDetected = () => { void reportShot(); };
   document.addEventListener('keyup', e => { if (!onceView) return; const k = e.key; if (k === 'PrintScreen' || (e.metaKey && e.shiftKey && ['3', '4', '5'].includes(k)) || (e.metaKey && e.shiftKey && (k === 's' || k === 'S'))) void reportShot(); });
@@ -1084,12 +1084,13 @@
     sb.auth.onAuthStateChange((event, next) => { if (event === 'SIGNED_OUT' || !next) location.replace('auth.html'); });
 
     if (!routedEarly) route();
+    try { startRealtime(); } catch (e) { console.warn(e); }
     await Promise.allSettled([
-      loadConvs(), loadLatest(S.pub, { silent: S.pub.loaded }), loadPlatform(), loadSettings(), loadRequests(), ensureMyThumb(),
+      loadConvs().then(() => renderList()), loadLatest(S.pub, { silent: S.pub.loaded }), loadPlatform(), loadSettings(), loadRequests(), ensureMyThumb(),
       rpc('chat_can_moderate').then(v => { S.canMod = v === true; }).catch(() => { S.canMod = false; })
     ]);
     if (!seenAt && S.pub.msgs.length) markPublicSeen();
-    renderList(); startRealtime();
+    renderList();
     // روابط من بوابة الإدارة: chat.html?dm=<id> يفتح محادثة خاصة، و?profile=<id> يفتح الملف الشخصي
     try {
       const q = new URLSearchParams(location.search), pu = q.get('profile'), du = q.get('dm');
