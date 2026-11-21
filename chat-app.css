@@ -270,3 +270,4 @@ input,textarea{font:inherit;color:inherit}
 .once-img{flex:1;background-position:center;background-repeat:no-repeat;background-size:contain;pointer-events:none}
 .once-wm{position:absolute;inset:60px 0 0;display:grid;grid-template-columns:repeat(3,1fr);align-content:space-around;pointer-events:none;overflow:hidden}
 .once-wm span{transform:rotate(-24deg);text-align:center;font-size:13px;color:rgba(255,255,255,.2);white-space:nowrap}
+.attach{background:rgba(47,111,224,.14)!important;color:var(--accent)!important}.attach .ic{width:22px;height:22px}

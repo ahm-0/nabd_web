@@ -6,7 +6,7 @@
   const KEY = 'nabd_screen_policy', AT = 'nabd_screen_policy_at';
   const SECTIONS = [
     ['home', 'الرئيسية', 'fa-house'], ['profile', 'الملف الشخصي', 'fa-user'], ['settings', 'الإعدادات', 'fa-gear'], ['chat', 'الدردشة', 'fa-comments'],
-    ['news', 'الأخبار', 'fa-newspaper'], ['support', 'الدعم الفني', 'fa-headset'], ['premium', 'المحتوى المميز والمكتبة', 'fa-crown'], ['exam', 'عداد الامتحانات', 'fa-hourglass-half'], ['admin', 'بوابة المشرفين', 'fa-user-shield']
+    ['news', 'الأخبار', 'fa-newspaper'], ['chat_once', 'منع الالتقاط عند فتح صورة لمرة واحدة', 'fa-eye-slash'], ['support', 'الدعم الفني', 'fa-headset'], ['premium', 'المحتوى المميز والمكتبة', 'fa-crown'], ['exam', 'عداد الامتحانات', 'fa-hourglass-half'], ['admin', 'بوابة المشرفين', 'fa-user-shield']
   ];
   const file = (location.pathname.split('/').pop() || 'index.html').replace(/\.html$/i, '');
   const SECTION_OF = { index: 'home', profile: 'profile', settings: 'settings', chat: 'chat', 'private-chat': 'chat', news: 'news', 'support-chat': 'support', premium: 'premium', library: 'premium', 'premium-admin': 'admin', 'exam-countdown': 'exam', 'admin-dashboard': 'admin', supervision: 'admin' };

@@ -106,3 +106,22 @@ body[data-page="news"] .post-head .avatar{display:grid!important;place-items:cen
 body[data-page="news"] .post-head>div{display:flex!important;align-items:center;gap:6px;flex-wrap:wrap}
 body[data-page="news"] .post-head{position:static!important}
 body[data-page="news"] #feed>.post>.post-head .avatar{position:absolute!important;right:-42px!important;left:auto!important;top:0!important;margin:0!important}
+
+/* قلب الجهة + ترتيب الفقاعة + إزالة الفراغ السفلي */
+body[data-page="news"] #feed>.post{justify-self:end!important;margin-left:0!important;margin-right:44px!important;margin-inline:0 44px!important;margin-inline-start:auto!important;border-radius:4px 16px 16px 16px!important}
+body[data-page="news"] #feed>.post{margin:8px 0 0 0!important;margin-right:auto!important;margin-left:44px!important}
+body[data-page="news"] #feed>.post>.post-head .avatar{right:auto!important;left:-42px!important}
+body[data-page="news"] .post-head{display:flex!important;align-items:center;gap:6px;min-height:20px}
+body[data-page="news"] .post-author{display:flex!important;flex:1;min-width:0}
+body[data-page="news"] .post-author-name{display:flex!important;align-items:center;gap:4px;font-size:13px!important}
+body[data-page="news"] .nw-foot{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:2px 0 6px;font-size:11px;color:var(--c-meta)}
+body[data-page="news"] .nw-views b{font-weight:600}.nw-views b:empty{display:none}
+body[data-page="news"] .nw-support{display:inline-flex;align-items:center;gap:6px;flex:none;padding:7px 12px;border-radius:99px;font-size:11.5px;font-weight:800;color:#fff;text-decoration:none;background:#25b868}
+body[data-page="news"] .nw-support i{font-size:13px}
+body[data-page="news"] .news-shell{min-height:100dvh;display:flex!important;flex-direction:column;padding-bottom:calc(var(--nw-comp,0px) + 6px + env(safe-area-inset-bottom))!important}
+body[data-page="news"] #feed{margin-top:auto!important;padding-bottom:4px!important}
+body[data-page="news"] .news-material-main{padding-bottom:0!important}
+body[data-page="news"] .compose-photo-button{width:44px;height:44px;border-radius:50%!important;background:rgba(47,111,224,.14)!important}
+body[data-page="news"] .nw-support{white-space:nowrap}
+body[data-page="news"] .nw-support span{display:inline!important;width:auto!important;height:auto!important;border-radius:0!important;background:none!important;font-size:11.5px!important;color:#fff!important}
+body[data-page="news"] .nw-brand h1{font-size:16px!important}

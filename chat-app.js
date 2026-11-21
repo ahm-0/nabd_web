@@ -626,7 +626,7 @@
   });
   let onceView = null;
   async function openOnce(id, btn) {
-    if (onceView) return; btn.disabled = true;
+    if (onceView) return; btn.disabled = true; try { await window.NabdScreenGuard?.refresh?.(true); } catch { /* تجاهل */ }
     try {
       const path = await rpc('chat_once_open', { p_message: id });
       const { data, error } = await sb.storage.from('chat-once').createSignedUrl(path, 60); if (error) throw error;
@@ -636,14 +636,14 @@
       const v = document.createElement('div'); v.className = 'once-view'; v.oncontextmenu = ev => ev.preventDefault();
       v.innerHTML = `<div class="once-top"><span>👁 صورة لمرة واحدة</span><button type="button" data-once-close aria-label="إغلاق">✕</button></div><div class="once-img" style="background-image:url('${url}')"></div><div class="once-wm">${Array.from({ length: 24 }, () => `<span>${wm}</span>`).join('')}</div>`;
       document.body.appendChild(v); onceView = { id, url, el: v, reported: false };
-      try { window.NabdAndroid?.setSecureScreen?.(true); } catch { /* تجاهل */ }
+      { const pol = window.NabdScreenGuard?.policy?.() || {}; if (pol.chat_once !== false) { try { window.NabdAndroid?.setSecureScreen?.(true); } catch { /* تجاهل */ } try { window.Capacitor?.Plugins?.PrivacyScreen?.enable?.(); } catch { /* تجاهل */ } onceView.lock = true; } }
       renderMsgs();
     } catch (err) {
       btn.disabled = false;
       if (err?.code === 'P0003') { onceState.set(id, true); renderMsgs(); toast('فُتحت هذه الصورة سابقًا'); } else toast(errText(err));
     }
   }
-  function closeOnce() { if (!onceView) return; URL.revokeObjectURL(onceView.url); onceView.el.remove(); onceView = null; try { window.NabdAndroid?.setSecureScreen?.(false); } catch { /* تجاهل */ } }
+  function closeOnce() { if (!onceView) return; URL.revokeObjectURL(onceView.url); onceView.el.remove(); onceView = null; try { window.NabdScreenGuard?.apply?.(); } catch { /* تجاهل */ } }
   async function reportShot() { if (!onceView || onceView.reported) return; onceView.reported = true; try { await rpc('chat_once_report_screenshot', { p_message: onceView.id }); } catch (e) { console.warn(e); } }
   window.nabdScreenshotDetected = () => { void reportShot(); };
   document.addEventListener('keyup', e => { if (!onceView) return; const k = e.key; if (k === 'PrintScreen' || (e.metaKey && e.shiftKey && ['3', '4', '5'].includes(k)) || (e.metaKey && e.shiftKey && (k === 's' || k === 'S'))) void reportShot(); });
@@ -927,6 +927,14 @@
     } finally { reconciling = false; }
   }
   setInterval(reconcile, 45000);
+  /* احتياطي سريع: إن تأخر الوصول اللحظي نجلب آخر الرسائل بسرعة */
+  let fastBusy = false;
+  setInterval(async () => {
+    if (fastBusy || document.visibilityState !== 'visible' || !S.uid) return; const c = cur(); if (!c) return;
+    fastBusy = true;
+    try { await loadLatest(c, { silent: true }); if (c.scope === 'private') markReadSoon(); } catch { /* تجاهل */ } finally { fastBusy = false; }
+  }, 4000);
+  setInterval(() => { if (document.visibilityState === 'visible' && S.uid && S.view.type === 'list') void loadConvs(); }, 8000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { reconcile(); markReadSoon(); if (S.view.type === 'public' && nearBottom()) markPublicSeen(); } });
   window.addEventListener('online', reconcile);
 

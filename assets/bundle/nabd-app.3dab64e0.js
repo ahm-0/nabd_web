@@ -1006,7 +1006,7 @@
     const rootComments = post.comments.filter(comment => !comment.parentId);
     const comments = rootComments.map(comment => { const commentVerified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified); const commentAvatar = comment.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((comment.name || 'ط')[0])}</span>`; const replyCount = post.comments.filter(reply => reply.parentId === comment.id).length; return `<div class="comment">${commentAvatar}<div><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(commentVerified, comment.vtype)}</b><p>${newsLinkMarkup(comment.text)}</p>${commentActionsMarkup(comment, post.id, replyCount)}</div></div>`; }).join('');
     const menu = newsIsAdmin ? `<button class="post-menu" type="button" data-action="post-menu" title="إدارة الخبر" aria-label="إدارة الخبر"><i class="fa-solid fa-ellipsis-vertical"></i></button>` : '';
-    return `<article class="post ${likePulsePosts.has(post.id) ? 'like-pulse' : ''}" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong class="post-author-name"><span>${escapeHTML(post.name)}</span>${verifiedBadgeMarkup(verified)}</strong><span>${escapeHTML(post.meta || `${student.stage} · ${student.city}`)} · ${newsTimeLabel(post.createdAt)}</span></div>${menu}</div>${newsTextMarkup(post)}${images}<div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب${post.likes ? ` · ${post.likes}` : ''}</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق${post.comments.length ? ` · ${post.comments.length}` : ''}</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
+    return `<article class="post ${likePulsePosts.has(post.id) ? 'like-pulse' : ''}" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong class="post-author-name"><span>${escapeHTML(post.name)}</span>${verifiedBadgeMarkup(verified)}</strong></div>${menu}</div>${newsTextMarkup(post)}${images}<div class="nw-foot"><span class="nw-views" data-views="${escapeHTML(post.id)}"><i class="fa-regular fa-eye"></i> <b>${(window.__newsViews || {})[post.id] ?? ''}</b></span><span>${newsTimeLabel(post.createdAt)}</span></div><div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب${post.likes ? ` · ${post.likes}` : ''}</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق${post.comments.length ? ` · ${post.comments.length}` : ''}</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
   }
 
   function commentActionsMarkup(comment, postId, replyCount = 0) {
@@ -1058,6 +1058,23 @@
     openModal(`<div class="comment-replies-screen" data-root-comment-id="${escapeHTML(parent.id)}"><div class="modal-head comment-replies-head"><button type="button" class="comment-page-back" data-comments-back="${escapeHTML(postId)}"><i class="fa-solid fa-arrow-right"></i><span>التعليقات</span></button><div class="comments-modal-title"><span class="comment-modal-icon replies-icon"><i class="fa-solid fa-reply"></i></span><div><span class="eyebrow">مجتمع الأخبار</span><h3>الردود</h3><small>${replies.length} رد على التعليق</small></div></div><button class="close-modal" aria-label="إغلاق">×</button></div><section class="comment-replies-body"><div class="comment-replies-label"><i class="fa-solid fa-reply"></i><span>الحوار مستمر هنا</span></div>${parentMarkup}<div class="comment-replies-list">${replyList}</div></section><form class="comment-modal-form" data-post-id="${escapeHTML(postId)}" data-parent-id="${escapeHTML(replyTo?.id || parent.id)}">${replyHint}<div><input name="comment" required maxlength="280" placeholder="اكتب ردك..." autocomplete="off"><button type="submit" title="إرسال الرد"><i class="fa-solid fa-paper-plane"></i></button></div></form></div>`);
   }
 
+  function syncNewsViews(list) {
+    if (PAGE !== 'news' || !supabaseClient) return;
+    const ids = (list || []).map(p => p.id).filter(Boolean); if (!ids.length) return;
+    const sig = ids.join(',').length + ':' + ids[0] + ':' + ids[ids.length - 1];
+    if (window.__newsViewsSig === sig) return; window.__newsViewsSig = sig;
+    clearTimeout(window.__newsViewsT);
+    window.__newsViewsT = setTimeout(async () => {
+      try {
+        let seen; try { seen = new Set(JSON.parse(localStorage.getItem('nabd_news_viewed') || '[]')); } catch { seen = new Set(); }
+        const fresh = ids.filter(i => !seen.has(i));
+        if (fresh.length) { const r = await supabaseClient.rpc('news_mark_viewed', { p_ids: fresh }); if (!r.error) { fresh.forEach(i => seen.add(i)); try { localStorage.setItem('nabd_news_viewed', JSON.stringify([...seen].slice(-300))); } catch { /* تجاهل */ } } }
+        const { data } = await supabaseClient.rpc('news_view_counts', { p_ids: ids });
+        window.__newsViews = window.__newsViews || {}; (data || []).forEach(r => { window.__newsViews[r.post_id] = Number(r.views); });
+        document.querySelectorAll('[data-views]').forEach(el => { const b = el.querySelector('b'); const v = window.__newsViews[el.dataset.views]; if (b) b.textContent = v == null ? '' : String(v); });
+      } catch { /* تجاهل */ }
+    }, 500);
+  }
   function renderFeed() {
     const feed = $('#feed');
     if (!feed) return;
@@ -1079,8 +1096,9 @@
     }).join('');
     const listing = visible.length ? newsHtml() : '<div class="empty-feed"><i class="fa-regular fa-newspaper"></i><b>لا توجد منشورات منشورة حاليًا.</b><span>ستظهر هنا الأخبار التي ينشرها المشرف.</span></div>';
     feed.innerHTML = listing;
+    syncNewsViews(visible);
     if (PAGE === 'news' && (!feed.dataset.shown || window.__newsToEnd)) { feed.dataset.shown = '1'; window.__newsToEnd = false; const goEnd = () => { const u = document.getElementById('nwUnread'); if (u) window.scrollTo(0, Math.max(0, u.getBoundingClientRect().top + window.scrollY - 70)); else window.scrollTo(0, document.documentElement.scrollHeight); }; goEnd(); requestAnimationFrame(goEnd); setTimeout(goEnd, 350); }
-    if (PAGE === 'news' && posts.length && !window.__newsSeenBound) { window.__newsSeenBound = true; const mark = () => { try { const newest = posts.reduce((a, p) => (p.createdAt && p.createdAt > a ? p.createdAt : a), ''); if (newest) localStorage.setItem('nabd_news_seen', newest); } catch { /* تجاهل */ } }; mark(); window.nabdBadges?.seenNews(); setTimeout(mark, 3000); window.addEventListener('pagehide', mark); document.addEventListener('visibilitychange', () => { if (document.hidden) mark(); }); }
+    if (PAGE === 'news' && posts.length && !window.__newsSeenBound) { window.__newsSeenBound = true; const mark = () => { try { const newest = posts.reduce((a, p) => (p.createdAt && p.createdAt > a ? p.createdAt : a), ''); if (newest) { localStorage.setItem('nabd_news_seen', newest); window.nabdBadges?.seenNews?.(newest); } } catch { /* تجاهل */ } }; mark(); window.nabdBadges?.seenNews(); setTimeout(mark, 900); window.addEventListener('pagehide', mark); document.addEventListener('visibilitychange', () => { if (document.hidden) mark(); }); }
     const postCount = $('#profilePosts');
     if (postCount) postCount.textContent = posts.filter(post => post.mine).length;
   }
