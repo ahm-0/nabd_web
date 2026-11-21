@@ -194,3 +194,17 @@ body[data-page="supervision"] .admin-analytics-panel, body[data-page="supervisio
 html body[data-page="supervision"] main.main-content.admin-users-main { margin: 0 !important; padding-inline: 0 !important; width: 100% !important; max-width: 100% !important; inset-inline: 0 !important; }
 html body[data-page="supervision"] .layout { padding: 0 !important; margin: 0 !important; max-width: none !important; width: 100% !important; }
 html body[data-page="supervision"] .app.admin-users-app { padding-inline: 0 !important; max-width: none !important; width: 100% !important; }
+
+/* مراقبة المحادثات */
+body[data-page="supervision"] .ap-mon-note{margin:0 0 10px;padding:10px 12px;border-radius:14px;font-size:12.5px;color:var(--ap-muted);background:var(--ap-a)}
+body[data-page="supervision"] .ap-mon-list{display:grid;gap:8px}
+body[data-page="supervision"] .ap-mon-row{display:grid;gap:3px;text-align:start;width:100%;padding:12px 14px;border-radius:16px;border:1px solid var(--ap-line);background:var(--ap-a);color:var(--ap-text);font-family:inherit;cursor:pointer}
+body[data-page="supervision"] .ap-mon-names{display:flex;align-items:center;gap:8px;flex-wrap:wrap}body[data-page="supervision"] .ap-mon-names b{font-size:14px}body[data-page="supervision"] .ap-mon-names i{font-size:11px;color:var(--ap-muted)}
+body[data-page="supervision"] .ap-mon-row small{font-size:12.5px;color:var(--ap-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}body[data-page="supervision"] .ap-mon-row em{font-style:normal;font-size:11px;color:var(--ap-muted)}
+body[data-page="supervision"] .ap-mon-msgs{flex:1;overflow:auto;display:flex;flex-direction:column;gap:6px;padding:12px 14px calc(18px + env(safe-area-inset-bottom))}
+body[data-page="supervision"] .ap-mon-msg{max-width:84%;padding:8px 12px;border-radius:16px;background:var(--ap-a);display:grid;gap:3px}
+body[data-page="supervision"] .ap-mon-msg.a{align-self:flex-start;background:rgba(90,168,255,.18)}body[data-page="supervision"] .ap-mon-msg.b{align-self:flex-end;background:rgba(150,170,230,.16)}
+body[data-page="supervision"] .ap-mon-msg b{font-size:11.5px;color:#5aa8ff}body[data-page="supervision"] .ap-mon-msg p{margin:0;font-size:14px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+body[data-page="supervision"] .ap-mon-msg small{font-size:10.5px;color:var(--ap-muted)}body[data-page="supervision"] .ap-mon-msg.is-del{opacity:.6;outline:1px dashed rgba(255,107,130,.6)}
+body[data-page="supervision"] .ap-mon-img{display:block;max-width:220px;max-height:260px;border-radius:12px}
+body[data-page="supervision"] .ap-mon-day{align-self:center;margin:8px 0 2px}body[data-page="supervision"] .ap-mon-day span{padding:3px 12px;border-radius:99px;font-size:11px;color:var(--ap-muted);background:var(--ap-a)}

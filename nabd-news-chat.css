@@ -76,3 +76,12 @@ body[data-page="news"] .news-loading-state>*{display:none}
 body[data-page="news"] .news-loading-state:not([hidden])::before,body[data-page="news"] .news-loading-state:not([hidden])::after{content:"";display:block;height:110px;width:86%;border-radius:6px 18px 18px 18px;background:linear-gradient(90deg,rgba(150,170,230,.16) 25%,rgba(150,170,230,.3) 50%,rgba(150,170,230,.16) 75%);background-size:200% 100%;animation:nwsk 1.3s linear infinite}
 body[data-page="news"] .news-loading-state:not([hidden])::after{height:78px;width:70%}
 @keyframes nwsk{to{background-position:-200% 0}}
+/* أصغر قليلاً */
+body[data-page="news"] .nw-head{min-height:72px!important;padding:calc(10px + env(safe-area-inset-top)) 14px 10px!important}
+.nw-brand{gap:11px}.nw-brand img{width:46px!important;height:46px!important}
+.nw-brand h1{font-size:17px!important}.nw-brand small{margin-top:2px!important;font-size:12px!important}
+.nw-chev{width:34px!important;height:34px!important;font-size:17px!important}
+/* لا تظهر هياكل التحميل فوق الرسائل الموجودة */
+body[data-page="news"]:has(#feed .post) .news-loading-state,body[data-page="news"]:has(#feed .post) .section-loading-indicator{display:none!important}
+body[data-page="news"] .news-loading-state:not([hidden]){inset:calc(76px + env(safe-area-inset-top)) 0 calc(66px + env(safe-area-inset-bottom)) 0!important}
+body[data-page="news"] .news-shell{padding-top:calc(76px + env(safe-area-inset-top))!important}
