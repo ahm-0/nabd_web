@@ -16,22 +16,35 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="assets/bundle/all.min.e8e1e872.css">
+<link rel="stylesheet" href="assets/bundle/nabd-ui.79450694.css">
+<link rel="stylesheet" href="assets/bundle/material-ui.962a81ab.css">
+<link rel="stylesheet" href="assets/bundle/nabd-theme.9fcd0995.css">
+<link rel="stylesheet" href="nabd-pro.css">
 <link rel="stylesheet" href="lessons.css">
 <script src="vendor/supabase/supabase.js" defer></script>
 <script src="supabase-client.js" defer></script>
 <script src="lessons.js" defer></script>
 <script src="pwa.js" defer></script>
-<script src="screen-guard.js" defer></script><script src="nabd-points.js" defer></script>
+<script src="screen-guard.js" defer></script><script src="nabd-points.js" defer></script><script src="nabd-badges.js" defer></script>
 </head>
-<body>
-<div class="ls-app" id="app">
-  <header class="ls-top" id="top">
-    <button class="ls-back" id="back" type="button" aria-label="رجوع"><i class="fa-solid fa-chevron-right"></i></button>
-    <div class="ls-title"><h1 id="topTitle">الدروس</h1><small id="topSub">اختر القسم لبدء المشاهدة</small></div>
-    <button class="ls-add" id="adminAdd" type="button" hidden aria-label="إضافة"><i class="fa-solid fa-plus"></i></button>
-  </header>
-  <main class="ls-main" id="view"></main>
+<body data-page="lessons">
+<div class="app">
+  <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i></a></div></header>
+  <div class="layout"><main class="main-content ls-main">
+    <div class="ls-top" id="top" hidden>
+      <button class="ls-back" id="back" type="button" aria-label="رجوع"><i class="fa-solid fa-chevron-right"></i></button>
+      <div class="ls-title"><h1 id="topTitle">الدروس</h1><small id="topSub"></small></div>
+    </div>
+    <div id="view"></div>
+  </main></div>
 </div>
+<nav class="bottom-nav" id="bottomNav">
+  <a class="bottom-link" href="chat.html"><i class="fa-solid fa-comments"></i><span>الدردشة</span></a>
+  <a class="bottom-link" href="assistant.html"><i class="fa-solid fa-robot"></i><span>AI</span></a>
+  <a class="bottom-link" href="index.html"><i class="fa-solid fa-house"></i><span>الرئيسية</span></a>
+  <a class="bottom-link" href="news.html"><i class="fa-regular fa-newspaper"></i><span>الأخبار</span></a>
+  <a class="bottom-link" href="profile.html"><i class="fa-regular fa-user"></i><span>حسابي</span></a>
+</nav>
 <div class="ls-toast" id="toast"></div>
 </body>
 </html>

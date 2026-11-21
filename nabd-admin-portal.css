@@ -216,3 +216,29 @@ body[data-page="supervision"] .ap-mon-once{display:inline-flex;align-items:cente
 .ap-mon-imgview{position:fixed;inset:0;z-index:500;display:grid;place-items:center;align-content:center;gap:10px;background:rgba(0,0,0,.92);padding:14px}
 .ap-mon-imgview img{max-width:100%;max-height:82vh;border-radius:10px}.ap-mon-imgview small{color:#cbd5e1;font-size:12px}
 .ap-mon-imgview button{position:absolute;top:calc(12px + env(safe-area-inset-top));inset-inline-start:14px;width:40px;height:40px;border:0;border-radius:50%;color:#fff;background:rgba(255,255,255,.2);font-size:18px}
+
+/* ===== إدارة الدروس ===== */
+body[data-page="supervision"] .ap-ls-add{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:999px;border:0;background:var(--ap-grad);color:#fff;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer}
+body[data-page="supervision"] .ap-ls-stages{display:flex;gap:8px;margin:4px 0 12px;overflow-x:auto;scrollbar-width:none}
+body[data-page="supervision"] .ap-ls-stages button{flex:none;padding:9px 16px;border-radius:999px;border:1px solid var(--ap-line);background:var(--ap-a);color:var(--ap-text);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer}
+body[data-page="supervision"] .ap-ls-stages button.is-active{background:var(--ap-grad);color:#fff;border-color:transparent}
+body[data-page="supervision"] .ap-ls-subjbar{display:flex;gap:8px;margin-bottom:12px}
+body[data-page="supervision"] .ap-ls-subjbar select{flex:1;min-width:0;padding:11px 12px;border-radius:14px;border:1px solid var(--ap-line);background:var(--ap-a);color:var(--ap-text);font-family:inherit;font-size:14px}
+body[data-page="supervision"] .ap-ls-subjbar button{width:44px;border-radius:14px;border:1px solid var(--ap-line);background:var(--ap-a);color:var(--ap-text);cursor:pointer}
+body[data-page="supervision"] .ap-ls-list{display:grid;gap:8px}
+body[data-page="supervision"] .ap-ls-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;border:1px solid var(--ap-line);background:var(--ap-a)}
+body[data-page="supervision"] .ap-ls-row.is-off{opacity:.62}
+body[data-page="supervision"] .ap-ls-n{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:var(--ap-grad);color:#fff;font-weight:800;font-size:14px;flex:none}
+body[data-page="supervision"] .ap-ls-t{flex:1;min-width:0}body[data-page="supervision"] .ap-ls-t b{display:block;font-size:14px;line-height:1.5}body[data-page="supervision"] .ap-ls-t small{color:var(--ap-muted);font-size:12px}
+body[data-page="supervision"] .ap-ls-b{display:flex;gap:4px;flex:none}
+body[data-page="supervision"] .ap-ls-b button{width:34px;height:34px;border-radius:10px;border:0;background:rgba(150,150,255,.12);color:var(--ap-text);cursor:pointer;font-size:13px}
+body[data-page="supervision"] .ap-ls-bg{position:fixed;inset:0;z-index:600;background:#0009;display:flex;align-items:flex-end;justify-content:center}
+body[data-page="supervision"] .ap-ls-sheet{width:100%;max-width:560px;max-height:92dvh;overflow:auto;background:var(--ap-a);color:var(--ap-text);border-radius:22px 22px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom,0px) + 18px)}
+body[data-page="supervision"] .ap-ls-sheet h4{margin:0 0 6px;font-size:16px}
+body[data-page="supervision"] .ap-ls-sheet label{display:block;margin:12px 0 4px;font-size:12.5px;color:var(--ap-muted);font-weight:700}
+body[data-page="supervision"] .ap-ls-sheet input:not([type=checkbox]),body[data-page="supervision"] .ap-ls-sheet textarea,body[data-page="supervision"] .ap-ls-sheet select{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--ap-line);background:var(--ap-b);color:var(--ap-text);font-family:inherit;font-size:14px}
+body[data-page="supervision"] .ap-ls-sheet textarea{min-height:96px;resize:vertical}
+body[data-page="supervision"] .ap-ls-chk{display:flex!important;align-items:center;gap:8px;font-size:14px!important;color:var(--ap-text)!important}
+body[data-page="supervision"] .ap-ls-btns{display:flex;gap:8px;margin-top:18px}
+body[data-page="supervision"] .ap-ls-btns button{flex:1;padding:12px;border-radius:14px;border:0;font-family:inherit;font-weight:800;background:rgba(150,150,255,.14);color:var(--ap-text);cursor:pointer}
+body[data-page="supervision"] .ap-ls-btns .ok{background:var(--ap-grad);color:#fff}body[data-page="supervision"] .ap-ls-btns .del{flex:none;color:#ff5974}
