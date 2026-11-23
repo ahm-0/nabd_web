@@ -1099,7 +1099,20 @@
     feed.innerHTML = listing;
     syncNewsViews(visible);
     if (PAGE === 'news' && (!feed.dataset.shown || window.__newsToEnd)) { feed.dataset.shown = '1'; window.__newsToEnd = false; const goEnd = () => { const u = document.getElementById('nwUnread'); if (u) window.scrollTo(0, Math.max(0, u.getBoundingClientRect().top + window.scrollY - 70)); else window.scrollTo(0, document.documentElement.scrollHeight); }; goEnd(); requestAnimationFrame(goEnd); setTimeout(goEnd, 350); }
-    if (PAGE === 'news' && posts.length && !window.__newsSeenBound) { window.__newsSeenBound = true; const mark = () => { try { const newest = posts.reduce((a, p) => (p.createdAt && p.createdAt > a ? p.createdAt : a), ''); if (newest) { localStorage.setItem('nabd_news_seen', newest); window.nabdBadges?.seenNews?.(newest); } } catch { /* تجاهل */ } }; mark(); window.nabdBadges?.seenNews(); setTimeout(mark, 900); window.addEventListener('pagehide', mark); document.addEventListener('visibilitychange', () => { if (document.hidden) mark(); }); }
+    if (PAGE === 'news' && posts.length) {
+      /* تعليم المقروء بحسب المنشورات التي ظهرت فعلاً على الشاشة: ما بعدها يبقى غير مقروء ويبقى رقمه على زر الأخبار */
+      window.__newsById = new Map(posts.map(p => [String(p.id), p.createdAt || '']));
+      if (!window.__newsIO && 'IntersectionObserver' in window) {
+        window.__newsMaxSeen = window.__newsSeenAtOpen || ''; let flushT = null;
+        const flush = () => { if (window.__newsMaxSeen) window.nabdBadges?.seenNews?.(window.__newsMaxSeen); };
+        window.__newsIO = new IntersectionObserver(entries => {
+          entries.forEach(en => { if (!en.isIntersecting) return; const t = window.__newsById.get(en.target.dataset.post); if (t && t > window.__newsMaxSeen) window.__newsMaxSeen = t; });
+          clearTimeout(flushT); flushT = setTimeout(flush, 500);
+        }, { threshold: 0.2 });
+        window.addEventListener('pagehide', flush); document.addEventListener('visibilitychange', () => { if (document.hidden) flush(); });
+      }
+      if (window.__newsIO) document.querySelectorAll('#feed .post').forEach(el => window.__newsIO.observe(el));
+    }
     const postCount = $('#profilePosts');
     if (postCount) postCount.textContent = posts.filter(post => post.mine).length;
   }
@@ -3147,14 +3160,46 @@
       if (event.target.id === 'postEditForm') { event.preventDefault(); savePostEdit(event.target); }
     });
 
-    $('#avatarInput')?.addEventListener('change', event => {
-      const file = event.target.files?.[0];
+    /* تصغير الصورة (قص مربع مركزي) وإرجاعها كـ Blob وData-URL */
+    const shrinkAvatar = async (file, size, quality) => {
+      let bmp;
+      try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+      catch { bmp = await new Promise((ok, no) => { const url = URL.createObjectURL(file); const img = new Image(); img.onload = () => { URL.revokeObjectURL(url); ok(img); }; img.onerror = () => { URL.revokeObjectURL(url); no(new Error('decode')); }; img.src = url; }); }
+      const w = bmp.width || bmp.naturalWidth, h = bmp.height || bmp.naturalHeight, side = Math.min(w, h);
+      const cv = document.createElement('canvas'); cv.width = cv.height = Math.min(size, side);
+      const cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height);
+      cx.imageSmoothingQuality = 'high'; cx.drawImage(bmp, (w - side) / 2, (h - side) / 2, side, side, 0, 0, cv.width, cv.height);
+      const blob = await new Promise(ok => cv.toBlob(ok, 'image/jpeg', quality));
+      return { blob, dataUrl: cv.toDataURL('image/jpeg', quality) };
+    };
+    $('#avatarInput')?.addEventListener('change', async event => {
+      const input = event.target; const file = input.files?.[0];
       if (!file) return;
-      if (!file.type.startsWith('image/')) return toast('اختر ملف صورة صالحًا.');
-      if (file.size > 700 * 1024) return toast('اختر صورة أصغر من 700 كيلوبايت للحفظ المحلي.');
-      const reader = new FileReader();
-      reader.onload = () => { student.avatar = reader.result; saveState(); syncAdminStudent(true); updateProfileUI(); renderAdminDashboard(); toast('تم تحديث صورة الملف الشخصي.'); };
-      reader.readAsDataURL(file);
+      if (!file.type.startsWith('image/')) { input.value = ''; return toast('اختر ملف صورة صالحًا.'); }
+      if (file.size > 25 * 1024 * 1024) { input.value = ''; return toast('الصورة كبيرة جدًا، اختر صورة أصغر.'); }
+      toast('جارٍ تجهيز الصورة…');
+      try {
+        const big = await shrinkAvatar(file, 512, 0.82), thumb = await shrinkAvatar(file, 96, 0.7);
+        let url = big.dataUrl;
+        if (supabaseClient && currentAuthUser) {
+          try {
+            const path = `avatars/${currentAuthUser.id}/a-${Date.now()}.jpg`;
+            const up = await supabaseClient.storage.from('nabd').upload(path, big.blob, { contentType: 'image/jpeg', cacheControl: '31536000' });
+            if (!up.error) url = supabaseClient.storage.from('nabd').getPublicUrl(path).data.publicUrl;
+            else console.warn('تعذر رفع الصورة إلى التخزين، سيتم الحفظ المضغوط', up.error);
+          } catch (e) { console.warn('رفع الصورة', e); }
+        }
+        student.avatar = url; saveState(); syncAdminStudent(true); updateProfileUI(); renderAdminDashboard();
+        if (supabaseClient && currentAuthUser) {
+          await persistStudentProfile();
+          const { error } = await supabaseClient.from('student_profiles').update({ avatar_thumb: thumb.dataUrl }).eq('user_id', currentAuthUser.id);
+          if (error) console.warn('تعذر حفظ المصغّرة', error);
+        }
+        /* تحديث الدردشة فوراً دون إعادة تشغيل: كاش المصغّرات المحلي + الكاش العام */
+        try { const key = 'nabd_chat_thumbs_v1'; const m = JSON.parse(localStorage.getItem(key) || '{}'); if (currentAuthUser) { m[currentAuthUser.id] = thumb.dataUrl; localStorage.setItem(key, JSON.stringify(m)); } } catch { /* تجاهل */ }
+        toast('تم تحديث صورة الملف الشخصي.');
+      } catch (e) { console.warn('تغيير الصورة', e); toast('تعذر تحديث الصورة، حاول مرة أخرى.'); }
+      finally { input.value = ''; }
     });
     $('#profileDetailsToggle')?.addEventListener('click', event => {
       const button = event.currentTarget;

@@ -434,6 +434,7 @@
   const adminLoadedTabs = new Set();
   let adminNewsActivity = [];
   let adminSupportThreads = [];
+  const adminSupportNew = new Map(); /* thread_id → عدد رسائل الطلاب الجديدة (خاص بهذا المشرف) */
   let adminChatStats = {};
   let adminChatModerators = [];
   let newsModerators = [];
@@ -2761,6 +2762,12 @@
     const ticket = adminSupportThreads.find(item => item.id === ticketId) || supportTickets.find(item => item.id === ticketId); if (!ticket) return;
     $('#apChat')?.remove();
     try { const m = JSON.parse(localStorage.getItem('nabd_admin_support_read') || '{}'); m[ticket.id] = Date.now(); localStorage.setItem('nabd_admin_support_read', JSON.stringify(m)); } catch { /* تجاهل */ }
+    /* تسجيل المحادثة (كل تذاكر هذا الطالب) كمقروءة لهذا المشرف فقط، ويختفي العداد فوراً */
+    if (adminSupportThreads.some(item => item.id === ticket.id) && supabaseClient) {
+      const ids = adminSupportThreads.filter(t => (t.user_id || t.id) === (ticket.user_id || ticket.id)).map(t => t.id);
+      window.__apOpenSupportIds = ids; ids.forEach(id => adminSupportNew.delete(id)); renderAdminSupport();
+      Promise.allSettled(ids.map(id => supabaseClient.rpc('admin_support_mark_seen', { p_thread: id }))).then(() => refreshSupportCounts(false));
+    }
     const time = ts => { try { return new Intl.DateTimeFormat('ar-SY', { hour: 'numeric', minute: '2-digit' }).format(new Date(ts)); } catch { return ''; } };
     const day = ts => { try { return new Intl.DateTimeFormat('ar-SY', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(ts)); } catch { return ''; } };
     let lastDay = ''; const rows = supportThread(ticket).map(message => {
@@ -2777,7 +2784,7 @@
     const form = $('.wc-composer', el); const input = $('textarea', form); const msgs = $('.wc-msgs', el);
     const clearQuote = () => { delete form.dataset.replyQuote; delete form.dataset.replyQuoteName; $('[data-wc-quote]', form).classList.add('hidden'); };
     $('[data-wc-quote-clear]', form).addEventListener('click', clearQuote);
-    $('[data-wc-close]', el).addEventListener('click', () => { el.remove(); document.body.classList.remove('wc-open'); renderAdminSupport(); });
+    $('[data-wc-close]', el).addEventListener('click', () => { el.remove(); document.body.classList.remove('wc-open'); const ids = window.__apOpenSupportIds || []; window.__apOpenSupportIds = null; ids.forEach(id => adminSupportNew.delete(id)); renderAdminSupport(); if (supabaseClient) Promise.allSettled(ids.map(id => supabaseClient.rpc('admin_support_mark_seen', { p_thread: id }))).then(() => refreshSupportCounts(false)); });
     input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 120) + 'px'; });
     form.addEventListener('submit', event => { event.preventDefault(); void sendAdminSupportReply(form); });
     msgs.scrollTop = msgs.scrollHeight;
@@ -2912,7 +2919,7 @@
     const supportOnly = adminSupportThreads.filter(t => t.category !== 'طلب توثيق');
     if (!supportOnly.length) { holder.innerHTML = '<div class="admin-empty">لا توجد رسائل دعم حتى الآن.</div>'; return; }
     const readMap = (() => { try { return JSON.parse(localStorage.getItem('nabd_admin_support_read') || '{}'); } catch { return {}; } })();
-    const unreadOf = (thread, messages) => { let n = 0; for (let i = messages.length - 1; i >= 0 && messages[i].sender !== 'admin'; i--) { const t = new Date(messages[i].createdAt || messages[i].created_at || 0).getTime(); if (t > (readMap[thread.id] || 0)) n++; } return n; };
+    const unreadOf = thread => supportOnly.filter(t => (t.user_id || t.id) === (thread.user_id || thread.id)).reduce((n, t) => n + Number(adminSupportNew.get(t.id) || 0), 0);
     const colors = ['#4c7d4a', '#3a6fe0', '#8a4fd6', '#d6409f', '#e08a1a', '#0e9a8a'];
     const waTime = ts => { try { const d = new Date(ts); const today = new Date(); return d.toDateString() === today.toDateString() ? new Intl.DateTimeFormat('ar-SY', { hour: 'numeric', minute: '2-digit' }).format(d) : new Intl.DateTimeFormat('ar-SY', { day: 'numeric', month: 'short' }).format(d); } catch { return ''; } };
     // محادثة واحدة لكل مستخدم (أحدث نشاط أولاً)
@@ -2920,7 +2927,7 @@
     holder.innerHTML = [...byUser.values()].sort((x, y) => new Date(y.updated_at || 0) - new Date(x.updated_at || 0)).map((thread, i) => {
       const messages = supportThread(thread); const last = messages[messages.length - 1]; const isOpen = thread.status !== 'resolved'; const mine = last?.sender === 'admin';
       const name = thread.name || 'طالب نبض';
-      return `<article class="wa-row ${isOpen && !mine && unreadOf(thread, messages) ? 'is-open' : ''}" role="button" tabindex="0" data-admin-action="support-reply" data-support-id="${escapeHTML(thread.id)}"><span class="wa-av" style="--c:${colors[(name.length + i) % colors.length]}">${escapeHTML(name.trim().charAt(0) || 'ط')}</span><div class="wa-main"><div class="wa-top"><b>${escapeHTML(name)}</b><span class="wa-time">${escapeHTML(waTime(thread.updated_at || thread.created_at))}</span></div><div class="wa-bottom"><p class="wa-prev">${mine ? '<i class="fa-solid fa-check-double tick"></i>' : ''}${escapeHTML(last?.text || 'لا توجد رسالة')}</p><span class="wa-cat">${escapeHTML(thread.category || 'استفسار عام')}</span>${(() => { const n = isOpen && !mine ? unreadOf(thread, messages) : 0; return n ? `<span class="wa-dot">${n}</span>` : ''; })()}</div></div></article>`;
+      return `<article class="wa-row ${unreadOf(thread) ? 'is-open' : ''}" role="button" tabindex="0" data-admin-action="support-reply" data-support-id="${escapeHTML(thread.id)}"><span class="wa-av" style="--c:${colors[(name.length + i) % colors.length]}">${escapeHTML(name.trim().charAt(0) || 'ط')}</span><div class="wa-main"><div class="wa-top"><b>${escapeHTML(name)}</b><span class="wa-time">${escapeHTML(waTime(thread.updated_at || thread.created_at))}</span></div><div class="wa-bottom"><p class="wa-prev">${mine ? '<i class="fa-solid fa-check-double tick"></i>' : ''}${escapeHTML(last?.text || 'لا توجد رسالة')}</p><span class="wa-cat">${escapeHTML(thread.category || 'استفسار عام')}</span>${(() => { const n = unreadOf(thread); return n ? `<span class="wa-dot">${n}</span>` : ''; })()}</div></div></article>`;
     }).join('');
   }
 
@@ -2931,6 +2938,7 @@
     const { data, error } = await supabaseClient.rpc('admin_list_support_threads', { p_limit: 100 });
     if (error || !Array.isArray(data)) { adminSupportThreads = []; holder.innerHTML = '<div class="admin-empty">تعذر تحميل رسائل الدعم.</div>'; console.warn('تعذر تحميل رسائل الدعم', error); return; }
     adminSupportThreads = data;
+    await refreshSupportCounts(false);
     renderAdminSupport();
     renderAdminVerify?.();
   }
@@ -3296,6 +3304,16 @@
     toast(accept ? 'تم قبول الطلب وتوثيق الحساب.' : 'تم رفض الطلب.');
     await loadAdminVerify(); void refreshAdminPending();
   }
+  async function refreshSupportCounts(rerender = true) {
+    if (!supabaseClient || !remoteAdminVerified) return;
+    const { data, error } = await supabaseClient.rpc('admin_support_counts'); if (error || !Array.isArray(data)) return;
+    const before = JSON.stringify([...adminSupportNew]); adminSupportNew.clear(); let total = 0; const openIds = new Set(window.__apOpenSupportIds || []);
+    if (openIds.size) Promise.allSettled([...openIds].map(id => supabaseClient.rpc('admin_support_mark_seen', { p_thread: id })));
+    data.forEach(r => { const n = openIds.has(r.thread_id) ? 0 : Number(r.new_count) || 0; if (n) { adminSupportNew.set(r.thread_id, n); total += n; } });
+    $$('[data-admin-tab="support"]').forEach(b => { let k = b.querySelector(':scope > .ap-tab-badge'); if (!total) { k?.remove(); return; } if (!k) { k = document.createElement('b'); k.className = 'ap-tab-badge'; b.appendChild(k); } k.textContent = total > 99 ? '99+' : String(total); });
+    if (rerender && before !== JSON.stringify([...adminSupportNew]) && $('#adminSupportRows') && !$('#apChat')) { if (activeAdminTab === 'support') void loadAdminSupport(); }
+  }
+  setInterval(() => { if (!document.hidden) void refreshSupportCounts(); }, 15000); setTimeout(() => void refreshSupportCounts(false), 3000);
   async function refreshAdminPending() {
     if (!supabaseClient || !remoteAdminVerified) return;
     const [v, sp] = await Promise.all([supabaseClient.rpc('admin_verify_pending'), supabaseClient.rpc('admin_support_pending')]);
@@ -3303,7 +3321,6 @@
     const vb = $('#apVerifyBadge'); if (vb) { vb.textContent = vn; vb.classList.toggle('hidden', !vn); }
     apSet('apVerifyPending', vn); apSet('apVerifyCount', vn);
     adminStats.open_support_threads = sn; apSet('adminOpenSupport', sn);
-    $$('[data-admin-tab="support"]').forEach(b => { let d = $('.ap-dot', b); if (!d) { d = document.createElement('em'); d.className = 'ap-dot'; b.appendChild(d); } d.textContent = sn || ''; d.hidden = !sn; });
   }
 
   /* ---------- مراقبة الدردشة ---------- */

@@ -240,6 +240,7 @@
     writeJSON(LS.cache + S.uid, {
       convs: S.convs, platform: S.platform, stats: S.stats,
       pub: S.pub.msgs.filter(m => !m.status).slice(-PAGE),
+      priv: [...S.threads.values()].filter(t => t.msgs.length).sort((a, b) => (b.msgs[b.msgs.length - 1].at || '').localeCompare(a.msgs[a.msgs.length - 1].at || '')).slice(0, 12).map(t => ({ id: t.id, otherId: t.otherId, msgs: t.msgs.filter(m => !m.status).slice(-30) })),
       names: [...S.profiles.values()].filter(p => p.name).slice(-120)
     });
   }, 500);
@@ -249,6 +250,7 @@
     S.convs = cache.convs || []; S.platform = cache.platform || S.platform; S.stats = cache.stats || S.stats;
     (cache.names || []).forEach(p => S.profiles.set(p.id, p));
     S.pub.msgs = cache.pub || []; S.pub.loaded = S.pub.msgs.length > 0;
+    (cache.priv || []).forEach(t => { if (t?.id && Array.isArray(t.msgs) && t.msgs.length) S.threads.set(t.id, { scope: 'private', id: t.id, otherId: t.otherId, msgs: t.msgs, hasMore: true, loaded: true, loading: false, unreadFrom: null, newCount: 0 }); });
     seenAt = localStorage.getItem(LS.seen + S.uid) || '';
   }
 
@@ -396,8 +398,13 @@
   }
   const signature = list => list.map(m => `${m.id}|${m.body}|${m.edited ? 1 : 0}|${m.my || ''}|${m.react || ''}|${m.read ? 1 : 0}|${JSON.stringify(m.reacts || '')}`).join('~');
 
-  async function loadLatest(c, { silent = false } = {}) {
-    if (c.loading) return;
+  /* إن كان هناك طلب جارٍ لنفس المحادثة ننتظره بدل أن نعود فارغين (كان يسبب «العدّاد موجود والرسائل لا تظهر») */
+  function loadLatest(c, opts) {
+    if (c.pendingLatest) return c.pendingLatest;
+    c.pendingLatest = loadLatestRun(c, opts || {}).finally(() => { c.pendingLatest = null; });
+    return c.pendingLatest;
+  }
+  async function loadLatestRun(c, { silent = false } = {}) {
     c.loading = true;
     try {
       const before = signature(c.msgs);
@@ -411,7 +418,8 @@
       if (c.scope === 'private' && fetched.some(x => onceOf(x.body))) { rpc('chat_once_state_v2', { p_thread: c.id }).then(st => { let ch = false; (st || []).forEach(r => { if (onceState.get(r.message_id) !== !!r.viewed) ch = true; onceState.set(r.message_id, !!r.viewed); if (r.shot_at && onceShots.get(r.message_id) !== (Number(r.shot_count) || 1)) { ch = true; onceShots.set(r.message_id, Number(r.shot_count) || 1); } }); if (ch && cur() === c) renderMsgs(); }).catch(() => {}); }
       if (c.scope === 'public') { const pin = c.msgs.find(m => m.pinned); if (pin) c.pinned = { id: pin.id, body: pin.body }; }
       if (cur() === c && (!silent || signature(c.msgs) !== before || !wasLoaded)) renderMsgs({ stick: !wasLoaded ? true : undefined });
-      if (c.scope === 'public') { renderListSoon(); saveCache(); }
+      if (c.scope === 'public') renderListSoon();
+      saveCache();
     } catch (error) {
       console.warn('تعذر تحميل الرسائل', error);
       if (!silent && cur() === c) { c.loaded = true; if (!c.msgs.length) E.msgs.innerHTML = `<div class="empty">${ic('alert')}<b>تعذر تحميل الرسائل</b><button class="btn sm" type="button" data-act="reload">إعادة المحاولة</button></div>`; }

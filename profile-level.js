@@ -37,8 +37,8 @@ https://nabd0.github.io/app/`;
     return cv.toDataURL('image/png');
   }
   const cap_ = n => window.Capacitor?.Plugins?.[n] || null;
-  async function shareApp() {
-    const P = window.nabdPoints, A = window.NabdAndroid;
+  async function shareApp(fromTask) {
+    const P = fromTask ? null : window.nabdPoints, A = window.NabdAndroid;
     try {
       if (A?.shareText) { const w = P?.awardOnShareLeave('app_share'); try { await A.shareText(SHARE_TEXT); } catch { w?.cancel(); } return; }
       if (A?.shareImage) { const w = P?.awardOnShareLeave('app_share'); try { await A.shareImage(await cardDataUrl(), 'نبض التفوق', SHARE_TEXT); } catch { w?.cancel(); } return; }
@@ -68,9 +68,65 @@ https://nabd0.github.io/app/`;
       <div class="pts-sheet"><p class="pts-sub">اضغط على أي مهمة لتنتقل إليها مباشرة:</p>
       <section class="pt-how"><div class="pt-how-grid-wrap"><div class="pt-how-grid"><a href="chat.html"><i class="fa-solid fa-comments"></i> المشاركة في الدردشة العامة <em>+1</em></a><a href="chat.html"><i class="fa-solid fa-heart"></i> التفاعل في الدردشة <em>+1</em></a><a href="news.html"><i class="fa-solid fa-message"></i> التعليق على منشورات الأخبار <em>+3</em></a><a href="news.html"><i class="fa-solid fa-thumbs-up"></i> التفاعل مع منشورات الأخبار <em>+1</em></a><a href="exam-countdown.html"><i class="fa-solid fa-share-nodes"></i> مشاركة عداد الامتحان <em>+10</em></a><a href="tests.html"><i class="fa-solid fa-clipboard-check"></i> إنهاء اختبار <em>+10</em></a><a href="index.html"><i class="fa-solid fa-door-open"></i> فتح التطبيق يوميًا <em>+5</em></a></div></div><a class="pts-big" href="#" id="ptsShareBig"><i class="fa-solid fa-share-nodes"></i><span><b>المساهمة في نشر التطبيق:</b> شارك رابط تحميل التطبيق في 10 مجموعات واتساب + مع 10 من أصدقائك + في 10 قنوات تليجرام، لتحصل على <em>+50 نقطة</em> (بشرط أن تجذب هذه المشاركات عمليات تحميل فعلية للتطبيق).</span></a></section><button type="button" class="pts-share" id="ptsShareApp"><i class="fa-solid fa-share-nodes"></i> مشاركة التطبيق</button></div>`;
     document.body.classList.add('sheet-open'); backdrop.classList.add('show');
-    $('#ptsShareApp')?.addEventListener('click', shareApp);
+    $('#ptsShareApp')?.addEventListener('click', () => shareApp());
     $('#ptsShareBig')?.addEventListener('click', e => { e.preventDefault(); shareApp(); });
   }
+
+  /* ───────── المهام اليومية: مهمتان تتجددان عند منتصف الليل بتوقيت دمشق، ومكافأتها تُمنح مرة واحدة من الخادم ───────── */
+  let tasks = [], tick = null;
+  const fmtLeft = ms => { const t = Math.max(0, Math.floor(ms / 1000)), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60; return [h, m, s].map(n => String(n).padStart(2, '0')).join(':'); };
+  const esc = x => String(x ?? '').replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+  function paintTasks() {
+    const box = $('#pfTasks'), list = $('#pfTasksList'); if (!box || !list) return;
+    if (!tasks.length) { box.hidden = true; return; }
+    box.hidden = false;
+    list.innerHTML = tasks.map(t => {
+      const done = t.claimed, ready = !done && t.started;
+      const btn = done ? '<button type="button" disabled>مكتملة ✅</button>' : ready ? `<button type="button" class="claim" data-claim="${esc(t.task_key)}">استلم +${t.points}</button>` : `<button type="button" data-start="${esc(t.task_key)}">ابدأ</button>`;
+      return `<div class="pf-task ${done ? 'done' : ''}"><span class="ti"><i class="${esc(/(^| )fa-(brands|solid|regular) /.test(t.icon) ? t.icon : 'fa-solid ' + t.icon)}"></i></span><span class="tt"><b>${esc(t.title)}</b><small>+${t.points} نقطة</small></span>${btn}</div>`;
+    }).join('');
+    updateTimer();
+  }
+  function updateTimer() {
+    const el = $('#pfTasksTimer'); const reset = tasks[0]?.next_reset; if (!el || !reset) return;
+    const left = new Date(reset) - Date.now();
+    if (left <= 0) { el.textContent = 'تتجدد الآن…'; clearInterval(tick); tick = null; setTimeout(loadTasks, 1500); return; }
+    el.textContent = 'تتجدد بعد ' + fmtLeft(left);
+  }
+  async function loadTasks() {
+    const c = window.nabdSupabase; if (!c || !$('#pfTasks')) return;
+    try {
+      const { data: s } = await c.auth.getSession(); if (!s?.session) return;
+      const { data, error } = await c.rpc('daily_tasks_today'); if (error || !Array.isArray(data)) return;
+      tasks = data; paintTasks();
+      clearInterval(tick); tick = setInterval(updateTimer, 1000);
+    } catch { /* صامت */ }
+  }
+  /* تعليم أن المستخدم فتح المهمة (يشترط الخادم مرور ثوانٍ قبل الاستلام) ثم فتح الرابط/المشاركة */
+  async function startTask(key) {
+    const c = window.nabdSupabase, t = tasks.find(x => x.task_key === key); if (!c || !t) return;
+    try { await c.rpc('daily_task_start', { p_key: key }); } catch { /* يعاد */ }
+    t.started = true; paintTasks();
+    if (t.kind === 'share') { await shareApp(true); return; }
+    if (t.url) { try { window.open(t.url, '_blank', 'noopener'); } catch { location.href = t.url; } }
+  }
+  async function claimTask(key, btn) {
+    const c = window.nabdSupabase, t = tasks.find(x => x.task_key === key); if (!c || !t) return;
+    if (btn) btn.disabled = true;
+    try {
+      const { data, error } = await c.rpc('daily_task_claim', { p_key: key });
+      if (error) { if (/too early/.test(error.message || '')) { toast('أكمل المهمة أولاً ثم عد لاستلام النقاط.'); } else toast('تعذر استلام النقاط الآن.'); if (btn) btn.disabled = false; return; }
+      const r = Array.isArray(data) ? data[0] : data;
+      t.claimed = true; paintTasks();
+      if (r?.awarded) toast(`+${r.awarded} نقطة 🎉`);
+      loadLevel(); /* تحديث شريط المستوى فوراً */
+    } catch { toast('تعذر استلام النقاط الآن.'); if (btn) btn.disabled = false; }
+  }
+  document.addEventListener('click', e => {
+    const st = e.target.closest('[data-start]'); if (st) { void startTask(st.dataset.start); return; }
+    const cl = e.target.closest('[data-claim]'); if (cl) void claimTask(cl.dataset.claim, cl);
+  });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && tasks.length) { paintTasks(); updateTimer(); } });
   document.addEventListener('click', e => { if (e.target.closest('#pfHowPoints')) openHow(); });
-  window.addEventListener('load', () => setTimeout(loadLevel, 600));
+  window.addEventListener('load', () => setTimeout(() => { loadLevel(); loadTasks(); }, 600));
 })();
