@@ -273,3 +273,10 @@ input,textarea{font:inherit;color:inherit}
 .attach{background:rgba(47,111,224,.14)!important;color:var(--accent)!important}.attach .ic{width:22px;height:22px}
 .shot-alert{margin:2px 0 4px;padding:6px 10px;border-radius:12px;font-size:12px;font-weight:700;color:#b42318;background:rgba(255,89,116,.14)}
 .once-wm{display:none!important}
+
+/* تحديد وحذف المحادثات */
+.selbar{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px;background:var(--panel,var(--bg));border-bottom:1px solid var(--line);position:relative;z-index:6}
+.selbar[hidden]{display:none}.selbar button{border:0;background:rgba(150,170,230,.16);color:var(--text);border-radius:12px;padding:8px 12px;font:700 13px inherit;cursor:pointer}
+.selbar #selCount{font-size:17px}.selbar .danger{background:#e5484d;color:#fff}.selbar .danger:disabled{opacity:.45}
+.conv .pick{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;border:2px solid var(--line);color:#fff;font-size:14px;font-weight:800;flex:none}
+.conv.picked{background:rgba(76,140,255,.12)}.conv.picked .pick{background:var(--accent);border-color:var(--accent)}

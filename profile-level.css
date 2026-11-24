@@ -30,3 +30,4 @@ body[data-page="profile"] .pf-level .pf-how{margin:6px 0 0!important;width:100%;
 .pf-task button.claim{background:linear-gradient(135deg,#0f9d58,#34d399)}
 .pf-task.done{opacity:.8}.pf-task.done .ti{background:rgba(15,157,88,.18);color:#0f9d58}.pf-task.done button{background:rgba(15,157,88,.18);color:#0f9d58}
 [hidden].pf-tasks{display:none!important}
+.pf-task button.pend{opacity:.75;background:rgba(150,170,230,.2);color:inherit}

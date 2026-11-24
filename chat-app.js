@@ -87,6 +87,7 @@
     convs: [], requests: [], search: '',
     pub: { scope: 'public', id: 'public', msgs: [], hasMore: true, loaded: false, loading: false, pinned: null, unreadFrom: null, newCount: 0 },
     threads: new Map(),
+    selMode: false, sel: new Set(),
     view: { type: 'list', userId: null, threadId: null },
     stats: { total: 0, online: 0, at: 0 },
     settings: { privateOn: true, notices: true },
@@ -280,7 +281,8 @@
       const mine = c.last_sender_id === S.uid;
       const preview = c.last_message ? `${mine ? '<b>أنت:</b> ' : ''}${esc(plain(c.last_message))}` : 'ابدأ المحادثة';
       const active = S.view.type === 'private' && S.view.userId === c.other_user_id;
-      return `<button class="conv ${unread ? 'unread' : ''} ${active ? 'active' : ''}" type="button" data-open="${esc(c.other_user_id)}">${avatarHTML(c.other_user_id, c.other_name)}<div class="body"><div class="row1"><span class="name">${esc(c.other_name || 'مستخدم')}${badgeHTML({ mod: c.other_is_moderator, ver: S.profiles.get(c.other_user_id)?.ver, vt: S.profiles.get(c.other_user_id)?.vt })}</span><span class="time">${listTime(c.last_message_at)}</span></div><div class="row2"><span class="preview">${preview}</span>${unread ? `<span class="count">${unread > 99 ? '99+' : unread}</span>` : ''}</div></div></button>`;
+      const picked = S.sel.has(c.other_user_id);
+      return `<button class="conv ${unread ? 'unread' : ''} ${active ? 'active' : ''} ${picked ? 'picked' : ''}" type="button" data-open="${esc(c.other_user_id)}">${S.selMode ? `<span class="pick">${picked ? '✓' : ''}</span>` : ''}${avatarHTML(c.other_user_id, c.other_name)}<div class="body"><div class="row1"><span class="name">${esc(c.other_name || 'مستخدم')}${badgeHTML({ mod: c.other_is_moderator, ver: S.profiles.get(c.other_user_id)?.ver, vt: S.profiles.get(c.other_user_id)?.vt })}</span><span class="time">${listTime(c.last_message_at)}</span></div><div class="row2"><span class="preview">${preview}</span>${unread ? `<span class="count">${unread > 99 ? '99+' : unread}</span>` : ''}</div></div></button>`;
     }).join('');
     if (!S.convs.length && !q) html += `<div class="empty">${ic('lock')}<b>لا توجد رسائل خاصة بعد</b><span>اضغط على اسم أي طالب في الدردشة العامة لبدء محادثة خاصة.</span></div>`;
     if (q && !convs.length && !pubName.includes(q)) html = `<div class="empty">${ic('chat')}<b>لا نتائج</b><span>جرّب اسمًا آخر.</span></div>`;
@@ -1010,8 +1012,41 @@
   $('#backBtn').addEventListener('click', goBack);
 
   /* ───────── قائمة المحادثات: أحداث ───────── */
+  /* ───────── حذف المحادثات الخاصة (لدي أنا فقط) عبر التحديد ───────── */
+  function ensureSelBar() {
+    let bar = $('#selBar'); if (bar) return bar;
+    bar = document.createElement('div'); bar.id = 'selBar'; bar.className = 'selbar'; bar.hidden = true;
+    bar.innerHTML = '<button type="button" id="selCancel" aria-label="إلغاء">✕</button><b id="selCount">0</b><span style="flex:1">محدد</span><button type="button" id="selAll">تحديد الكل</button><button type="button" id="selDel" class="danger" aria-label="حذف">🗑 حذف</button>';
+    $('#listPane').prepend(bar); return bar;
+  }
+  function paintSel() { const bar = ensureSelBar(); bar.hidden = !S.selMode; $('#selCount').textContent = String(S.sel.size); $('#selDel').disabled = !S.sel.size; renderList(); }
+  function enterSelect(firstId) { S.selMode = true; S.sel = new Set(firstId ? [firstId] : []); paintSel(); }
+  function exitSelect() { S.selMode = false; S.sel = new Set(); paintSel(); }
+  async function deleteSelected() {
+    const users = [...S.sel]; if (!users.length) return;
+    if (!confirm(users.length === 1 ? 'حذف هذه المحادثة من عندك؟ لن تُحذف من عند الطرف الآخر.' : `حذف ${users.length} محادثات من عندك؟ لن تُحذف من عند الطرف الآخر.`)) return;
+    const ids = S.convs.filter(c => S.sel.has(c.other_user_id)).map(c => c.thread_id);
+    try {
+      await rpc('chat_delete_private_threads', { p_threads: ids });
+      ids.forEach(id => S.threads.delete(id)); S.convs = S.convs.filter(c => !S.sel.has(c.other_user_id));
+      saveCache(); exitSelect(); toast('تم حذف المحادثات');
+      if (S.view.type === 'private' && users.includes(S.view.userId)) location.hash = '#/';
+      void loadConvs().then(() => renderList()); window.nabdBadges?.refresh?.();
+    } catch (error) { toast('تعذر حذف المحادثات'); }
+  }
+  let pressT = null, pressed = false;
+  E.convList.addEventListener('pointerdown', event => { const row = event.target.closest('.conv[data-open]'); if (!row || row.dataset.open === 'public' || S.selMode) return; pressed = false; clearTimeout(pressT); pressT = setTimeout(() => { pressed = true; try { navigator.vibrate?.(20); } catch { /* تجاهل */ } enterSelect(row.dataset.open); }, 480); });
+  ['pointerup', 'pointerleave', 'pointercancel', 'scroll'].forEach(ev => E.convList.addEventListener(ev, () => clearTimeout(pressT), true));
+  E.convList.addEventListener('contextmenu', event => { if (event.target.closest('.conv[data-open]')) event.preventDefault(); });
+  document.addEventListener('click', event => {
+    if (event.target.closest('#selCancel')) exitSelect();
+    else if (event.target.closest('#selAll')) { S.sel = S.sel.size === S.convs.length ? new Set() : new Set(S.convs.map(c => c.other_user_id)); paintSel(); }
+    else if (event.target.closest('#selDel')) void deleteSelected();
+  });
   E.convList.addEventListener('click', event => {
     const open = event.target.closest('[data-open]');
+    if (pressed) { pressed = false; event.preventDefault(); return; }
+    if (S.selMode && open) { if (open.dataset.open === 'public') return; S.sel.has(open.dataset.open) ? S.sel.delete(open.dataset.open) : S.sel.add(open.dataset.open); if (!S.sel.size) exitSelect(); else paintSel(); return; }
     if (open) { location.hash = open.dataset.open === 'public' ? '#/public' : `#/u/${encodeURIComponent(open.dataset.open)}`; return; }
     if (event.target.closest('[data-act="requests"]')) requestsSheet();
   });
@@ -1023,12 +1058,12 @@
   $('#listMenuBtn').addEventListener('click', event => {
     event.stopPropagation();
     if (E.menu.classList.contains('show')) return closeMenu();
-    openMenu(event.currentTarget, `<button type="button" data-m="settings">${ic('sliders')}<span>إعدادات الدردشة</span></button><button type="button" data-m="refresh">${ic('refresh')}<span>تحديث</span></button><a href="profile.html">${ic('user')}<span>ملفي الشخصي</span></a><a href="index.html">${ic('home')}<span>الرئيسية</span></a>`);
+    openMenu(event.currentTarget, `<button type="button" data-m="settings">${ic('sliders')}<span>إعدادات الدردشة</span></button><button type="button" data-m="refresh">${ic('refresh')}<span>تحديث</span></button><button type="button" data-m="select">${ic('check')}<span>تحديد وحذف محادثات</span></button><a href="profile.html">${ic('user')}<span>ملفي الشخصي</span></a><a href="index.html">${ic('home')}<span>الرئيسية</span></a>`);
   });
   E.menu.addEventListener('click', event => {
     const item = event.target.closest('[data-m]'); if (!item) return;
     closeMenu();
-    if (item.dataset.m === 'settings') settingsSheet(); else if (item.dataset.m === 'refresh') { toast('جارٍ التحديث…'); void reconcile(); }
+    if (item.dataset.m === 'settings') settingsSheet(); else if (item.dataset.m === 'refresh') { toast('جارٍ التحديث…'); void reconcile(); } else if (item.dataset.m === 'select') { if (!S.convs.length) toast('لا توجد محادثات خاصة للحذف'); else enterSelect(null); }
   });
   $('#navAi').addEventListener('click', () => {
     try {
