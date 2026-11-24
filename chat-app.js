@@ -45,7 +45,7 @@
     lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>'
   };
   const ic = (name, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[name] || ''}</svg>`;
-  const IMG_RE = /^\[\[img:(https:\/\/[^\]\s]+)\]\]\s*/;
+  const IMG_RE = /^\[\[img:(https:\/\/vyjosbxjizttdwnrphza\.supabase\.co\/storage\/[^\]\s]+)\]\]\s*/;
   const imgOf = body => { const m = IMG_RE.exec(body || ''); return m ? { url: m[1], cap: body.slice(m[0].length) } : null; };
   const ONCE_RE = /^\[\[once:([^\]\s]+)\]\]\s*/;
   const onceOf = body => { const m = ONCE_RE.exec(body || ''); return m ? { path: m[1], cap: body.slice(m[0].length) } : null; };
