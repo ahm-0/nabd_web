@@ -5,7 +5,7 @@
     ['news', 'الأخبار', 'news.html', 'fa-newspaper', 'اخبار'], ['chat', 'الدردشة', 'chat.html', 'fa-comments', 'دردشه محادثة'],
     ['support', 'الدعم', 'support-chat.html', 'fa-headset', 'دعم'], ['home', 'الرئيسية', 'index.html', 'fa-house', 'رئيسيه'],
     ['tests', 'الاختبارات', 'tests.html', 'fa-clipboard-check', 'اختبار'], ['predictions', 'التوقعات', 'predictions.html', 'fa-bullseye', 'توقعات'],
-    ['exam', 'عداد الامتحان', 'exam-countdown.html', 'fa-hourglass-half', 'امتحان عداد'], ['points', 'المتصدرين', 'points.html', 'fa-trophy', 'نقاط لوحة'],
+    ['exam', 'عداد الامتحان', 'exam-countdown.html', 'fa-hourglass-half', 'امتحان عداد'], ['points', 'لوحة الشرف', 'points.html', 'fa-trophy', 'نقاط لوحة'],
     ['profile', 'الملف الشخصي', 'profile.html', 'fa-user', 'ملف'], ['settings', 'الإعدادات', 'settings.html', 'fa-gear', 'اعدادات'],
     ['premium', 'بكالوريا المميز', 'premium.html', 'fa-crown', 'مميز'], ['calc', 'حاسبة المعدل', 'grade-calculator.html', 'fa-calculator', 'معدل'],
     ['time', 'تنظيم الوقت', 'time-organizer.html', 'fa-clock', 'وقت'], ['uni', 'الجامعات', 'universities.html', 'fa-building-columns', 'جامعة'],

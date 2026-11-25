@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#071324">
-  <title>نبض التفوق | المتصدرون</title>
+  <title>نبض التفوق | لوحة الشرف</title>
   <script id="nabd-theme-init">(()=>{try{const raw=localStorage.getItem('nabd_v3_student')||localStorage.getItem('nabd_v2_student');const saved=raw?JSON.parse(raw):null;const theme=saved?.theme==='dark'&&saved?.themeSet?'dark':'light';document.documentElement.dataset.theme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==='light'?'#f2f7ff':'#080d19';}catch{document.documentElement.dataset.theme='light';}})();</script>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
@@ -31,11 +31,11 @@
 <script src="screen-guard.js" defer></script><script src="nabd-points.js" defer></script><script src="nabd-badges.js" defer></script><script src="nabd-motion.js" defer></script><link rel="stylesheet" href="points.css"></head>
 <body data-page="points">
   <div class="app">
-    <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-wave-square"></i></span><span><h1>نبض التفوق</h1><small>منصتك نحو التميز</small></span></a><div class="top-actions"><a class="icon-button" href="notifications.html" title="الإشعارات"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a></div></header>
+    <header class="hb-bar"><button type="button" class="hb-btn" id="hbBack" aria-label="رجوع"><i class="fa-solid fa-arrow-right"></i></button><h1><i class="fa-solid fa-trophy"></i> لوحة الشرف</h1><span class="hb-sp"></span><button type="button" class="hb-btn" id="hbGift" aria-label="الجوائز"><i class="fa-solid fa-gift"></i></button><button type="button" class="hb-btn" id="hbHelp" aria-label="كيف أجمع النقاط"><i class="fa-regular fa-circle-question"></i></button></header>
     <div class="layout"><main class="main-content pt-page">
+      <section class="pt-podium" id="ptPodium" aria-label="المراكز الثلاثة الأولى"></section>
       <section class="pt-me panel" id="ptMe"><div class="pt-me-top"><div class="pt-lvl" id="ptLvl">1</div><div class="pt-me-info"><b id="ptLvlName">—</b><small id="ptRank">جارٍ التحميل…</small></div><div class="pt-total"><b id="ptTotal">0</b><small>نقطة</small></div></div><div class="pt-bar"><i id="ptBar"></i></div><small class="pt-next" id="ptNext"></small></section>
       <div class="pt-prize"><i class="fa-solid fa-trophy"></i><span>🏆 سيتم توزيع جوائز قيّمة للمتصدرين في تطبيق نبض التفوق.. الكل يشارك!</span></div>
-      <section class="pt-podium" id="ptPodium" aria-label="المراكز الثلاثة الأولى"></section>
       
       <section class="pt-list panel"><h3><i class="fa-solid fa-ranking-star"></i> أفضل 100 متفوق</h3><div id="ptList"><div class="pt-empty">جارٍ التحميل…</div></div></section>
     </main></div>

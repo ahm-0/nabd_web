@@ -18,13 +18,19 @@
     const lo = need(l - 1), hi = need(l); requestAnimationFrame(() => { $('#ptBar').style.width = Math.min(100, ((total - lo) / (hi - lo)) * 100) + '%'; });
     $('#ptNext').textContent = `باقي ${hi - total} نقطة للمستوى ${l + 1}`;
     const rows = board.data || [];
-    if (board.error || !rows.length) { $('#ptList').innerHTML = `<div class="pt-empty">${board.error ? 'تعذر تحميل المتصدرين.' : 'لا يوجد متصدرون بعد — كن الأول!'}</div>`; $('#ptPodium').innerHTML = ''; return; }
+    if (board.error || !rows.length) { $('#ptList').innerHTML = `<div class="pt-empty">${board.error ? 'تعذر تحميل لوحة الشرف.' : 'لا يوجد أحد في لوحة الشرف بعد — كن الأول!'}</div>`; $('#ptPodium').innerHTML = ''; return; }
     const prof = {}; const { data: ps } = await c.rpc('chat_get_profiles_v2', { p_user_ids: rows.map(r => r.user_id) }); (ps || []).forEach(p => { prof[p.user_id] = p; });
-    const pod = (r, i) => r ? `<div class="pt-pod p${i}" data-uid="${esc(r.user_id)}" style="animation-delay:${i * 90}ms">${i === 1 ? '<span class="crown">👑</span>' : ''}${ava(prof[r.user_id])}<b>${esc(nm(prof[r.user_id]))}${badge(prof[r.user_id])}</b><span class="sc">${r.total} ⭐</span><span class="lv">م${lvl(r.total)} · ${lvlName(lvl(r.total))}</span></div>` : '<div></div>';
+    const pod = (r, i) => r ? `<div class="pt-pod p${i}" data-uid="${esc(r.user_id)}" style="animation-delay:${i * 90}ms">${i === 1 ? '<span class="crown"><i class="fa-solid fa-crown"></i></span>' : ''}<span class="ring">${ava(prof[r.user_id])}<em class="rk">${i}</em></span><b class="pn">${esc(nm(prof[r.user_id]))}${badge(prof[r.user_id])}</b><div class="blk"><strong>${r.total}</strong><span>نقطة</span><small><i class="fa-regular fa-file-lines"></i> ${lvl(r.total)}</small></div></div>` : '<div></div>';
     window.__ptProf = prof; window.__ptRows = rows;
-    $('#ptPodium').innerHTML = pod(rows[1], 2) + pod(rows[0], 1) + pod(rows[2], 3);
-    $('#ptList').innerHTML = rows.map((r, i) => `<div class="pt-row ${r.user_id === uid ? 'me' : ''}" data-uid="${esc(r.user_id)}"><span class="n">${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span>${ava(prof[r.user_id])}<span class="nm"><b>${esc(nm(prof[r.user_id]))}${badge(prof[r.user_id])}</b><small>${esc(prof[r.user_id]?.study_stage || '')} · مستوى ${lvl(r.total)}</small></span><span class="sc">${r.total}</span></div>`).join('');
+    $('#ptPodium').innerHTML = pod(rows[2], 3) + pod(rows[0], 1) + pod(rows[1], 2);
+    const topT = Math.max(1, rows[0].total);
+    $('#ptList').innerHTML = rows.slice(3).map((r, k) => { const i = k + 3; const pr = prof[r.user_id]; return `<div class="pt-row ${r.user_id === uid ? 'me' : ''}" data-uid="${esc(r.user_id)}"><span class="n">${i + 1}</span>${ava(pr)}<span class="nm"><b>${esc(nm(pr))}${badge(pr)}</b><span class="pg"><i class="fa-regular fa-file-lines"></i><u>${lvl(r.total)}</u><s><i style="width:${Math.max(4, Math.round(r.total / topT * 100))}%"></i></s></span></span><span class="sc"><b>${r.total}</b><small>نقطة</small></span></div>`; }).join('') || '<div class="pt-empty">لا مزيد من المتصدرين بعد</div>';
+    $('#ptList').closest('.pt-list').querySelector('h3').hidden = true;
   }
+  const sheet = html => { const m = $('#modalContent'), b = $('#modalBackdrop'); if (!m || !b) return; m.innerHTML = '<div class="modal-head"><div><span class="eyebrow">لوحة الشرف</span></div><button class="close-modal" aria-label="إغلاق">×</button></div>' + html; document.body.classList.add('sheet-open'); b.classList.add('show'); };
+  $('#hbBack')?.addEventListener('click', () => { if (history.length > 1) history.back(); else location.href = 'index.html'; });
+  $('#hbGift')?.addEventListener('click', () => sheet('<div class="pt-prof"><h3>🏆 الجوائز</h3><p class="bio">سيتم توزيع جوائز قيّمة للمتصدرين في تطبيق نبض التفوق.. الكل يشارك!</p></div>'));
+  $('#hbHelp')?.addEventListener('click', () => sheet('<div class="pt-prof"><h3>كيف أجمع النقاط؟</h3><p class="bio">أنجز المهام اليومية من ملفك الشخصي، وتفاعل مع الأخبار والدردشة والدروس، وادخل التطبيق كل يوم. كلما زادت نقاطك ارتفع ترتيبك ومستواك.</p><a class="pt-act" href="profile.html"><i class="fa-solid fa-list-check"></i> المهام اليومية</a></div>'));
   document.addEventListener('click', e => {
     const el = e.target.closest('[data-uid]'); if (el) { openUser(el.dataset.uid); return; }
   });
