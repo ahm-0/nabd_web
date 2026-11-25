@@ -69,3 +69,4 @@ html[data-theme="light"] .pt-pod .blk{color:#fff}
 .pt-row .pg s{flex:1;height:8px;border-radius:8px;background:rgba(150,170,230,.2);overflow:hidden;text-decoration:none;display:block}
 .pt-row .pg s i{display:block;height:100%;border-radius:8px;background:#7565e6}
 .pt-row .sc{display:grid;justify-items:start;color:#7f74f0}.pt-row .sc b{font-size:24px;font-weight:800;color:#7f74f0}.pt-row .sc small{font-size:12px;color:var(--pt-muted)}
+.pt-row,.nx-news-card{content-visibility:auto;contain-intrinsic-size:auto 80px}

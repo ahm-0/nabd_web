@@ -140,5 +140,5 @@ https://nabd0.github.io/app/`;
     if (tasks.some(t => t.verify && t.started && !t.claimed)) void loadTasks(); else { paintTasks(); updateTimer(); }
   });
   document.addEventListener('click', e => { if (e.target.closest('#pfHowPoints')) openHow(); });
-  window.addEventListener('load', () => setTimeout(() => { loadLevel(); loadTasks(); }, 600));
+  { const go = () => { loadLevel(); loadTasks(); }; if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go(); }
 })();

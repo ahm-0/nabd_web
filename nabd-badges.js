@@ -66,7 +66,7 @@
   const start = () => {
     const nav = document.getElementById('bottomNav');
     if (nav) new MutationObserver(paint).observe(nav, { childList: true });
-    setTimeout(refresh, 900);
+    setTimeout(refresh, 250);
     setInterval(refresh, 30000); /* شبكة أمان إن انقطع الاتصال اللحظي */
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
     window.addEventListener('online', refresh);
