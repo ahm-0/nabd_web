@@ -248,3 +248,24 @@ body[data-page="supervision"] .ap-mon-onceimg{position:relative;margin:4px 0 2px
 body[data-page="supervision"] .ap-mon-onceimg img{display:block;max-width:240px;max-height:300px;border-radius:12px;cursor:zoom-in}
 body[data-page="supervision"] .ap-mon-onceimg .ph{display:grid;place-items:center;width:200px;height:140px;border-radius:12px;background:rgba(150,150,255,.14);color:var(--ap-muted)}
 body[data-page="supervision"] .ap-mon-onceimg figcaption{position:absolute;bottom:6px;inset-inline-start:6px;display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;background:rgba(245,158,11,.95);color:#1c1200;font-size:11px;font-weight:800}
+
+/* محرر الاختبارات */
+body[data-page="supervision"] .ap-qz-sheet{max-width:680px}
+body[data-page="supervision"] .qz-chks{display:flex;flex-wrap:wrap;gap:8px}
+body[data-page="supervision"] .qz-chk{display:inline-flex!important;align-items:center;gap:6px;margin:6px 0!important;font-size:13px!important;color:var(--ap-text)!important}
+body[data-page="supervision"] .qz-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+body[data-page="supervision"] .qz-qhead{display:flex;align-items:center;justify-content:space-between;margin:18px 0 8px}
+body[data-page="supervision"] .qz-qhead button,body[data-page="supervision"] .qz-imp button,body[data-page="supervision"] .qz-addo{border:0;border-radius:11px;padding:8px 12px;margin-inline-start:6px;font:700 12.5px inherit;background:rgba(150,150,255,.16);color:var(--ap-text);cursor:pointer}
+body[data-page="supervision"] .qz-imp{display:grid;gap:8px;margin-bottom:10px}
+body[data-page="supervision"] .qz-imp[hidden]{display:none}
+body[data-page="supervision"] .qz-imp textarea{min-height:150px}
+body[data-page="supervision"] .qz-imp small{color:var(--ap-muted);font-size:12px}
+body[data-page="supervision"] .qz-list{display:grid;gap:10px}
+body[data-page="supervision"] .qz-q{display:grid;gap:8px;padding:12px;border:1px solid var(--ap-line);border-radius:16px;background:rgba(150,150,255,.06)}
+body[data-page="supervision"] .qz-qh{display:flex;justify-content:space-between;align-items:center}
+body[data-page="supervision"] .qz-qh button{border:0;background:rgba(150,150,255,.14);color:var(--ap-text);border-radius:9px;width:30px;height:30px;cursor:pointer;margin-inline-start:4px}
+body[data-page="supervision"] .qz-opt{display:flex;align-items:center;gap:8px}
+body[data-page="supervision"] .qz-opt input[type=radio]{width:20px;height:20px;flex:none;accent-color:#22c55e}
+body[data-page="supervision"] .qz-opt input[type=text]{flex:1;min-width:0}
+body[data-page="supervision"] .qz-opt button{border:0;background:none;color:var(--ap-muted);font-size:20px;cursor:pointer;width:28px}
+body[data-page="supervision"] .qz-q textarea{min-height:64px}

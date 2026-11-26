@@ -255,8 +255,10 @@
     /* التعليقات: معاينة + نافذة كاملة */
     const bg = $('#csbg'), list = $('#cml'), more = $('#cmm'), ta = $('#cmt'), send = $('#cms'); let last = null, total = Number(L.comments) || 0;
     const setTotal = () => { ['#cmn', '#cmn2', '#cmc'].forEach(s => { $(s).textContent = fmtN(total); }); };
-    const item = c => `<div class="cm" data-id="${c.id}"><span class="av" style="background:hsl(${hue(c.name)} 55% 45%)">${esc(Array.from(c.name)[0] || '؟')}</span><div class="b"><div class="n">${esc(c.name)}${c.is_verified ? ' <i class="fa-solid fa-circle-check" style="color:var(--primary);font-size:11px"></i>' : ''}<small>${ago(c.created_at)}</small></div><p>${esc(c.body)}</p>${c.mine ? '<button class="x" data-del="1"><i class="fa-regular fa-trash-can"></i> حذف</button>' : ''}</div></div>`;
-    const preview = rows => { $('#cmpv').innerHTML = rows.length ? `<span class="av" style="background:hsl(${hue(rows[0].name)} 55% 45%)">${esc(Array.from(rows[0].name)[0] || '؟')}</span><span class="tx">${esc(rows[0].body)}</span>` : '<span class="muted">كن أول من يعلّق</span>'; };
+    const avOf = c => c.avatar && /^(data:image\/|https:)/.test(c.avatar) ? `<span class="av"><img src="${esc(c.avatar)}" alt=""></span>` : `<span class="av" style="background:hsl(${hue(c.name)} 55% 45%)">${esc(Array.from(c.name)[0] || '؟')}</span>`;
+    const vbOf = c => { if (!c.is_verified) return ''; const lb = { admin: 'مشرف موثّق', teacher: 'أستاذ موثّق', developer: 'مطوّر المنصة' }; const k = lb[c.vtype] ? c.vtype : 'verified'; return `<span class="verified-badge vb-${k}" role="img" title="${lb[k] || 'حساب موثّق'}"><i class="fa-solid fa-check"></i></span>`; };
+    const item = c => `<div class="cm" data-id="${c.id}">${avOf(c)}<div class="b"><div class="n">${esc(c.name)}${vbOf(c)}<small>${ago(c.created_at)}</small></div><p>${esc(c.body)}</p>${c.mine ? '<button class="x" data-del="1"><i class="fa-regular fa-trash-can"></i> حذف</button>' : ''}</div></div>`;
+    const preview = rows => { $('#cmpv').innerHTML = rows.length ? `${avOf(rows[0])}<span class="tx">${esc(rows[0].body)}</span>` : '<span class="muted">كن أول من يعلّق</span>'; };
     const load = async (reset) => {
       const rows = await rpc('lesson_comments_list', { p_lesson: L.id, p_limit: 20, p_before: reset ? null : last });
       if (my !== token) return;

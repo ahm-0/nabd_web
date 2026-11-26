@@ -280,3 +280,9 @@ input,textarea{font:inherit;color:inherit}
 .selbar #selCount{font-size:17px}.selbar .danger{background:#e5484d;color:#fff}.selbar .danger:disabled{opacity:.45}
 .conv .pick{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;border:2px solid var(--line);color:#fff;font-size:14px;font-weight:800;flex:none}
 .conv.picked{background:rgba(76,140,255,.12)}.conv.picked .pick{background:var(--accent);border-color:var(--accent)}
+
+/* سحب للتحديث */
+.ptr-pill{position:fixed;top:calc(env(safe-area-inset-top,0px) + 70px);left:50%;transform:translate(-50%,-60px);width:40px;height:40px;border-radius:50%;display:grid;place-items:center;z-index:60;opacity:0;pointer-events:none;background:var(--panel,#fff);color:var(--accent,#4c8cff);border:1px solid var(--line);box-shadow:0 8px 22px rgba(0,0,0,.25);font-size:16px}
+.ptr-pill.ready{background:var(--accent,#4c8cff);color:#fff}.ptr-pill.spin svg{animation:ptrspin .8s linear infinite}
+@keyframes ptrspin{to{transform:rotate(360deg)}}
+#convScroll,#msgs{overscroll-behavior-y:contain}

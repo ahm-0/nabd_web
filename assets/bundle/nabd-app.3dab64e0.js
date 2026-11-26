@@ -919,7 +919,7 @@
       images: Array.isArray(row.images) ? row.images : [],
       likes: Number(row.like_count || 0),
       liked: Boolean(row.liked_by_me),
-      comments: Array.isArray(row.comments) ? row.comments.map(comment => ({ id: comment.id, authorId: comment.author_id || '', parentId: comment.parent_id || comment.parentId || '', name: comment.name || 'طالب نبض', meta: comment.meta || 'مجتمع الأخبار', text: comment.text || '', mine: Boolean(currentAuthUser && comment.author_id === currentAuthUser.id), verified: Boolean(comment.verified), vtype: comment.vtype || '', createdAt: comment.created_at })) : [],
+      comments: Array.isArray(row.comments) ? row.comments.map(comment => ({ id: comment.id, authorId: comment.author_id || '', parentId: comment.parent_id || comment.parentId || '', name: comment.name || 'طالب نبض', meta: comment.meta || 'مجتمع الأخبار', text: comment.text || '', mine: Boolean(currentAuthUser && comment.author_id === currentAuthUser.id), verified: Boolean(comment.verified), vtype: comment.vtype || '', avatar: comment.avatar || '', likes: Number(comment.likes || 0), liked: Boolean(comment.liked), createdAt: comment.created_at })) : [],
       remote: true,
       mine: Boolean(currentAuthUser && row.author_id === currentAuthUser.id),
       verified: true,
@@ -1005,7 +1005,7 @@
       ? `<div class="post-images ${(post.images || []).length > 1 ? 'multiple' : ''}">${post.images.map(src => `<img loading="lazy" src="${escapeHTML(src)}" alt="صورة مرفقة بالمنشور">`).join('')}</div><div class="post-media-indicator">${post.images.length > 1 ? `<i class="fa-solid fa-images"></i> اسحب لمشاهدة الصور ${post.images.length}` : ''}</div>`
       : '';
     const rootComments = post.comments.filter(comment => !comment.parentId);
-    const comments = rootComments.map(comment => { const commentVerified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified); const commentAvatar = comment.mine ? avatarMarkup('comment-avatar') : `<span class="comment-avatar">${escapeHTML((comment.name || 'ط')[0])}</span>`; const replyCount = post.comments.filter(reply => reply.parentId === comment.id).length; return `<div class="comment">${commentAvatar}<div><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(commentVerified, comment.vtype)}</b><p>${newsLinkMarkup(comment.text)}</p>${commentActionsMarkup(comment, post.id, replyCount)}</div></div>`; }).join('');
+    const comments = rootComments.map(comment => { const commentVerified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified); const commentAvatar = commentAvatarMarkup(comment); const replyCount = post.comments.filter(reply => reply.parentId === comment.id).length; return `<div class="comment">${commentAvatar}<div><b>${escapeHTML(comment.name)}${verifiedBadgeMarkup(commentVerified, comment.vtype)}</b><p>${newsLinkMarkup(comment.text)}</p>${commentActionsMarkup(comment, post.id, replyCount)}</div></div>`; }).join('');
     const menu = newsIsAdmin ? `<button class="post-menu" type="button" data-action="post-menu" title="إدارة الخبر" aria-label="إدارة الخبر"><i class="fa-solid fa-ellipsis-vertical"></i></button>` : '';
     return `<article class="post ${likePulsePosts.has(post.id) ? 'like-pulse' : ''}" data-post="${escapeHTML(post.id)}"><div class="post-head">${avatar}<div class="post-author"><strong class="post-author-name"><span>${escapeHTML(post.name)}</span>${verifiedBadgeMarkup(verified)}</strong></div>${menu}</div>${newsTextMarkup(post)}${images}<div class="nw-foot"><span class="nw-views" data-views="${escapeHTML(post.id)}"><i class="fa-regular fa-eye"></i> <b>${(window.__newsViews || {})[post.id] ?? ''}</b></span><span>${newsTimeLabel(post.createdAt)}</span></div><div class="post-insights"><span>${post.likes} إعجاب</span><span>${post.comments.length} تعليق</span></div><div class="post-tools"><button class="tool-button ${post.liked ? 'liked' : ''}" type="button" data-action="like"><i class="${post.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> إعجاب${post.likes ? ` · ${post.likes}` : ''}</button><button class="tool-button" type="button" data-action="comments"><i class="fa-regular fa-comment"></i> تعليق${post.comments.length ? ` · ${post.comments.length}` : ''}</button><button class="tool-button" type="button" data-action="share"><i class="fa-solid fa-arrow-up-from-bracket"></i> مشاركة</button></div><div class="comments ${openComments.has(post.id) ? '' : 'hidden'}">${comments}<form class="comment-form"><input required maxlength="280" placeholder="أضف تعليقًا محترمًا..."><button title="إرسال" aria-label="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></form></div></article>`;
   }
@@ -1029,19 +1029,41 @@
     return `<article class="comment-thread-item" data-comment-id="${escapeHTML(comment.id || '')}"><div class="comment-thread-head">${avatar}<div><b>${escapeHTML(comment.name || 'طالب نبض')}${verifiedBadgeMarkup(verified, comment.vtype)}</b><small>${escapeHTML(comment.meta || 'مجتمع الأخبار')}</small></div></div><p>${newsLinkMarkup(comment.text || '')}</p>${commentActionsMarkup(comment, postId, replyCount)}</article>`;
   }
 
+  const igExpanded = new Set();
+  const igAgo = value => { const t = value ? new Date(value).getTime() : NaN; if (Number.isNaN(t)) return ''; const sec = Math.max(0, (Date.now() - t) / 1000); if (sec < 60) return 'الآن'; if (sec < 3600) return Math.floor(sec / 60) + ' د'; if (sec < 86400) return Math.floor(sec / 3600) + ' س'; if (sec < 604800) return Math.floor(sec / 86400) + ' ي'; return Math.floor(sec / 604800) + ' أسبوع'; };
+  function commentAvatarMarkup(comment, extra = '') {
+    if (comment.mine) return avatarMarkup('comment-avatar ' + extra);
+    if (comment.avatar && /^(data:image\/|https:)/.test(comment.avatar)) return `<span class="comment-avatar ${extra}"><img src="${escapeHTML(comment.avatar)}" alt=""></span>`;
+    return `<span class="comment-avatar ${extra}">${escapeHTML(Array.from(comment.name || 'ط')[0])}</span>`;
+  }
+  function igCommentMarkup(comment, postId, isReply = false) {
+    const verified = comment.mine ? student.verificationStatus === 'approved' : Boolean(comment.verified);
+    const id = escapeHTML(comment.id || ''), pid = escapeHTML(postId);
+    const del = comment.mine ? `<button type="button" class="ig-act" data-comment-delete="${id}" data-comment-post="${pid}">حذف</button>` : '';
+    return `<article class="ig-c ${isReply ? 'ig-r' : ''}" data-comment-id="${id}">${commentAvatarMarkup(comment, isReply ? 'sm' : '')}<div class="ig-b"><p class="ig-t"><b class="ig-n">${escapeHTML(comment.name || 'طالب نبض')}${verifiedBadgeMarkup(verified, comment.vtype)}</b> ${newsLinkMarkup(comment.text || '')}</p><div class="ig-m"><span>${igAgo(comment.createdAt)}</span><button type="button" class="ig-act" data-comment-reply="${id}" data-comment-post="${pid}" data-comment-name="${escapeHTML(comment.name || 'طالب نبض')}">رد</button>${del}</div></div><button type="button" class="ig-h ${comment.liked ? 'on' : ''}" data-comment-like="${id}" data-comment-post="${pid}" aria-label="إعجاب بالتعليق"><i class="${comment.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i><span data-hc>${comment.likes ? comment.likes : ''}</span></button></article>`;
+  }
+  function igRootOf(comments, id) { let cur = comments.find(c => c.id === id), guard = 0; while (cur && cur.parentId && guard++ < 50) { const up = comments.find(c => c.id === cur.parentId); if (!up) break; cur = up; } return cur; }
   function commentThreadMarkup(post) {
     const comments = post.comments || [];
-    const roots = comments.filter(comment => !comment.parentId);
+    const roots = comments.filter(comment => !comment.parentId || !comments.some(c => c.id === comment.parentId));
     if (!roots.length) return '<div class="comment-thread-empty"><i class="fa-regular fa-comments"></i><b>ابدأ الحوار</b><span>كن أول من يضيف تعليقًا محترمًا.</span></div>';
-    return roots.map(comment => commentItemMarkup(comment, post.id, comments.filter(reply => reply.parentId === comment.id))).join('');
+    return roots.map(root => {
+      const desc = []; const queue = [root.id]; const seen = new Set(queue);
+      while (queue.length) { const cur = queue.shift(); comments.filter(c => c.parentId === cur && !seen.has(c.id)).forEach(c => { seen.add(c.id); desc.push(c); queue.push(c.id); }); }
+      desc.sort((x, y) => new Date(x.createdAt) - new Date(y.createdAt));
+      const open = igExpanded.has(root.id);
+      const more = desc.length ? `<button type="button" class="ig-more" data-toggle-replies="${escapeHTML(root.id)}"><i></i><span>${open ? 'إخفاء الردود' : `عرض الردود (${desc.length})`}</span></button><div class="ig-reps" ${open ? '' : 'hidden'}>${desc.map(r => igCommentMarkup(r, post.id, true)).join('')}</div>` : '';
+      return `<div class="ig-thread">${igCommentMarkup(root, post.id)}${more}</div>`;
+    }).join('');
   }
 
   function openPostComments(postId, replyTo = null, options = {}) {
     const rawPost = feedPost(postId); if (!rawPost) return;
     if (!options.fromHistory) pushNewsModalState('comments', postId);
     const post = enrichedPost(rawPost);
+    if (replyTo) { const rt = igRootOf(post.comments || [], replyTo.id); if (rt) igExpanded.add(rt.id); }
     const replyHint = replyTo ? `<div class="comment-reply-target"><i class="fa-solid fa-reply"></i><span>رد على <b>${escapeHTML(replyTo.name)}</b></span><button type="button" data-clear-comment-reply="${escapeHTML(postId)}" title="إلغاء الرد"><i class="fa-solid fa-xmark"></i></button></div>` : '';
-    openModal(`<div class="comments-screen" data-comment-post-id="${escapeHTML(postId)}"><div class="modal-head comments-modal-head"><div class="comments-modal-title"><span class="comment-modal-icon"><i class="fa-regular fa-comments"></i></span><div><span class="eyebrow">مجتمع الأخبار</span><h3>التعليقات</h3><small>${post.comments.length} تعليق · شارك باحترام</small></div></div><button class="close-modal" aria-label="إغلاق">×</button></div><section class="comment-thread-list">${commentThreadMarkup(post)}</section><form class="comment-modal-form" data-post-id="${escapeHTML(postId)}" data-parent-id="${escapeHTML(replyTo?.id || '')}">${replyHint}<div><input name="comment" required maxlength="280" placeholder="اكتب تعليقك..." autocomplete="off"><button type="submit" title="إرسال التعليق"><i class="fa-solid fa-paper-plane"></i></button></div></form></div>`);
+    openModal(`<div class="comments-screen" data-comment-post-id="${escapeHTML(postId)}"><div class="modal-head comments-modal-head"><div class="comments-modal-title"><span class="comment-modal-icon"><i class="fa-regular fa-comments"></i></span><div><span class="eyebrow">مجتمع الأخبار</span><h3>التعليقات</h3><small>${post.comments.length} تعليق · شارك باحترام</small></div></div><button class="close-modal" aria-label="إغلاق">×</button></div><section class="comment-thread-list">${commentThreadMarkup(post)}</section><form class="comment-modal-form" data-post-id="${escapeHTML(postId)}" data-parent-id="${escapeHTML(replyTo?.id || '')}">${replyHint}<div class="ig-compose">${avatarMarkup('comment-avatar sm')}<input name="comment" required maxlength="280" placeholder="${replyTo ? 'اكتب ردك...' : 'أضف تعليقًا...'}" autocomplete="off"><button type="submit" title="نشر">نشر</button></div></form></div>`);
   }
 
   function openPostReplies(postId, commentId, replyTo = null, options = {}) {
@@ -1289,6 +1311,7 @@
         }
         if (!result) throw new Error('تعذر حفظ التعليق.');
         post.comments = [...(post.comments || []), { ...localComment, id: result.id || localComment.id, parentId: result.parent_id || parentId, name: result.name || localComment.name, meta: result.meta || localComment.meta, text: result.text || localComment.text, createdAt: result.created_at || localComment.createdAt }];
+        if (parentId) { const rt = igRootOf(post.comments, parentId); if (rt) igExpanded.add(rt.id); }
       } else {
         postInteractions[postId] = { ...(postInteractions[postId] || {}), comments: [...(postInteractions[postId]?.comments || []), localComment] };
         saveState();
@@ -1305,6 +1328,19 @@
     } finally {
       if (submit) submit.disabled = false;
     }
+  }
+
+  async function toggleCommentLike(btn) {
+    const postId = btn.dataset.commentPost, id = btn.dataset.commentLike; const post = feedPost(postId); if (!post) return;
+    const list = post.remote ? (post.comments || []) : (postInteractions[postId]?.comments || []); const c = list.find(x => x.id === id); if (!c) return;
+    const paint = () => { btn.classList.toggle('on', Boolean(c.liked)); const i = btn.querySelector('i'); if (i) i.className = (c.liked ? 'fa-solid' : 'fa-regular') + ' fa-heart'; const h = btn.querySelector('[data-hc]'); if (h) h.textContent = c.likes ? String(c.likes) : ''; };
+    const prev = { liked: c.liked, likes: c.likes || 0 };
+    c.liked = !prev.liked; c.likes = Math.max(0, prev.likes + (c.liked ? 1 : -1)); paint();
+    if (!post.remote) { saveState(); return; }
+    try {
+      const { data, error } = await supabaseClient.rpc('news_toggle_comment_like', { p_comment_id: id }); if (error) throw error;
+      const r = Array.isArray(data) ? data[0] : data; if (r) { c.liked = Boolean(r.liked); c.likes = Number(r.likes || 0); paint(); }
+    } catch { c.liked = prev.liked; c.likes = prev.likes; paint(); toast('تعذر تسجيل الإعجاب الآن.'); }
   }
 
   async function deleteComment(postId, commentId) {
@@ -1352,8 +1388,12 @@
 
   function setSectionLoading(selector, active, label = 'جارٍ التحميل') { const root = typeof selector === 'string' ? $(selector) : selector; if (!root) return; const custom = root.querySelector(':scope > #chatLoadingState, :scope > #newsLoadingState'); if (custom) { custom.querySelector('span')?.replaceChildren(document.createTextNode(label)); custom.hidden = !active; root.setAttribute('aria-busy', String(Boolean(active))); return; } let indicator = root.querySelector(':scope > .section-loading-indicator'); if (active) { if (!indicator) { indicator = document.createElement('div'); indicator.className = 'section-loading-indicator'; indicator.setAttribute('role', 'status'); root.prepend(indicator); } indicator.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>${escapeHTML(label)}</span>`; indicator.hidden = false; root.setAttribute('aria-busy', 'true'); } else { if (indicator) indicator.remove(); root.removeAttribute('aria-busy'); } }
 
+  const nwSkeleton = () => '<div class="nw-skel" aria-hidden="true">' + [0, 1, 2].map(n => `<div class="sk"><div class="sk-h"><i class="a"></i><div style="flex:1;display:grid;gap:8px"><i class="l1"></i><i class="l3"></i></div></div><i class="l2"></i><i class="l3"></i>${n === 0 ? '<i class="im"></i>' : ''}</div>`).join('') + '</div>';
+  window.nabdNewsRefresh = async () => { try { await loadRemoteNewsPosts(true); renderFeed(); } catch { toast('تعذر التحديث الآن.'); } };
   async function initNews() {
     if (!$('#feed')) return;
+    try { if (!posts.length && !localStorage.getItem('nabd_news_raw')) $('#feed').innerHTML = nwSkeleton(); } catch { /* تجاهل */ }
+    if (window.NabdPTR && !window.__nwPtr) { window.__nwPtr = true; window.NabdPTR.attach({ scroller: window, onRefresh: () => window.nabdNewsRefresh() }); }
     setSectionLoading('.news-material-main', true, 'جارٍ تحديث الأخبار'); const newsLoader = $('#newsLoadingState'); if (newsLoader) newsLoader.hidden = false;
     elevateNewsComposer();
     const dock = $('#newsComposerDock');
@@ -1654,8 +1694,14 @@
     renderTestCatalog();
   }
 
+  async function loadRemoteQuizzes() {
+    if (!supabaseClient) return;
+    const apply = rows => { if (!Array.isArray(rows)) return; for (let i = testCatalogData.length - 1; i >= 0; i--) if (testCatalogData[i].remote) testCatalogData.splice(i, 1); rows.forEach(q => { const id = 'q-' + q.id; testCatalogData.unshift({ id, remote: true, title: q.title, subject: q.subject, category: q.category || 'general', level: q.level || 'متوسط', duration: q.duration || 10, score: q.score || 20, questions: (q.questions || []).map(k => ({ text: k.text, options: k.options, correct: k.correct, explain: k.explain || '' })) }); TEST_STAGES[id] = q.stages && q.stages.length ? q.stages : ['nine', 'science', 'literary']; }); renderTestCatalog(); };
+    try { const c = JSON.parse(localStorage.getItem('nabd_quizzes_v1') || 'null'); if (c) apply(c); } catch { /* تجاهل */ }
+    try { const { data, error } = await supabaseClient.rpc('quizzes_list'); if (error) throw error; apply(data); try { localStorage.setItem('nabd_quizzes_v1', JSON.stringify(data)); } catch { /* تجاهل */ } } catch (e) { console.warn('تعذر تحميل الاختبارات', e); }
+  }
   function initTests() {
-    if (!$('#testCatalog')) return; renderTestCatalog();
+    if (!$('#testCatalog')) return; renderTestCatalog(); void loadRemoteQuizzes();
     $('#testSearch')?.addEventListener('input', renderTestCatalog);
     $$('[data-test-filter]').forEach(item => item.classList.toggle('active', item.dataset.testFilter === activeTestFilter));
     $$('[data-test-filter]').forEach(button => button.addEventListener('click', () => { activeTestFilter = button.dataset.testFilter; $$('[data-test-filter]').forEach(item => item.classList.toggle('active', item === button)); renderTestCatalog(); }));
@@ -3119,6 +3165,10 @@
 
       const newsManage = event.target.closest('[data-news-manage]');
       if (newsManage) { const id = newsManage.dataset.postId; if (newsManage.dataset.newsManage === 'edit') openPostEditor(id); if (newsManage.dataset.newsManage === 'delete') { closeModal(); deleteNewsPost(id); } return; }
+      const likeC = event.target.closest('[data-comment-like]');
+      if (likeC) { void toggleCommentLike(likeC); return; }
+      const togR = event.target.closest('[data-toggle-replies]');
+      if (togR) { const rid = togR.dataset.toggleReplies, box = togR.nextElementSibling; const open = box?.hasAttribute('hidden'); if (open) { box.removeAttribute('hidden'); igExpanded.add(rid); } else { box?.setAttribute('hidden', ''); igExpanded.delete(rid); } const n = box ? box.querySelectorAll('.ig-c').length : 0; togR.querySelector('span').textContent = open ? 'إخفاء الردود' : `عرض الردود (${n})`; return; }
       const commentDelete = event.target.closest('[data-comment-delete]');
       if (commentDelete) { deleteComment(commentDelete.dataset.commentPost, commentDelete.dataset.commentDelete); return; }
       const repliesButton = event.target.closest('[data-comment-replies]');

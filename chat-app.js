@@ -928,6 +928,8 @@
 
   /* مطابقة دورية تلتقط ما لا يصل لحظيًا (الحذف الناعم، انقطاع الشبكة) */
   let reconciling = false;
+  window.nabdChatRefresh = async () => { reconciling = false; await reconcile(); };
+  if (window.NabdPTR) { window.NabdPTR.attach({ scroller: E.convScroll, host: E.listPane, onRefresh: () => window.nabdChatRefresh() }); window.NabdPTR.attach({ scroller: E.msgs, host: E.chatPane, onRefresh: () => window.nabdChatRefresh() }); }
   async function reconcile() {
     if (reconciling || document.visibilityState !== 'visible' || !S.uid) return;
     reconciling = true;

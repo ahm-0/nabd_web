@@ -130,3 +130,45 @@ body[data-page="news"] .nw-brand h1{font-size:16px!important}
 body[data-page="news"] .nw-support{display:grid!important;justify-items:center;gap:2px;padding:0!important;border-radius:0!important;background:none!important;color:inherit!important}
 body[data-page="news"] .nw-support i{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;font-size:16px;color:#fff;background:#25b868}
 body[data-page="news"] .nw-support span{font-size:9.5px!important;font-weight:400!important;color:var(--nw-muted,#6b7a99)!important;line-height:1.1}
+
+/* ===== تعليقات الأخبار بنمط انستغرام ===== */
+.comments-screen .comment-thread-list{display:grid;gap:2px;padding:4px 2px 8px;max-height:58vh;overflow:auto}
+.ig-thread{display:grid}
+.ig-c{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:start;padding:9px 2px}
+.ig-c .comment-avatar{width:38px;height:38px;border-radius:50%;overflow:hidden;display:grid;place-items:center;font-weight:800;flex:none;background:linear-gradient(135deg,var(--primary,#3b6bd6),#7565e6);color:#fff;object-fit:cover}
+.ig-c .comment-avatar img{width:100%;height:100%;object-fit:cover}
+.ig-c .comment-avatar.sm,.ig-compose .comment-avatar.sm{width:28px;height:28px;font-size:12px}
+.ig-t{margin:0;font-size:14px;line-height:1.6;color:var(--text,inherit);word-break:break-word}
+.ig-n{margin-inline-end:4px;font-weight:800}
+.ig-m{display:flex;gap:14px;align-items:center;margin-top:3px;font-size:12px;color:var(--muted,#8a94a8)}
+.ig-act{border:0;background:none;padding:0;font:700 12px inherit;color:var(--muted,#8a94a8);cursor:pointer}
+.ig-act:active{opacity:.6}
+.ig-h{border:0;background:none;display:grid;justify-items:center;gap:1px;min-width:34px;padding:4px 2px;color:var(--muted,#8a94a8);font-size:11px;cursor:pointer}
+.ig-h i{font-size:16px}.ig-h.on{color:#ed4956}.ig-h.on i{animation:igpop .3s}
+@keyframes igpop{40%{transform:scale(1.35)}}
+.ig-more{display:flex;align-items:center;gap:10px;margin:0 48px 4px 0;padding:4px 0;border:0;background:none;color:var(--muted,#8a94a8);font:700 12px inherit;cursor:pointer}
+.ig-more i{width:26px;height:1px;background:currentColor;opacity:.5}
+.ig-reps{margin-inline-start:48px}.ig-reps[hidden]{display:none}
+.ig-r{padding:6px 0}
+.comment-modal-form .ig-compose{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line,rgba(150,170,230,.25));border-radius:999px}
+.comment-modal-form .ig-compose .comment-avatar{border-radius:50%;object-fit:cover;overflow:hidden;display:grid;place-items:center;width:28px;height:28px;flex:none}
+.comment-modal-form .ig-compose input{flex:1;min-width:0;border:0!important;background:transparent!important;box-shadow:none!important;outline:0;padding:6px 2px;font-size:14px;color:inherit}
+.comment-modal-form .ig-compose button{border:0;background:none;color:var(--primary,#3b6bd6);font:800 14px inherit;padding:4px 8px;cursor:pointer;width:auto;height:auto;min-width:0}
+.comment-modal-form .ig-compose button:disabled{opacity:.4}
+
+/* ===== سحب للتحديث + هياكل التحميل ===== */
+.ptr-pill{position:fixed;top:calc(env(safe-area-inset-top,0px) + 56px);left:50%;transform:translate(-50%,-60px);width:40px;height:40px;border-radius:50%;display:grid;place-items:center;z-index:60;opacity:0;pointer-events:none;background:var(--surface,#fff);color:var(--primary,#3b6bd6);border:1px solid var(--line,rgba(150,170,230,.3));box-shadow:0 8px 22px rgba(0,0,0,.18);font-size:16px}
+.ptr-pill.ready{background:var(--primary,#3b6bd6);color:#fff}
+.ptr-pill.spin svg{animation:ptrspin .8s linear infinite}
+@keyframes ptrspin{to{transform:rotate(360deg)}}
+.nw-skel{display:grid;gap:12px}
+.nw-skel .sk{display:grid;gap:10px;padding:14px;border-radius:20px;border:1px solid var(--line,rgba(150,170,230,.2));background:var(--surface,rgba(255,255,255,.05))}
+.nw-skel .sk-h{display:flex;gap:10px;align-items:center}
+.nw-skel i{display:block;border-radius:10px;background:linear-gradient(90deg,rgba(150,170,230,.14) 25%,rgba(150,170,230,.28) 50%,rgba(150,170,230,.14) 75%);background-size:200% 100%;animation:nwshine 1.2s linear infinite}
+.nw-skel .a{width:40px;height:40px;border-radius:50%}.nw-skel .l1{height:12px;width:40%}.nw-skel .l2{height:12px;width:92%}.nw-skel .l3{height:12px;width:70%}.nw-skel .im{height:150px;border-radius:14px}
+@keyframes nwshine{to{background-position:-200% 0}}
+body.news-page,html{overscroll-behavior-y:contain}
+.comment-modal-form .ig-compose{box-sizing:border-box;width:100%;max-width:100%;grid-template-columns:none;margin:0}
+.comment-modal-form .ig-compose input{width:auto!important;flex:1 1 0;min-height:0!important;height:auto!important}
+.comment-modal-form .ig-compose button{flex:none;border-radius:8px!important;background:none!important;box-shadow:none!important;color:var(--primary,#3b6bd6)!important}
+.comment-modal-form{grid-template-columns:minmax(0,1fr)}.comment-modal-form .ig-compose input{font-size:14px!important}
